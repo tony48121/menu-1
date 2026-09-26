@@ -2,124 +2,423 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Réglage de la touche du menu</title>
+<title>Admin Menu NUI</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&family=Rajdhani:wght@500;600;700&display=swap');
 
-  :root {
-    --panel: #0d0e17;
-    --border: rgba(255, 255, 255, 0.08);
-    --text: #f2f2f7;
-    --text-dim: #8a8ca3;
-    --accent: #58c4ff;
-    --font: 'Inter', system-ui, -apple-system, sans-serif;
+  :root{
+    --panel-w: 430px;
+    --accent: #4da3ff;
+    --text: #e8f1fb;
+    --text-dim: #7d90ac;
+    --bg-1: rgba(7,12,22,.94);
+    --bg-2: rgba(4,7,14,.97);
   }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  *{ box-sizing:border-box; }
 
-  html, body {
-    width: 100%;
-    height: 100%;
-    background: transparent;
-    color: var(--text);
-    font-family: var(--font);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  html,body{
+    margin:0; height:100%;
+    background:transparent; /* transparent : le jeu reste visible derriere le menu en NUI */
+    font-family:'Rajdhani', sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow:hidden;
   }
 
-  .panel {
-    width: 460px;
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+  /* Fond degrade uniquement pour previsualiser ce fichier hors du jeu.
+     Supprimer cette classe sur <body> une fois integre en jeu. */
+  body.preview-bg{
+    background:
+      radial-gradient(circle at 12% 15%, rgba(40,90,180,.35), transparent 40%),
+      radial-gradient(circle at 88% 85%, rgba(40,90,180,.3), transparent 45%),
+      #030509;
+    display:flex; align-items:center; justify-content:center;
   }
 
-  .row-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 14px 18px;
-    border-bottom: 2px solid var(--accent);
+  .menu{
+    width:var(--panel-w);
+    max-height:82vh;
+    display:flex;
+    flex-direction:column;
+    background:linear-gradient(180deg, var(--bg-1), var(--bg-2));
+    border:1px solid rgba(77,163,255,.45);
+    border-radius:6px;
+    box-shadow:0 0 0 1px rgba(0,0,0,.4), 0 0 30px rgba(47,140,255,.25), inset 0 0 50px rgba(10,20,45,.5);
+    backdrop-filter:blur(8px);
+    overflow:hidden;
+    user-select:none;
+  }
+  .menu:focus{ outline:none; }
+
+  /* ---------- Header ---------- */
+  .menu__header{
+    position:relative;
+    height:112px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    background:linear-gradient(135deg, rgba(12,24,46,.9), rgba(4,8,16,.95));
+    border-bottom:1px solid rgba(77,163,255,.3);
+    overflow:hidden;
+  }
+  .menu__header::before,
+  .menu__header::after{
+    content:''; position:absolute; top:0; bottom:0; width:140px;
+    background:linear-gradient(115deg, transparent 46%, rgba(77,163,255,.16) 47%, rgba(77,163,255,.16) 49%, transparent 50%);
+  }
+  .menu__header::before{ left:-30px; }
+  .menu__header::after{ right:-30px; }
+
+  .menu__brandRow{ display:flex; align-items:center; gap:10px; z-index:1; }
+  .menu__mark{ width:30px; height:30px; color:var(--accent); filter:drop-shadow(0 0 6px rgba(77,163,255,.7)); }
+  .menu__title{
+    font-family:'Orbitron', sans-serif;
+    font-weight:800;
+    font-size:30px;
+    letter-spacing:3px;
+    background:linear-gradient(180deg,#dcefff 0%, #5aaeff 55%, #1c66c9 100%);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+    text-shadow:0 0 22px rgba(70,150,255,.35);
+  }
+  .menu__subtitle{
+    z-index:1;
+    margin-top:2px;
+    font-family:'Rajdhani', sans-serif;
+    font-size:12px;
+    font-weight:600;
+    letter-spacing:9px;
+    color:#cfe4ff;
+    padding-left:9px;
   }
 
-  .row-header .icon {
-    font-size: 15px;
-    color: var(--text-dim);
-    opacity: 0.8;
+  /* ---------- Fil d'ariane (sous la banniere, au-dessus des onglets) ---------- */
+  .menu__breadcrumb{
+    display:flex; align-items:center; gap:6px;
+    padding:7px 18px;
+    font-size:11.5px; font-weight:600; letter-spacing:1px;
+    color:var(--text-dim);
+    background:rgba(77,163,255,.05);
+    border-bottom:1px solid rgba(77,163,255,.15);
   }
+  .menu__breadcrumb .current{ color:#b7d6ff; }
 
-  .row-header .sep {
-    width: 1px;
-    height: 16px;
-    background: var(--border);
+  /* ---------- Onglets principaux ---------- */
+  .menu__tabs{ display:flex; background:#03060c; border-bottom:1px solid rgba(77,163,255,.22); }
+  .menu__tab{
+    flex:1; text-align:center; padding:11px 0; cursor:pointer;
+    font-size:13px; font-weight:700; letter-spacing:2px;
+    color:var(--text-dim); position:relative; transition:color .15s;
   }
-
-  .row-header .label {
-    font-size: 14px;
-    font-weight: 600;
+  .menu__tab:hover{ color:#b7d6ff; }
+  .menu__tab.active{ color:var(--accent); }
+  .menu__tab.active::after{
+    content:''; position:absolute; left:22%; right:22%; bottom:0; height:2px;
+    background:var(--accent); box-shadow:0 0 8px var(--accent);
   }
+  .menu__tab.disabled{ opacity:.35; pointer-events:none; }
 
-  .key-row {
-    display: flex;
-    align-items: center;
-    padding: 14px 18px;
-    font-size: 14px;
-    color: var(--text);
+  /* ---------- Liste ---------- */
+  .menu__list{ flex:1; overflow-y:auto; padding:4px 0; }
+  .menu__list::-webkit-scrollbar{ width:6px; }
+  .menu__list::-webkit-scrollbar-thumb{ background:rgba(77,163,255,.35); border-radius:3px; }
+
+  .menu__item{
+    display:flex; align-items:center; gap:13px;
+    padding:11px 18px; cursor:pointer;
+    font-size:15.5px; font-weight:600; color:#dce8f9;
+    border-left:3px solid transparent;
+    transition:background .12s, border-color .12s;
   }
-
-  .key-row .cursor {
-    display: inline-block;
-    width: 1px;
-    margin-left: 3px;
-    color: var(--accent);
-    animation: blink 1s step-end infinite;
+  .menu__item:hover{ background:rgba(77,163,255,.08); }
+  .menu__item.active{
+    background:linear-gradient(90deg, rgba(47,120,220,.55), rgba(20,55,105,.18));
+    border-left-color:var(--accent);
   }
+  .menu__item.back{ color:#b7d6ff; }
+  .menu__item .icon{ width:19px; height:19px; flex-shrink:0; color:#c6d8f2; opacity:.9; }
+  .menu__item .label{ flex:1; }
+  .menu__item .go{ width:14px; height:14px; color:#6f84a3; flex-shrink:0; }
 
-  @keyframes blink {
-    50% { opacity: 0; }
+  /* ---------- Footer ---------- */
+  .menu__footer{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:9px 18px; background:#03060c; border-top:1px solid rgba(77,163,255,.22);
+    font-size:12px; font-weight:600; letter-spacing:.5px; color:var(--text-dim);
+  }
+  .menu__footer .brandMini{ width:15px; height:15px; color:var(--accent); opacity:.75; }
+
+  [hidden]{ display:none !important; }
+
+  @media (prefers-reduced-motion: reduce){
+    .menu__tab, .menu__item{ transition:none; }
   }
 </style>
 </head>
-<body>
-  <div class="panel">
-    <div class="row-header">
-      <span class="icon">⌨</span>
-      <span class="sep"></span>
-      <span class="label">Choisir la touche du menu</span>
+<body class="preview-bg">
+
+  <div class="menu" id="menu" tabindex="-1">
+
+    <div class="menu__header">
+      <div class="menu__brandRow">
+        <svg class="menu__mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 4 7 13h7l-5 7 11-9h-7l5-7Z"/>
+        </svg>
+        <span class="menu__title" id="menuTitle">ADMIN</span>
+      </div>
+      <span class="menu__subtitle">M E N U</span>
     </div>
-    <div class="key-row">
-      <span id="keyValue">F6</span><span class="cursor">|</span>
+
+    <div class="menu__breadcrumb" id="breadcrumb" hidden>
+      <span id="breadcrumbText"></span>
     </div>
+
+    <div class="menu__tabs">
+      <div class="menu__tab active" data-tab="main">MAIN</div>
+      <div class="menu__tab" data-tab="config">CONFIG</div>
+    </div>
+
+    <ul class="menu__list" id="menuList"></ul>
+
+    <div class="menu__footer">
+      <span id="footerLabel">-</span>
+      <svg class="brandMini" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 4 7 13h7l-5 7 11-9h-7l5-7Z"/>
+      </svg>
+      <span id="footerCount">-</span>
+    </div>
+
   </div>
 
 <script>
-  const keyValue = document.getElementById('keyValue');
+(function(){
 
-  // Ce qu'on affiche ici est purement visuel. Quand tu branches ça sur
-  // ton menu FiveM, sauvegarde `currentKey` à chaque changement (ex:
-  // callback NUI vers ton client Lua) pour un RegisterKeyMapping
-  // dynamique avec cette touche.
-  let currentKey = 'F6';
-
-  const KEY_LABELS = {
-    ' ': 'Espace', 'Escape': 'Échap', 'Delete': 'Suppr', 'Backspace': 'Retour',
-    'Enter': 'Entrée', 'ArrowUp': '↑', 'ArrowDown': '↓', 'ArrowLeft': '←', 'ArrowRight': '→',
+  /* =========================================================
+     1) CONTENU DU MENU
+     Uniquement des categories de navigation generiques.
+     Chaque entree de niveau superieur possede un sous-menu
+     "children" (place-holders) pour permettre d'y entrer.
+     Aucune action de gameplay n'est codee en dur : chaque
+     clic sur un item final envoie juste un id via callback
+     NUI, a traiter (avec verification de permission ACE)
+     cote Lua.
+     ========================================================= */
+  const ICONS = {
+    self:   '<circle cx="12" cy="8" r="3.4"/><path d="M5 20c0-3.6 3.1-6.2 7-6.2s7 2.6 7 6.2"/>',
+    world:  '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.6 2.4 4 5.4 4 8.5s-1.4 6.1-4 8.5c-2.6-2.4-4-5.4-4-8.5s1.4-6.1 4-8.5Z"/>',
+    weapon: '<path d="M3 15h9v2.2c0 .9.7 1.6 1.6 1.6H15v-3.8h3.4L21 12.4V15h1.2M3 15v-2.4L12 12l1-2.4h4.6L21 12" />',
+    combat: '<circle cx="12" cy="12" r="8"/><path d="M12 3v3.2M12 17.8V21M3 12h3.2M17.8 12H21"/><circle cx="12" cy="12" r="2.2"/>',
+    vehicle:'<path d="M4.5 16v-3.3l1.7-4A2 2 0 0 1 8.1 7.4h7.8a2 2 0 0 1 1.9 1.3l1.7 4V16"/><path d="M3.5 16h17v2.2a1 1 0 0 1-1 1H16a1 1 0 0 1-1-1v-.7H9v.7a1 1 0 0 1-1 1H4.5a1 1 0 0 1-1-1V16Z"/><circle cx="7.5" cy="16" r="1.3"/><circle cx="16.5" cy="16" r="1.3"/>',
+    misc:   '<path d="M12 3.5 13.4 8 18 9.4 13.4 10.8 12 15.3 10.6 10.8 6 9.4 10.6 8Z"/><path d="M18.5 15.5 19.3 17.8 21.5 18.5 19.3 19.3 18.5 21.5 17.8 19.3 15.5 18.5 17.8 17.8Z"/>',
+    server: '<rect x="4" y="4.5" width="16" height="5.5" rx="1.2"/><rect x="4" y="14" width="16" height="5.5" rx="1.2"/><circle cx="7.3" cy="7.2" r=".9" fill="currentColor" stroke="none"/><circle cx="7.3" cy="16.8" r=".9" fill="currentColor" stroke="none"/>',
+    settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 13.5a7.6 7.6 0 0 0 0-3l2-1.5-2-3.4-2.3.9a7.6 7.6 0 0 0-2.6-1.5L14 2.5h-4l-.5 2.5a7.6 7.6 0 0 0-2.6 1.5l-2.3-.9-2 3.4 2 1.5a7.6 7.6 0 0 0 0 3l-2 1.5 2 3.4 2.3-.9c.8.7 1.7 1.2 2.6 1.5l.5 2.6h4l.5-2.6c.9-.3 1.8-.8 2.6-1.5l2.3.9 2-3.4Z"/>',
+    palette:'<path d="M12 3.5c-4.7 0-8.5 3.6-8.5 8 0 3 2 4.7 4 4.7.9 0 1.3-.5 1.3-1.2 0-.6-.4-1-.4-1.9 0-1.9 1.6-3.4 3.6-3.4 3.2 0 5-2 5-4.6 0-2-2.3-5.6-5-5.6Z"/><circle cx="8.3" cy="10" r=".9" fill="currentColor" stroke="none"/><circle cx="11" cy="7.3" r=".9" fill="currentColor" stroke="none"/><circle cx="14.5" cy="8.3" r=".9" fill="currentColor" stroke="none"/>'
   };
+  const GO_ICON   = '<path d="M8 5h11v11M19 5 6 18"/>';
+  const BACK_ICON = '<path d="M15 5 8 12l7 7"/>';
 
-  function labelFor(key) {
-    return KEY_LABELS[key] || (key.length === 1 ? key.toUpperCase() : key);
+  function placeholders(prefix){
+    return [
+      { id: prefix+'_1', label:'Option 1' },
+      { id: prefix+'_2', label:'Option 2' },
+      { id: prefix+'_3', label:'Option 3' }
+    ];
+  }
+  function cat(id, label, icon){
+    return { id, label, icon, children: placeholders(id) };
   }
 
-  // Aucune étape de validation : chaque touche pressée remplace
-  // immédiatement la précédente, sans limite de nombre de fois.
+  const DATA = {
+    main: [
+      cat('self_options',    'Self Options',    'self'),
+      cat('world_options',   'World Options',   'world'),
+      cat('weapon_options',  'Weapon Options',  'weapon'),
+      cat('combat_options',  'Combat Options',  'combat'),
+      cat('vehicle_options', 'Vehicle Options', 'vehicle'),
+      cat('misc_options',    'Miscellaneous',   'misc'),
+      cat('server_options',  'Server Options',  'server'),
+      cat('settings',        'Settings',        'settings')
+    ],
+    config: [
+      cat('cfg_interface',   'Interface',     'settings'),
+      cat('cfg_notifs',      'Notifications', 'misc'),
+      cat('cfg_keybinds',    'Keybinds',      'server'),
+      cat('cfg_theme',       'Theme',         'palette'),
+      cat('cfg_permissions', 'Permissions',   'self')
+    ]
+  };
+
+  /* =========================================================
+     2) ETAT + RENDU
+     state.path est une pile de niveaux : [{label, items}, ...]
+     Le niveau 0 correspond toujours a l'onglet actif.
+     ========================================================= */
+  const state = { tab:'main', activeIndex:0, path:[] };
+
+  const listEl        = document.getElementById('menuList');
+  const footerLabelEl = document.getElementById('footerLabel');
+  const footerCountEl = document.getElementById('footerCount');
+  const breadcrumbEl  = document.getElementById('breadcrumb');
+  const breadcrumbTxt = document.getElementById('breadcrumbText');
+  const menuEl        = document.getElementById('menu');
+
+  function resetPath(){
+    state.path = [{ label: state.tab === 'main' ? 'MAIN' : 'CONFIG', items: DATA[state.tab] }];
+    state.activeIndex = 0;
+  }
+  resetPath();
+
+  function currentLevel(){ return state.path[state.path.length - 1]; }
+
+  function currentEntries(){
+    const level = currentLevel();
+    const entries = [];
+    if (state.path.length > 1){
+      entries.push({ id:'__back__', label:'Retour', isBack:true });
+    }
+    return entries.concat(level.items);
+  }
+
+  function render(){
+    const entries = currentEntries();
+    listEl.innerHTML = '';
+
+    entries.forEach((item, i) => {
+      const li = document.createElement('li');
+      li.className = 'menu__item' + (i === state.activeIndex ? ' active' : '') + (item.isBack ? ' back' : '');
+      const iconPath = item.isBack ? BACK_ICON : (ICONS[item.icon] || '');
+      const showGo = !item.isBack && !!item.children;
+      li.innerHTML = `
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${iconPath}</svg>
+        <span class="label">${item.label}</span>
+        ${showGo ? `<svg class="go" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GO_ICON}</svg>` : ''}
+      `;
+      li.addEventListener('click', () => activate(i));
+      li.addEventListener('mouseenter', () => { state.activeIndex = i; render(); });
+      listEl.appendChild(li);
+    });
+
+    document.querySelectorAll('.menu__tab').forEach(t => t.classList.toggle('disabled', state.path.length > 1));
+
+    if (state.path.length > 1){
+      breadcrumbEl.hidden = false;
+      const labels = state.path.map(l => l.label);
+      breadcrumbTxt.innerHTML = labels.slice(0, -1).join(' &rsaquo; ') + ' <span class="current">&rsaquo; ' + labels[labels.length - 1] + '</span>';
+    } else {
+      breadcrumbEl.hidden = true;
+    }
+
+    const active = entries[state.activeIndex];
+    footerLabelEl.textContent = active ? active.label : '-';
+    footerCountEl.textContent = entries.length ? (state.activeIndex + 1) + ' / ' + entries.length : '-';
+  }
+
+  function activate(i){
+    const entries = currentEntries();
+    const item = entries[i];
+    if (!item) return;
+    state.activeIndex = i;
+
+    if (item.isBack){
+      goBack();
+      return;
+    }
+    if (item.children){
+      state.path.push({ label: item.label, items: item.children });
+      state.activeIndex = 0;
+      render();
+      return;
+    }
+    postNUI('selectOption', { id: item.id, label: item.label, tab: state.tab, path: state.path.map(l => l.label) });
+    render();
+  }
+
+  function goBack(){
+    if (state.path.length > 1){
+      state.path.pop();
+      state.activeIndex = 0;
+      render();
+    }
+  }
+
+  function switchTab(tab){
+    state.tab = tab;
+    resetPath();
+    document.querySelectorAll('.menu__tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+    render();
+  }
+
+  /* =========================================================
+     3) NAVIGATION CLAVIER
+     ========================================================= */
   document.addEventListener('keydown', (e) => {
-    e.preventDefault();
-    currentKey = e.key;
-    keyValue.textContent = labelFor(currentKey);
+    const entries = currentEntries();
+    const total = entries.length;
+
+    if (e.key === 'ArrowDown'){
+      e.preventDefault();
+      if (total) state.activeIndex = (state.activeIndex + 1) % total;
+      render();
+    } else if (e.key === 'ArrowUp'){
+      e.preventDefault();
+      if (total) state.activeIndex = (state.activeIndex - 1 + total) % total;
+      render();
+    } else if (e.key === 'Enter'){
+      e.preventDefault();
+      activate(state.activeIndex);
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight'){
+      e.preventDefault();
+      if (state.path.length === 1) switchTab(state.tab === 'main' ? 'config' : 'main');
+    } else if (e.key === 'Backspace'){
+      e.preventDefault();
+      goBack();
+    } else if (e.key === 'Escape'){
+      e.preventDefault();
+      if (state.path.length > 1) goBack(); else closeMenu();
+    }
   });
+
+  document.querySelectorAll('.menu__tab').forEach(tabEl => {
+    tabEl.addEventListener('click', () => {
+      if (state.path.length === 1) switchTab(tabEl.dataset.tab);
+    });
+  });
+
+  /* =========================================================
+     4) PONT NUI (a brancher cote Lua)
+     ========================================================= */
+  function resourceName(){
+    try { return typeof GetParentResourceName === 'function' ? GetParentResourceName() : 'admin_menu'; }
+    catch(_) { return 'admin_menu'; }
+  }
+
+  function postNUI(endpoint, data){
+    fetch(`https://${resourceName()}/${endpoint}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json; charset=UTF-8' },
+      body: JSON.stringify(data || {})
+    }).catch(() => {});
+  }
+
+  function openMenu(){
+    menuEl.hidden = false;
+    switchTab('main');
+  }
+  function closeMenu(){
+    menuEl.hidden = true;
+    postNUI('close', {});
+  }
+
+  window.addEventListener('message', (event) => {
+    const data = event.data || {};
+    if (data.action === 'open')  openMenu();
+    if (data.action === 'close') closeMenu();
+    if (data.action === 'setTitle' && data.title) {
+      document.getElementById('menuTitle').textContent = data.title;
+    }
+  });
+
+  render();
+})();
 </script>
 </body>
 </html>
