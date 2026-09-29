@@ -1,423 +1,287 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Admin Menu NUI</title>
+<title>Menu</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+<script async src="https://unpkg.com/@phosphor-icons/web"></script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&family=Rajdhani:wght@500;600;700&display=swap');
-
-  :root{
-    --panel-w: 430px;
-    --accent: #4da3ff;
-    --text: #e8f1fb;
-    --text-dim: #7d90ac;
-    --bg-1: rgba(7,12,22,.94);
-    --bg-2: rgba(4,7,14,.97);
-  }
-
-  *{ box-sizing:border-box; }
-
-  html,body{
-    margin:0; height:100%;
-    background:transparent; /* transparent : le jeu reste visible derriere le menu en NUI */
-    font-family:'Rajdhani', sans-serif;
-    -webkit-font-smoothing:antialiased;
-    overflow:hidden;
-  }
-
-  /* Fond degrade uniquement pour previsualiser ce fichier hors du jeu.
-     Supprimer cette classe sur <body> une fois integre en jeu. */
-  body.preview-bg{
-    background:
-      radial-gradient(circle at 12% 15%, rgba(40,90,180,.35), transparent 40%),
-      radial-gradient(circle at 88% 85%, rgba(40,90,180,.3), transparent 45%),
-      #030509;
-    display:flex; align-items:center; justify-content:center;
-  }
-
-  .menu{
-    width:var(--panel-w);
-    max-height:82vh;
-    display:flex;
-    flex-direction:column;
-    background:linear-gradient(180deg, var(--bg-1), var(--bg-2));
-    border:1px solid rgba(77,163,255,.45);
-    border-radius:6px;
-    box-shadow:0 0 0 1px rgba(0,0,0,.4), 0 0 30px rgba(47,140,255,.25), inset 0 0 50px rgba(10,20,45,.5);
-    backdrop-filter:blur(8px);
-    overflow:hidden;
-    user-select:none;
-  }
-  .menu:focus{ outline:none; }
-
-  /* ---------- Header ---------- */
-  .menu__header{
-    position:relative;
-    height:112px;
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    background:linear-gradient(135deg, rgba(12,24,46,.9), rgba(4,8,16,.95));
-    border-bottom:1px solid rgba(77,163,255,.3);
-    overflow:hidden;
-  }
-  .menu__header::before,
-  .menu__header::after{
-    content:''; position:absolute; top:0; bottom:0; width:140px;
-    background:linear-gradient(115deg, transparent 46%, rgba(77,163,255,.16) 47%, rgba(77,163,255,.16) 49%, transparent 50%);
-  }
-  .menu__header::before{ left:-30px; }
-  .menu__header::after{ right:-30px; }
-
-  .menu__brandRow{ display:flex; align-items:center; gap:10px; z-index:1; }
-  .menu__mark{ width:30px; height:30px; color:var(--accent); filter:drop-shadow(0 0 6px rgba(77,163,255,.7)); }
-  .menu__title{
-    font-family:'Orbitron', sans-serif;
-    font-weight:800;
-    font-size:30px;
-    letter-spacing:3px;
-    background:linear-gradient(180deg,#dcefff 0%, #5aaeff 55%, #1c66c9 100%);
-    -webkit-background-clip:text;
-    background-clip:text;
-    color:transparent;
-    text-shadow:0 0 22px rgba(70,150,255,.35);
-  }
-  .menu__subtitle{
-    z-index:1;
-    margin-top:2px;
-    font-family:'Rajdhani', sans-serif;
-    font-size:12px;
-    font-weight:600;
-    letter-spacing:9px;
-    color:#cfe4ff;
-    padding-left:9px;
-  }
-
-  /* ---------- Fil d'ariane (sous la banniere, au-dessus des onglets) ---------- */
-  .menu__breadcrumb{
-    display:flex; align-items:center; gap:6px;
-    padding:7px 18px;
-    font-size:11.5px; font-weight:600; letter-spacing:1px;
-    color:var(--text-dim);
-    background:rgba(77,163,255,.05);
-    border-bottom:1px solid rgba(77,163,255,.15);
-  }
-  .menu__breadcrumb .current{ color:#b7d6ff; }
-
-  /* ---------- Onglets principaux ---------- */
-  .menu__tabs{ display:flex; background:#03060c; border-bottom:1px solid rgba(77,163,255,.22); }
-  .menu__tab{
-    flex:1; text-align:center; padding:11px 0; cursor:pointer;
-    font-size:13px; font-weight:700; letter-spacing:2px;
-    color:var(--text-dim); position:relative; transition:color .15s;
-  }
-  .menu__tab:hover{ color:#b7d6ff; }
-  .menu__tab.active{ color:var(--accent); }
-  .menu__tab.active::after{
-    content:''; position:absolute; left:22%; right:22%; bottom:0; height:2px;
-    background:var(--accent); box-shadow:0 0 8px var(--accent);
-  }
-  .menu__tab.disabled{ opacity:.35; pointer-events:none; }
-
-  /* ---------- Liste ---------- */
-  .menu__list{ flex:1; overflow-y:auto; padding:4px 0; }
-  .menu__list::-webkit-scrollbar{ width:6px; }
-  .menu__list::-webkit-scrollbar-thumb{ background:rgba(77,163,255,.35); border-radius:3px; }
-
-  .menu__item{
-    display:flex; align-items:center; gap:13px;
-    padding:11px 18px; cursor:pointer;
-    font-size:15.5px; font-weight:600; color:#dce8f9;
-    border-left:3px solid transparent;
-    transition:background .12s, border-color .12s;
-  }
-  .menu__item:hover{ background:rgba(77,163,255,.08); }
-  .menu__item.active{
-    background:linear-gradient(90deg, rgba(47,120,220,.55), rgba(20,55,105,.18));
-    border-left-color:var(--accent);
-  }
-  .menu__item.back{ color:#b7d6ff; }
-  .menu__item .icon{ width:19px; height:19px; flex-shrink:0; color:#c6d8f2; opacity:.9; }
-  .menu__item .label{ flex:1; }
-  .menu__item .go{ width:14px; height:14px; color:#6f84a3; flex-shrink:0; }
-
-  /* ---------- Footer ---------- */
-  .menu__footer{
-    display:flex; align-items:center; justify-content:space-between;
-    padding:9px 18px; background:#03060c; border-top:1px solid rgba(77,163,255,.22);
-    font-size:12px; font-weight:600; letter-spacing:.5px; color:var(--text-dim);
-  }
-  .menu__footer .brandMini{ width:15px; height:15px; color:var(--accent); opacity:.75; }
-
-  [hidden]{ display:none !important; }
-
-  @media (prefers-reduced-motion: reduce){
-    .menu__tab, .menu__item{ transition:none; }
-  }
+:root{--color-main:rgba(197,34,34,0.35);--color-border:rgba(197,34,34,0.35);--color-shadow:rgba(197,34,34,0.35);--color-notify-main:rgba(197,34,34,1);--color-notify-shadow:rgba(197,34,34,0.35);--color-mainSolid:rgba(197,34,34,1);--color-tab:rgba(197,34,34,0.35);--bg-deep:#0a0a0a;--bg-mid:#111111;--bg-panel:rgba(13,13,13,0.97);--text-primary:rgba(255,255,255,0.92);--text-secondary:rgba(255,255,255,0.42);--text-divider:rgba(255,255,255,0.38);--divider-line:rgba(255,255,255,0.12);--item-height:2.75vh;--border-radius:0.5vh;--font:'Inter',ui-sans-serif,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}.menu-root{font-family:var(--font);color:var(--text-primary);position:fixed;width:34vh;z-index:1000;border-radius:0.5vh}.menu-root > :not(.menu-scrollbar):first-child{border-radius:0.5vh 0.5vh 0 0;overflow:hidden}.menu-banner{border-radius:0.5vh 0.5vh 0 0;overflow:hidden}.menu-tabs{overflow:hidden}.menu-body{overflow:hidden}.menu-footer{border-radius:0 0 0.5vh 0.5vh;overflow:hidden}.menu-banner{padding:0;overflow:hidden}.menu-banner img{width:100%;height:10vh;object-fit:cover;display:block;border-bottom:0.1vh solid var(--color-mainSolid)}.menu-tabs{display:flex;background:var(--bg-deep);padding:0.45vh 0.5vh;gap:0.3vh;border-bottom:0.05vh solid rgba(255,255,255,0.05)}.tab-item{flex:1;padding:0.55vh 0;font-size:1.05vh;font-weight:400;text-align:center;letter-spacing:0.01em;border-radius:0.3vh 0.3vh 0 0;color:var(--text-secondary);border:0.08vh solid transparent;user-select:none}.tab-item.active{color:var(--text-primary);font-weight:500;background:var(--color-tab);border-color:var(--color-mainSolid)}.menu-scrollbar{position:absolute;left:-1.2vh;top:13.7vh;width:0.6vh;height:39vh;transition:opacity 0.3s cubic-bezier(0.4,0,0.2,1)}.scrollbar-track{width:100%;height:100%;background-color:rgba(0,0,0,0.8);border-radius:0.4vh;position:relative;transition:0.5s}.scrollbar-thumb{position:absolute;top:0;left:0;width:100%;background-color:var(--color-mainSolid);border-radius:0.2vh;transition:top 0.25s ease-out,height 0.25s ease-out;min-height:2vh}.menu-body{background:var(--bg-panel);overflow:hidden}.menu-items{position:relative;max-height:38vh;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;padding-bottom:0.5vh;padding-top:0.5vh}.menu-items::-webkit-scrollbar{display:none}.selection-highlight{position:absolute;left:0.35vh;right:0.35vh;height:var(--item-height);border-radius:0.4vh;background:rgba(255,255,255,0.07);border:0.07vh solid rgba(255,255,255,0.11);z-index:0;pointer-events:none;will-change:top;transform:translateZ(0)}.menu-item{display:flex;justify-content:space-between;align-items:center;padding:0 1.1vh;height:var(--item-height);box-sizing:border-box;position:relative;z-index:1}.item-label{display:flex;align-items:center;gap:0.5vh;min-width:0;flex:1}.menu-item .name{font-size:1.12vh;color:var(--text-primary);font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.slider-val{color:var(--text-secondary);font-size:1.0vh}.components-container{display:flex;align-items:center;gap:0.8vh;flex-shrink:0}.component{display:flex;align-items:center}.caret-icon{font-size:1.1vh;color:var(--text-secondary)}.toggle-switch{position:relative;display:inline-flex;align-items:center;cursor:pointer}.toggle-switch input{position:absolute;opacity:0;width:0;height:0}.toggle-track{display:block;width:3.4vh;height:1.5vh;background:#2a2a2a;border-radius:1vh;position:relative;transition:background 0.22s ease;border:0.07vh solid rgba(255,255,255,0.08)}.toggle-thumb{position:absolute;top:50%;left:0.18vh;transform:translateY(-50%);width:1.05vh;height:1.05vh;border-radius:50%;background:#888;transition:left 0.22s ease,background 0.22s ease}.toggle-switch input:checked ~ .toggle-track{background:var(--color-mainSolid);border-color:transparent}.toggle-switch input:checked ~ .toggle-track .toggle-thumb{left:calc(100% - 1.18vh - 0.18vh);background:#fff}.range-component{position:relative;width:9vh;height:1.6vh;display:flex;align-items:center}.range-track{position:absolute;left:0;width:100%;height:0.35vh;background:rgba(255,255,255,0.15);border-radius:0.2vh;z-index:1}.range-fill{position:absolute;left:0;height:0.35vh;background:var(--color-mainSolid);border-radius:0.2vh;z-index:2;pointer-events:none}.range-component input[type="range"]{-webkit-appearance:none;appearance:none;position:relative;width:100%;height:0.35vh;background:transparent;outline:none;margin:0;padding:0;cursor:pointer;z-index:3}.range-component input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:1.2vh;height:1.2vh;border-radius:50%;background:#fff;box-shadow:0 0 0.1vh rgba(0,0,0,0.4);margin-top:-0.125vh;cursor:pointer}.range-component input[type="range"]::-moz-range-thumb{width:1.2vh;height:1.2vh;border-radius:50%;background:#fff;border:none;cursor:pointer}.scroll-value span{background:rgba(255,255,255,0.09);border-radius:0.3vh;padding:0.15vh 0.6vh;color:rgba(255,255,255,0.82);font-size:1.02vh;max-width:13vh;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}.separator-container{display:flex;align-items:center;height:2.75vh;padding:0 1.4vh;gap:0.9vh;box-sizing:border-box}.separator-bar{flex:1;height:0.08vh;background:var(--color-mainSolid);border-radius:0.2vh}.separator-text{color:white;font-size:0.9vh;font-weight:600;white-space:nowrap;letter-spacing:0.14em;text-transform:uppercase}.menu-footer{background-color:#0d0d0d;display:flex;justify-content:space-between;align-items:center;padding:0.5vh 1.1vh;font-size:1.05vh;color:rgba(255,255,255,0.4);border-top:0.05vh solid rgba(255,255,255,0.06);height:2vh}.footer-brand{font-size:1.0vh;color:var(--text-secondary);font-weight:400}.footer-counter{font-size:1.0vh;color:var(--text-secondary);font-weight:400}.input-overlay{position:fixed;top:0;left:0;transform:none;width:100%;height:100%;background:rgb(0,0,0,0.5);z-index:999999;color:white;font-weight:500;font-family:sans-serif;font-size:1.2vh}.input-box{background-color:rgba(0,0,0,0.8);border-radius:0.25vh;display:flex;flex-direction:column;position:fixed;bottom:17.5vh;left:50%;transform:translateX(-50%);height:auto;width:55vh;overflow:hidden}.input-box > .input-header{padding:0.8vh 1vh 0.8vh 1vh;border-bottom:0.1vh solid var(--color-mainSolid);width:100%;font-size:1.2vh}.input-header-inner{display:flex;align-items:center;gap:0.5vh}.input-header-text{color:white}.input-box input{padding:1.25vh 1vh 1.25vh 1vh;border:none;outline:none;background:transparent;color:white;font-size:1.2vh;display:block;margin:0}body,main{all:unset;display:block}main{all:unset}.notify-stack{position:fixed;bottom:2vh;right:2vh;display:flex;flex-direction:column;gap:0.8vh;z-index:9999;pointer-events:none}.notify-card{background:rgba(0,0,0,0.62);border-left:0.25vh solid var(--accent);color:#fff;font-family:sans-serif;width:32vh;max-width:85vw;overflow:hidden;outline:none;border-top:none;border-right:none;border-bottom:none}.notify-body{display:flex;flex-direction:row;align-items:center;padding:1vh 1.2vh 0.9vh 1.2vh;gap:1vh}.notify-icon-wrap{width:2.2vh;height:2.2vh;min-width:2.2vh;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0}.notify-icon{font-size:1.1vh;color:#fff;line-height:1;display:block;text-align:center;width:1.1vh;height:1.1vh}.notify-text{display:flex;flex-direction:column;gap:0.2vh;min-width:0}.notify-header{font-size:1.35vh;font-weight:530;color:#ffffff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:0.02em}.notify-message{font-size:1.05vh;font-weight:300;color:rgba(200,200,200,0.85);line-height:1.4}.notify-bar{height:0.25vh;width:100%;background:rgba(255,255,255,0.06)}.notify-bar-fill{height:100%;background:var(--accent);transition:width 0.1s linear;will-change:width}:root{--color-main:rgba(201,201,201,0.35);--color-border:rgba(201,201,201,0.35);--color-shadow:rgba(139,139,139,0.35);--color-notify-main:rgba(201,201,201);--color-notify-shadow:rgba(201,198,198,0.35);--color-mainSolid:rgba(201,201,201);--color-tab:rgba(201,201,201,0.35)}*{background:transparent}::-webkit-scrollbar{display:none;width:0;height:0}.hovering-text-wrap{position:fixed;bottom:7.5vh;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;justify-content:center;outline:none;min-width:18.52vh;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial}.hovering-text-list{list-style:none;margin:0;padding:0;text-align:center;pointer-events:none;user-select:none;max-height:calc(9 * (1.3vh * 1.3 + 0.37vh));overflow-y:auto;overflow-x:hidden;scrollbar-width:none;-ms-overflow-style:none;display:flex;flex-direction:column;align-items:center;scroll-behavior:smooth}.hovering-text-item{padding:0.185vh 0;font-size:1.3vh;line-height:1.3;transition:transform 0.22s cubic-bezier(.2,.9,.2,1),color 0.22s cubic-bezier(.2,.9,.2,1),letter-spacing 0.22s;transform-origin:center;white-space:nowrap;min-width:27.78vh;font-weight:600;color:#fff}.hovering-text-inactive{color:#fff;transform:scale(0.98);letter-spacing:0}.hovering-text-selected{transform:scale(1.03);font-weight:600;letter-spacing:0.015vh;color:var(--color-main)}li{display:list-item;text-align:-webkit-match-parent}ul{list-style-type:disc}
 </style>
 </head>
-<body class="preview-bg">
-
-  <div class="menu" id="menu" tabindex="-1">
-
-    <div class="menu__header">
-      <div class="menu__brandRow">
-        <svg class="menu__mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M18 4 7 13h7l-5 7 11-9h-7l5-7Z"/>
-        </svg>
-        <span class="menu__title" id="menuTitle">ADMIN</span>
-      </div>
-      <span class="menu__subtitle">M E N U</span>
-    </div>
-
-    <div class="menu__breadcrumb" id="breadcrumb" hidden>
-      <span id="breadcrumbText"></span>
-    </div>
-
-    <div class="menu__tabs">
-      <div class="menu__tab active" data-tab="main">MAIN</div>
-      <div class="menu__tab" data-tab="config">CONFIG</div>
-    </div>
-
-    <ul class="menu__list" id="menuList"></ul>
-
-    <div class="menu__footer">
-      <span id="footerLabel">-</span>
-      <svg class="brandMini" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M18 4 7 13h7l-5 7 11-9h-7l5-7Z"/>
-      </svg>
-      <span id="footerCount">-</span>
-    </div>
-
-  </div>
-
+<body>
+<div id="app"></div>
 <script>
-(function(){
+(()=>{
+const app=document.getElementById('app');
+const $=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
+const clamp=(n,a=0,b=100)=>Math.max(a,Math.min(b,n));
+const E_OUT='cubic-bezier(.33,1,.68,1)',E_IN='cubic-bezier(.32,0,.67,0)';
 
-  /* =========================================================
-     1) CONTENU DU MENU
-     Uniquement des categories de navigation generiques.
-     Chaque entree de niveau superieur possede un sous-menu
-     "children" (place-holders) pour permettre d'y entrer.
-     Aucune action de gameplay n'est codee en dur : chaque
-     clic sur un item final envoie juste un id via callback
-     NUI, a traiter (avec verification de permission ACE)
-     cote Lua.
-     ========================================================= */
-  const ICONS = {
-    self:   '<circle cx="12" cy="8" r="3.4"/><path d="M5 20c0-3.6 3.1-6.2 7-6.2s7 2.6 7 6.2"/>',
-    world:  '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.6 2.4 4 5.4 4 8.5s-1.4 6.1-4 8.5c-2.6-2.4-4-5.4-4-8.5s1.4-6.1 4-8.5Z"/>',
-    weapon: '<path d="M3 15h9v2.2c0 .9.7 1.6 1.6 1.6H15v-3.8h3.4L21 12.4V15h1.2M3 15v-2.4L12 12l1-2.4h4.6L21 12" />',
-    combat: '<circle cx="12" cy="12" r="8"/><path d="M12 3v3.2M12 17.8V21M3 12h3.2M17.8 12H21"/><circle cx="12" cy="12" r="2.2"/>',
-    vehicle:'<path d="M4.5 16v-3.3l1.7-4A2 2 0 0 1 8.1 7.4h7.8a2 2 0 0 1 1.9 1.3l1.7 4V16"/><path d="M3.5 16h17v2.2a1 1 0 0 1-1 1H16a1 1 0 0 1-1-1v-.7H9v.7a1 1 0 0 1-1 1H4.5a1 1 0 0 1-1-1V16Z"/><circle cx="7.5" cy="16" r="1.3"/><circle cx="16.5" cy="16" r="1.3"/>',
-    misc:   '<path d="M12 3.5 13.4 8 18 9.4 13.4 10.8 12 15.3 10.6 10.8 6 9.4 10.6 8Z"/><path d="M18.5 15.5 19.3 17.8 21.5 18.5 19.3 19.3 18.5 21.5 17.8 19.3 15.5 18.5 17.8 17.8Z"/>',
-    server: '<rect x="4" y="4.5" width="16" height="5.5" rx="1.2"/><rect x="4" y="14" width="16" height="5.5" rx="1.2"/><circle cx="7.3" cy="7.2" r=".9" fill="currentColor" stroke="none"/><circle cx="7.3" cy="16.8" r=".9" fill="currentColor" stroke="none"/>',
-    settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 13.5a7.6 7.6 0 0 0 0-3l2-1.5-2-3.4-2.3.9a7.6 7.6 0 0 0-2.6-1.5L14 2.5h-4l-.5 2.5a7.6 7.6 0 0 0-2.6 1.5l-2.3-.9-2 3.4 2 1.5a7.6 7.6 0 0 0 0 3l-2 1.5 2 3.4 2.3-.9c.8.7 1.7 1.2 2.6 1.5l.5 2.6h4l.5-2.6c.9-.3 1.8-.8 2.6-1.5l2.3.9 2-3.4Z"/>',
-    palette:'<path d="M12 3.5c-4.7 0-8.5 3.6-8.5 8 0 3 2 4.7 4 4.7.9 0 1.3-.5 1.3-1.2 0-.6-.4-1-.4-1.9 0-1.9 1.6-3.4 3.6-3.4 3.2 0 5-2 5-4.6 0-2-2.3-5.6-5-5.6Z"/><circle cx="8.3" cy="10" r=".9" fill="currentColor" stroke="none"/><circle cx="11" cy="7.3" r=".9" fill="currentColor" stroke="none"/><circle cx="14.5" cy="8.3" r=".9" fill="currentColor" stroke="none"/>'
-  };
-  const GO_ICON   = '<path d="M8 5h11v11M19 5 6 18"/>';
-  const BACK_ICON = '<path d="M15 5 8 12l7 7"/>';
-
-  function placeholders(prefix){
-    return [
-      { id: prefix+'_1', label:'Option 1' },
-      { id: prefix+'_2', label:'Option 2' },
-      { id: prefix+'_3', label:'Option 3' }
-    ];
+/* ---------- transitions (équivalent de svelte/transition) ---------- */
+function tr(el,{kind,dur,start=.94,x=0,y=0,base=''},out){
+  const hid={opacity:0},shown={opacity:1};
+  if(kind==='scale'){hid.transform=`${base} scale(${start})`;shown.transform=`${base} scale(1)`}
+  if(kind==='fly'){hid.transform=`${base} translate(${x}px,${y}px)`;shown.transform=`${base} translate(0px,0px)`}
+  return el.animate(out?[shown,hid]:[hid,shown],{duration:dur,easing:kind==='fade'?'linear':out?E_IN:E_OUT,fill:out?'forwards':'none'});
+}
+function present(s,show,build,plan){
+  if(show){
+    if(s.els){if(s.out){s.anims.forEach(a=>a.reverse());s.out=false;s.g++}return}
+    s.els=build();s.out=false;s.anims=plan(s.els,false);
+  }else if(s.els&&!s.out){
+    const els=s.els,g=++s.g;s.out=true;s.anims=plan(els,true);
+    Promise.all(s.anims.map(a=>a.finished)).then(()=>{if(s.g===g){els.forEach(e=>e.remove());s.els=null;s.out=false}}).catch(()=>{});
   }
-  function cat(id, label, icon){
-    return { id, label, icon, children: placeholders(id) };
-  }
+}
 
-  const DATA = {
-    main: [
-      cat('self_options',    'Self Options',    'self'),
-      cat('world_options',   'World Options',   'world'),
-      cat('weapon_options',  'Weapon Options',  'weapon'),
-      cat('combat_options',  'Combat Options',  'combat'),
-      cat('vehicle_options', 'Vehicle Options', 'vehicle'),
-      cat('misc_options',    'Miscellaneous',   'misc'),
-      cat('server_options',  'Server Options',  'server'),
-      cat('settings',        'Settings',        'settings')
-    ],
-    config: [
-      cat('cfg_interface',   'Interface',     'settings'),
-      cat('cfg_notifs',      'Notifications', 'misc'),
-      cat('cfg_keybinds',    'Keybinds',      'server'),
-      cat('cfg_theme',       'Theme',         'palette'),
-      cat('cfg_permissions', 'Permissions',   'self')
-    ]
-  };
+/* ================= MENU PRINCIPAL (Base) ================= */
+const B={cur:0,menu:[],tabs:['Main Menu'],tab:0,top:'23vh',left:'6.25vh',
+  banner:'https://r2.fivemanage.com/Z8B50VjDrkoAUPTQqy96i/4671a49bb8dbd061986d53c51832e7dc.jpg',
+  trackH:0,thumbTop:0,thumbH:24,over:false,hlTop:0,lock:null,rows:[],slot:{g:0}};
+const live=()=>B.root&&B.root.isConnected;
+const types=o=>Array.isArray(o.type)?o.type:[o.type];
+const sig=o=>o.type=='divider'?'d':types(o).join(',');
 
-  /* =========================================================
-     2) ETAT + RENDU
-     state.path est une pile de niveaux : [{label, items}, ...]
-     Le niveau 0 correspond toujours a l'onglet actif.
-     ========================================================= */
-  const state = { tab:'main', activeIndex:0, path:[] };
+function buildMenu(){
+  const r=$('div','menu-root');r.style.cssText=`top:${B.top};left:${B.left};transform-origin:top left`;
+  const ban=$('div','menu-banner'),img=$('img');img.alt='';img.src=B.banner;ban.append(img);
+  const tabs=$('div','menu-tabs');
+  const sb=$('div','menu-scrollbar'),trk=$('div','scrollbar-track'),thumb=$('div','scrollbar-thumb');trk.append(thumb);sb.append(trk);
+  const body=$('div','menu-body'),list=$('div','menu-items');list.onscroll=onScroll;
+  const hl=$('div','selection-highlight');hl.style.top=B.hlTop+'px';list.append(hl);body.append(list);
+  const foot=$('div','menu-footer'),cnt=$('span','footer-counter');foot.append($('span','footer-brand','Venom - Menu'),cnt);
+  r.append(ban,tabs,sb,body,foot);app.append(r);
+  Object.assign(B,{root:r,img,tabsEl:tabs,trackEl:trk,thumb,list,hl,cnt,rows:[]});
+  renderTabs();applyBar();
+  return [r];
+}
+const planMenu=(e,out)=>[tr(e[0],{kind:'scale',start:.94,dur:480},out)];
 
-  const listEl        = document.getElementById('menuList');
-  const footerLabelEl = document.getElementById('footerLabel');
-  const footerCountEl = document.getElementById('footerCount');
-  const breadcrumbEl  = document.getElementById('breadcrumb');
-  const breadcrumbTxt = document.getElementById('breadcrumbText');
-  const menuEl        = document.getElementById('menu');
-
-  function resetPath(){
-    state.path = [{ label: state.tab === 'main' ? 'MAIN' : 'CONFIG', items: DATA[state.tab] }];
-    state.activeIndex = 0;
-  }
-  resetPath();
-
-  function currentLevel(){ return state.path[state.path.length - 1]; }
-
-  function currentEntries(){
-    const level = currentLevel();
-    const entries = [];
-    if (state.path.length > 1){
-      entries.push({ id:'__back__', label:'Retour', isBack:true });
-    }
-    return entries.concat(level.items);
-  }
-
-  function render(){
-    const entries = currentEntries();
-    listEl.innerHTML = '';
-
-    entries.forEach((item, i) => {
-      const li = document.createElement('li');
-      li.className = 'menu__item' + (i === state.activeIndex ? ' active' : '') + (item.isBack ? ' back' : '');
-      const iconPath = item.isBack ? BACK_ICON : (ICONS[item.icon] || '');
-      const showGo = !item.isBack && !!item.children;
-      li.innerHTML = `
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${iconPath}</svg>
-        <span class="label">${item.label}</span>
-        ${showGo ? `<svg class="go" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GO_ICON}</svg>` : ''}
-      `;
-      li.addEventListener('click', () => activate(i));
-      li.addEventListener('mouseenter', () => { state.activeIndex = i; render(); });
-      listEl.appendChild(li);
-    });
-
-    document.querySelectorAll('.menu__tab').forEach(t => t.classList.toggle('disabled', state.path.length > 1));
-
-    if (state.path.length > 1){
-      breadcrumbEl.hidden = false;
-      const labels = state.path.map(l => l.label);
-      breadcrumbTxt.innerHTML = labels.slice(0, -1).join(' &rsaquo; ') + ' <span class="current">&rsaquo; ' + labels[labels.length - 1] + '</span>';
-    } else {
-      breadcrumbEl.hidden = true;
-    }
-
-    const active = entries[state.activeIndex];
-    footerLabelEl.textContent = active ? active.label : '-';
-    footerCountEl.textContent = entries.length ? (state.activeIndex + 1) + ' / ' + entries.length : '-';
-  }
-
-  function activate(i){
-    const entries = currentEntries();
-    const item = entries[i];
-    if (!item) return;
-    state.activeIndex = i;
-
-    if (item.isBack){
-      goBack();
-      return;
-    }
-    if (item.children){
-      state.path.push({ label: item.label, items: item.children });
-      state.activeIndex = 0;
-      render();
-      return;
-    }
-    postNUI('selectOption', { id: item.id, label: item.label, tab: state.tab, path: state.path.map(l => l.label) });
-    render();
-  }
-
-  function goBack(){
-    if (state.path.length > 1){
-      state.path.pop();
-      state.activeIndex = 0;
-      render();
-    }
-  }
-
-  function switchTab(tab){
-    state.tab = tab;
-    resetPath();
-    document.querySelectorAll('.menu__tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
-    render();
-  }
-
-  /* =========================================================
-     3) NAVIGATION CLAVIER
-     ========================================================= */
-  document.addEventListener('keydown', (e) => {
-    const entries = currentEntries();
-    const total = entries.length;
-
-    if (e.key === 'ArrowDown'){
-      e.preventDefault();
-      if (total) state.activeIndex = (state.activeIndex + 1) % total;
-      render();
-    } else if (e.key === 'ArrowUp'){
-      e.preventDefault();
-      if (total) state.activeIndex = (state.activeIndex - 1 + total) % total;
-      render();
-    } else if (e.key === 'Enter'){
-      e.preventDefault();
-      activate(state.activeIndex);
-    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight'){
-      e.preventDefault();
-      if (state.path.length === 1) switchTab(state.tab === 'main' ? 'config' : 'main');
-    } else if (e.key === 'Backspace'){
-      e.preventDefault();
-      goBack();
-    } else if (e.key === 'Escape'){
-      e.preventDefault();
-      if (state.path.length > 1) goBack(); else closeMenu();
-    }
+function renderTabs(){
+  if(!live())return;
+  B.tabsEl.replaceChildren(...B.tabs.map((t,i)=>{
+    const d=$('div','tab-item'+(i===B.tab?' active':''),t);
+    if(B.tabs.length===1)d.style.cssText='min-width:8vh;flex-grow:0;flex-basis:auto';
+    return d;
+  }));
+}
+const comp=h=>{const d=$('div','component');d.innerHTML=h;return d};
+function mkRow(o){
+  if(o.type=='divider'){const d=$('div','separator-container');d.append($('div','separator-bar'),$('div','separator-text'),$('div','separator-bar'));return d}
+  const r=$('div','menu-item'),lab=$('div','item-label'),cc=$('div','components-container');
+  lab.append($('span','name'));
+  types(o).forEach(t=>{
+    if(t==='submenu')cc.append(comp('<i class="ph ph-caret-right caret-icon"></i>'));
+    else if(t==='checkbox'){const c=comp('<label class="toggle-switch"><input type="checkbox"><span class="toggle-track"><span class="toggle-thumb"></span></span></label>');
+      c.querySelector('input').onchange=e=>{r._o.checked=e.target.checked};cc.append(c)}
+    else if(t==='slider'){const c=comp('<div class="range-component"><div class="range-track"></div><div class="range-fill"></div><input type="range"></div>');
+      c.querySelector('input').oninput=e=>{r._o.value=+e.target.value;patchRow(r,r._o,r._i)};cc.append(c)}
+    else if(t==='scroll')cc.append(comp('<div class="scroll-value"><span></span></div>'));
   });
-
-  document.querySelectorAll('.menu__tab').forEach(tabEl => {
-    tabEl.addEventListener('click', () => {
-      if (state.path.length === 1) switchTab(tabEl.dataset.tab);
-    });
+  r.append(lab,cc);return r;
+}
+function patchRow(r,o,i){
+  r._o=o;r._i=i;
+  if(o.type=='divider'){r.children[1].textContent=o.label??'';return}
+  r.classList.toggle('is-selected',B.cur===i);
+  const nm=r.querySelector('.name');nm.textContent=o.label??'';
+  if(types(o).includes('slider')&&B.cur===i)nm.append(' ',$('span','slider-val',': '+o.value));
+  const cb=r.querySelector('input[type=checkbox]');if(cb)cb.checked=!!o.checked;
+  const rg=r.querySelector('input[type=range]');
+  if(rg){
+    [['min',o.min],['max',o.max],['step',o.step]].forEach(([k,v])=>v==null?rg.removeAttribute(k):rg.setAttribute(k,v));
+    rg.value=o.value??'';
+    r.querySelector('.range-fill').style.width=o.max>o.min?((o.value-o.min)/(o.max-o.min))*100+'%':'0%';
+  }
+  const sc=r.querySelector('.scroll-value span');
+  if(sc)sc.textContent=o.options?.[o.selected-1]?.label||o.options?.[0]?.label||(!o.options||o.options.length===0?'Loading...':'None');
+}
+function renderItems(){
+  B.menu.forEach((o,i)=>{
+    let row=B.rows[i];
+    if(!row||row._s!==sig(o)){const n=mkRow(o);n._s=sig(o);row?row.replaceWith(n):B.list.append(n);row=B.rows[i]=n}
+    patchRow(row,o,i);
   });
-
-  /* =========================================================
-     4) PONT NUI (a brancher cote Lua)
-     ========================================================= */
-  function resourceName(){
-    try { return typeof GetParentResourceName === 'function' ? GetParentResourceName() : 'admin_menu'; }
-    catch(_) { return 'admin_menu'; }
-  }
-
-  function postNUI(endpoint, data){
-    fetch(`https://${resourceName()}/${endpoint}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json; charset=UTF-8' },
-      body: JSON.stringify(data || {})
-    }).catch(() => {});
-  }
-
-  function openMenu(){
-    menuEl.hidden = false;
-    switchTab('main');
-  }
-  function closeMenu(){
-    menuEl.hidden = true;
-    postNUI('close', {});
-  }
-
-  window.addEventListener('message', (event) => {
-    const data = event.data || {};
-    if (data.action === 'open')  openMenu();
-    if (data.action === 'close') closeMenu();
-    if (data.action === 'setTitle' && data.title) {
-      document.getElementById('menuTitle').textContent = data.title;
+  while(B.rows.length>B.menu.length)B.rows.pop().remove();
+}
+function updCounter(){
+  const s=B.menu.reduce((a,o,i)=>(o?.type!=='divider'&&a.push(i),a),[]);
+  let n=0;
+  if(s.length){const p=s.indexOf(B.cur);n=p!==-1?p+1:s.reduce((b,x,k)=>Math.abs(x-B.cur)<Math.abs(s[b]-B.cur)?k:b,0)+1}
+  B.cnt.textContent=`${n}/${s.length}`;
+}
+function applyBar(){
+  if(!B.thumb)return;
+  B.trackEl.style.height=B.trackH+'px';B.thumb.style.top=B.thumbTop+'px';B.thumb.style.height=B.thumbH+'px';
+}
+function bar(){
+  if(!live()||B.lock)return;
+  B.lock=requestAnimationFrame(()=>{
+    B.lock=null;const L=B.list;if(!live())return;
+    const cH=L.clientHeight,sH=L.scrollHeight,n=B.menu.length;
+    B.trackH=Math.round(cH);B.over=sH>cH+1;
+    if(B.over){
+      B.thumbH=Math.min(Math.max(100,Math.round(cH/sH*B.trackH)),B.trackH);
+      const mx=Math.max(0,sH-cH),ra=mx?clamp(L.scrollTop/mx,0,1):0,sc=Math.max(0,B.trackH-B.thumbH);
+      B.thumbTop=clamp(Math.round(sc*ra),0,sc);
+    }else{
+      B.thumbH=Math.min(n<=7?B.trackH:Math.max(100,Math.round(B.trackH*(7/n))),B.trackH);
+      const c=Math.max(1,n),ra=c>1?clamp(B.cur,0,c-1)/(c-1):0,sc=Math.max(0,B.trackH-B.thumbH);
+      B.thumbTop=clamp(Math.round(sc*ra),0,sc);
     }
+    applyBar();
   });
+}
+function onScroll(){
+  const L=B.list;if(!L||!B.over||B.lock)return;
+  B.lock=requestAnimationFrame(()=>{
+    B.lock=null;
+    const mx=Math.max(0,L.scrollHeight-L.clientHeight),ra=mx?clamp(L.scrollTop/mx,0,1):0,sc=Math.max(0,B.trackH-B.thumbH);
+    B.thumbTop=clamp(Math.round(sc*ra),0,sc);applyBar();
+  });
+}
+function moveHl(t){
+  const h=B.hl;if(!h){B.hlTop=t;return}
+  const from=parseFloat(getComputedStyle(h).top)||B.hlTop;
+  h.getAnimations().forEach(a=>a.cancel());
+  B.hlTop=t;h.style.top=t+'px';
+  h.animate([{top:from+'px'},{top:t+'px'}],{duration:220,easing:'ease-out',fill:'forwards'});
+}
+const curRow=()=>B.menu[B.cur]&&B.menu[B.cur].type!='divider'?B.rows[B.cur]:null;
+function refresh(){
+  if(!live())return;
+  renderItems();updCounter();
+  const el=curRow();if(el){moveHl(el.offsetTop);el.scrollIntoView({behavior:'smooth',block:'nearest'})}
+  bar();
+}
+const showMenu=()=>{present(B.slot,true,buildMenu,planMenu);refresh()};
 
-  render();
+/* ================= SAISIE (Input) ================= */
+const I={title:'Vehicle Model',value:'',blocking:false,slot:{g:0}};
+function buildInput(){
+  const ov=$('div','input-overlay'),box=$('div','input-box'),head=$('div','input-header'),inner=$('div','input-header-inner');
+  const inp=$('input');inp.type='text';inp.oninput=()=>{I.value=inp.value};
+  inner.append($('div','input-header-text'));head.append(inner);box.append(head,inp);ov.append(box);app.append(ov);
+  return [ov,box];
+}
+const planInput=(e,out)=>[tr(e[0],{kind:'fade',dur:400},out),tr(e[1],{kind:'scale',start:.94,dur:480,base:'translateX(-50%)'},out)];
+function inputUI(show){
+  present(I.slot,show,buildInput,planInput);
+  const e=I.slot.els;if(!e)return;
+  e[1].querySelector('.input-header-text').textContent='Venom Menu - '+(I.title??'');
+  e[1].querySelector('input').value=I.value??'';
+}
+const unblock=()=>setTimeout(()=>{I.blocking=false},350);
+
+/* ================= FREECAM ================= */
+const F={h:0,w:0,v:0,wl:['WEAPON_TRANQUILIZER'],vl:['Dump'],opts:[],slot:{g:0}};
+function buildFreecam(){
+  const wrap=$('div','hovering-text-wrap'),ul=$('ul','hovering-text-list');
+  ul.style.webkitMaskImage='linear-gradient(transparent 0%, black 0%, black 95%, transparent 100%)';wrap.append(ul);
+  const cr=$('div');cr.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:0.9259vh;height:0.9259vh;pointer-events:none;z-index:10000;display:block';
+  const h=$('div'),v=$('div');
+  h.style.cssText='position:absolute;top:50%;left:0;width:100%;height:0.185vh;background-color:white;transform:translateY(-50%)';
+  v.style.cssText='position:absolute;left:50%;top:0;width:0.185vh;height:100%;background-color:white;transform:translateX(-50%)';
+  cr.append(h,v);app.append(wrap,cr);return [wrap,cr];
+}
+const planFreecam=(e,out)=>[tr(e[0],{kind:'fly',y:8,dur:350,base:'translateX(-50%)'},out),tr(e[1],{kind:'fade',dur:350},out)];
+function renderFreecam(){
+  const e=F.slot.els;if(!e)return;
+  const ul=e[0].firstChild,W='#fff',R='rgba(197, 34, 34)';
+  const sp=(t,c)=>{const s=$('span','',t);s.style.color=c;return s};
+  F.opts.forEach((o,i)=>{
+    let li=ul.children[i];if(!li){li=$('li');ul.append(li)}
+    const sel=i===F.h,lb=String(o.label??'');
+    li.className='hovering-text-item '+(sel?'hovering-text-selected':'hovering-text-inactive');
+    li.style.color='white';li.id='hovering-text-opt-'+i;
+    li.dataset.id=lb.toLowerCase().replace(/\s+/g,'_');li.dataset.data=lb;li.setAttribute('aria-current',sel?'true':'false');
+    const car=lb==='Spawn Car',gun=lb==='Shoot Weapon';
+    li.replaceChildren(...(!sel?[sp(lb,W)]:(car||gun)
+      ?[sp('-',W),` ${lb} (`,sp(car?F.vl[F.v]:F.wl[F.w],R),') ',sp('-',W)]
+      :[sp('-',W),' ',sp(lb,R),' ',sp('-',W)]));
+  });
+  while(ul.children.length>F.opts.length)ul.lastChild.remove();
+  const el=ul.children[F.h];if(!el)return;
+  if(ul.scrollHeight>ul.clientHeight){
+    const t=el.offsetTop,b=t+el.offsetHeight,vt=ul.scrollTop,vb=vt+ul.clientHeight;
+    if(t<vt)ul.scrollTo({top:t,behavior:'smooth'});
+    else if(b>vb)ul.scrollTo({top:b-ul.clientHeight,behavior:'smooth'});
+  }else el.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+/* ================= NOTIFICATIONS ================= */
+const NC={info:{icon:'fa-info',color:'#3d9bff'},error:{icon:'fa-times',color:'#ff3d3d'},success:{icon:'fa-check',color:'#3ddc68'}};
+const stack=$('div','notify-stack');app.append(stack);
+function flip(mutate){
+  const f=new Map([...stack.children].map(c=>[c,c.getBoundingClientRect()]));
+  mutate();
+  [...stack.children].forEach(c=>{
+    const o=f.get(c);if(!o)return;
+    const n=c.getBoundingClientRect(),dx=o.left-n.left,dy=o.top-n.top;
+    if(dx||dy)c.animate([{transform:`translate(${dx}px,${dy}px)`},{transform:'none'}],{duration:300,easing:E_OUT});
+  });
+}
+function dismiss(card){
+  flip(()=>{
+    const {offsetWidth:w,offsetHeight:h,offsetLeft:l,offsetTop:t}=card;
+    Object.assign(card.style,{position:'absolute',boxSizing:'border-box',left:l+'px',top:t+'px',width:w+'px',height:h+'px'});
+  });
+  tr(card,{kind:'fly',x:80,dur:250},true).finished.then(()=>card.remove()).catch(()=>{});
+}
+function notify(header,message,duration,type){
+  const cfg=NC[type]||NC.info,card=$('div','notify-card');
+  card.style.setProperty('--accent',cfg.color);
+  card.innerHTML=`<div class="notify-body"><div class="notify-icon-wrap"><i class="fa ${cfg.icon} notify-icon"></i></div><div class="notify-text"><span class="notify-header"></span><span class="notify-message"></span></div></div><div class="notify-bar"><div class="notify-bar-fill" style="width:100%"></div></div>`;
+  card.querySelector('.notify-header').textContent=header;
+  card.querySelector('.notify-message').textContent=message??'';
+  flip(()=>stack.prepend(card));
+  tr(card,{kind:'fly',x:80,dur:350},false);
+  const fill=card.querySelector('.notify-bar-fill'),step=100/(duration/100);let p=100;
+  const iv=setInterval(()=>{
+    if(p>0){p=Math.max(p-step,0);fill.style.width=p+'%'}
+    else{clearInterval(iv);setTimeout(()=>dismiss(card),100)}
+  },100);
+}
+
+/* ================= MESSAGES DU JEU ================= */
+addEventListener('message',e=>{
+  const d=e.data||{};
+  switch(d.action){
+    case 'setCurrent':B.cur=d.current-1;B.menu=d.menu||[];showMenu();break;
+    case 'showMenu':d.visible?showMenu():present(B.slot,false);break;
+    case 'setTabs':B.tabs=d.tabs||[];B.tab=d.index;renderTabs();break;
+    case 'setTabIndex':B.tab=d.index||0;renderTabs();break;
+    case 'resetTabs':B.tabs=['Main Menu'];B.tab=0;renderTabs();break;
+    case 'setMenuPos':
+      if(d.x!==undefined)B.left=d.x+'vh';
+      if(d.y!==undefined)B.top=d.y+'vh';
+      if(live()){B.root.style.left=B.left;B.root.style.top=B.top}break;
+    case 'setBanner':if(d.url){B.banner=d.url;if(live())B.img.src=d.url}break;
+    case 'setMenuColor':{
+      const r=d.r??197,g=d.g??34,b=d.b??34,s=document.documentElement.style,c=`${r},${g},${b}`;
+      s.setProperty('--color-main',`rgba(${c},0.35)`);s.setProperty('--color-border',`rgba(${c},0.35)`);
+      s.setProperty('--color-shadow',`rgba(${c},0.35)`);s.setProperty('--color-notify-main',`rgba(${c})`);
+      s.setProperty('--color-notify-shadow',`rgba(${c},0.35)`);s.setProperty('--color-mainSolid',`rgba(${c})`);
+      s.setProperty('--color-tab',`rgba(${c},0.35)`);break}
+    case 'showInputPrompt':
+      I.title=d.title;I.value=d.showInput?d.value:'';inputUI(!!d.showInput);
+      if(d.showInput)I.blocking=true;else unblock();break;
+    case 'hideInputPrompt':inputUI(false);unblock();break;
+    case 'updateInputPrompt':I.title=d.title;I.value=d.value;inputUI(!!I.slot.els&&!I.slot.out);break;
+    case 'displayFreecam':
+      F.opts=d.options||[];F.wl=d.weaponOptions||F.wl;F.vl=d.vehicleOptions||F.vl;
+      if(d.weaponIndex!==undefined)F.w=d.weaponIndex-1;
+      if(d.vehicleIndex!==undefined)F.v=d.vehicleIndex-1;
+      present(F.slot,!!d.visible,buildFreecam,planFreecam);renderFreecam();break;
+    case 'updateWeapon':F.w=d.index-1;renderFreecam();break;
+    case 'updateVehicle':F.v=d.index-1;renderFreecam();break;
+    case 'scroll':
+      if(F.opts.length){F.h=(F.h+(d.direction==='up'?-1:1)+F.opts.length)%F.opts.length;renderFreecam()}break;
+    case 'notify':notify(d.header||'Info',d.message,d.duration||4000,d.type||'info');break;
+  }
+});
 })();
 </script>
 </body>
