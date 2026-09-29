@@ -51,7 +51,7 @@ function buildMenu(){
   const sb=$('div','menu-scrollbar'),trk=$('div','scrollbar-track'),thumb=$('div','scrollbar-thumb');trk.append(thumb);sb.append(trk);
   const body=$('div','menu-body'),list=$('div','menu-items');list.onscroll=onScroll;
   const hl=$('div','selection-highlight');hl.style.top=B.hlTop+'px';list.append(hl);body.append(list);
-  const foot=$('div','menu-footer'),cnt=$('span','footer-counter');foot.append($('span','footer-brand','Venom - Menu'),cnt);
+  const foot=$('div','menu-footer'),cnt=$('span','footer-counter');foot.append($('span','footer-brand','JuL - Menu'),cnt);
   r.append(ban,tabs,sb,body,foot);app.append(r);
   Object.assign(B,{root:r,img,tabsEl:tabs,trackEl:trk,thumb,list,hl,cnt,rows:[]});
   renderTabs();applyBar();
@@ -170,7 +170,7 @@ const planInput=(e,out)=>[tr(e[0],{kind:'fade',dur:400},out),tr(e[1],{kind:'scal
 function inputUI(show){
   present(I.slot,show,buildInput,planInput);
   const e=I.slot.els;if(!e)return;
-  e[1].querySelector('.input-header-text').textContent='Venom Menu - '+(I.title??'');
+  e[1].querySelector('.input-header-text').textContent='JuL Menu - '+(I.title??'');
   e[1].querySelector('input').value=I.value??'';
 }
 const unblock=()=>setTimeout(()=>{I.blocking=false},350);
