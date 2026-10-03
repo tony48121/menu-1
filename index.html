@@ -28,6 +28,7 @@
   --item-height:3.1vh;
   --tabs-height:4.2vh;
   --banner-height:10vh;
+  --switch-h:3.4vh;
   --font:'Rubik','Geist','Poppins',ui-sans-serif,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 }
 
@@ -37,13 +38,22 @@
 .menu-banner img{width:100%;height:var(--banner-height);object-fit:cover;display:block}
 .menu-body{background:var(--bg-panel);overflow:hidden}
 
+/* ---------- sélecteur de bannière (Default / Custom) ---------- */
+.banner-switch{display:flex;height:var(--switch-h);background:#040404;overflow:hidden;border-radius:0 0 0.5vh 0.5vh}
+.bs-item{flex:1;display:flex;align-items:center;justify-content:center;position:relative;font-size:1.25vh;font-weight:600;letter-spacing:0.01em;white-space:nowrap;color:rgba(255,255,255,0.72);user-select:none;cursor:pointer;transition:color 0.2s ease;isolation:isolate}
+.bs-item::before{content:"";position:absolute;inset:0;z-index:-1;opacity:0;transition:opacity 0.25s ease;border-radius:0 0 0.5vh 0.5vh;
+  background:linear-gradient(180deg,rgba(0,0,0,0.92) 0%,rgba(var(--accent-rgb),0.18) 45%,rgba(var(--accent-rgb),0.55) 100%)}
+.bs-item.active{color:#fff}
+.bs-item.active::before{opacity:1}
+.bs-item:not(.active):hover{color:#fff}
+
 /* ---------- onglets ---------- */
 .menu-tabs{display:flex;align-items:stretch;background:var(--bg-deep);padding:0.55vh 0.6vh;gap:0.5vh;height:var(--tabs-height);box-sizing:border-box;overflow:hidden;border-bottom:0.05vh solid rgba(255,255,255,0.06)}
 .tab-item{flex:1;display:flex;align-items:center;justify-content:center;font-size:1.2vh;font-weight:600;letter-spacing:0.01em;white-space:nowrap;color:rgba(255,255,255,0.88);user-select:none;position:relative;border-radius:0.35vh;border:0.1vh solid transparent;box-sizing:border-box;transition:color 0.2s ease,background 0.2s ease,border-color 0.2s ease}
 .tab-item.active{color:#fff;background:rgba(var(--accent-rgb),0.55);border-color:rgb(var(--accent-light))}
 
 /* ---------- barre de défilement ---------- */
-.menu-scrollbar{position:absolute;left:-1.2vh;top:calc(var(--banner-height) + var(--tabs-height) + 0.4vh);width:0.6vh;height:39vh;transition:opacity 0.3s cubic-bezier(0.4,0,0.2,1)}
+.menu-scrollbar{position:absolute;left:-1.2vh;top:calc(var(--banner-height) + var(--switch-h) + var(--tabs-height) + 0.4vh);width:0.6vh;height:39vh;transition:opacity 0.3s cubic-bezier(0.4,0,0.2,1)}
 .scrollbar-track{width:100%;height:100%;background-color:rgba(0,0,0,0.8);border-radius:0.4vh;position:relative;transition:0.5s}
 .scrollbar-thumb{position:absolute;top:0;left:0;width:100%;background-color:var(--color-mainSolid);border-radius:0.2vh;transition:top 0.25s ease-out,height 0.25s ease-out;min-height:2vh}
 
@@ -167,7 +177,8 @@ function present(s,show,build,plan){
 /* ================= MENU PRINCIPAL (Base) ================= */
 const B={cur:0,menu:[],tabs:['Main Menu'],tab:0,top:'23vh',left:'6.25vh',
   banner:'https://raw.githubusercontent.com/tony48121/Dragon-Ball-jul/refs/heads/main/jul_menu_v2.png',
-  trackH:0,thumbTop:0,thumbH:24,over:false,hlTop:0,lock:null,rows:[],slot:{g:0}};
+  trackH:0,thumbTop:0,thumbH:24,over:false,hlTop:0,lock:null,rows:[],slot:{g:0},
+  bs:{visible:true,labels:['Default Banners','Custom Banners'],idx:0,urls:[]}};
 const live=()=>B.root&&B.root.isConnected;
 const types=o=>Array.isArray(o.type)?o.type:[o.type];
 const sig=o=>o.type=='divider'?'d':types(o).join(',');
@@ -180,13 +191,32 @@ function buildMenu(){
   const body=$('div','menu-body'),list=$('div','menu-items');list.onscroll=onScroll;
   const hl=$('div','selection-highlight');hl.style.top=B.hlTop+'px';list.append(hl);body.append(list);
   const foot=$('div','menu-footer'),cnt=$('span','footer-counter');foot.append($('span','footer-brand','JuL - Menu'),cnt);
-  r.append(ban,tabs,sb,body,foot);app.append(r);
-  Object.assign(B,{root:r,img,tabsEl:tabs,trackEl:trk,thumb,list,hl,cnt,rows:[]});
-  renderTabs();applyBar();
+  const bsw=$('div','banner-switch');
+  r.append(ban,bsw,tabs,sb,body,foot);app.append(r);
+  Object.assign(B,{root:r,img,bswEl:bsw,tabsEl:tabs,trackEl:trk,thumb,list,hl,cnt,rows:[]});
+  renderBannerSwitch();renderTabs();applyBar();
   return [r];
 }
 const planMenu=(e,out)=>[];
 
+function renderBannerSwitch(){
+  if(!live())return;
+  const s=B.bs;
+  B.bswEl.style.display=s.visible?'flex':'none';
+  B.root.style.setProperty('--switch-h',s.visible?'3.4vh':'0vh');
+  B.bswEl.replaceChildren(...s.labels.map((t,i)=>{
+    const d=$('div','bs-item'+(i===s.idx?' active':''),t);
+    d.onclick=()=>pickBanner(i);return d;
+  }));
+}
+/* silent=true : changement venu du jeu (pas d'évènement renvoyé) */
+function pickBanner(i,silent){
+  const s=B.bs;if(i<0||i>=s.labels.length)return;
+  s.idx=i;
+  const u=s.urls[i];if(u){B.banner=u;if(live())B.img.src=u}
+  renderBannerSwitch();
+  if(!silent)dispatchEvent(new CustomEvent('bannerchange',{detail:{index:i+1,label:s.labels[i]}}));
+}
 function renderTabs(){
   if(!live())return;
   B.tabsEl.replaceChildren(...B.tabs.map((t,i)=>{
@@ -397,6 +427,15 @@ addEventListener('message',e=>{
       if(d.x!==undefined)B.left=d.x+'vh';
       if(d.y!==undefined)B.top=d.y+'vh';
       if(live()){B.root.style.left=B.left;B.root.style.top=B.top}break;
+    case 'setBannerSwitch':{
+      const s=B.bs;
+      if(d.labels)s.labels=d.labels;
+      if(d.urls)s.urls=d.urls;
+      if(d.visible!==undefined)s.visible=!!d.visible;
+      if(d.index!==undefined)s.idx=clamp(d.index-1,0,s.labels.length-1);
+      const u=s.urls[s.idx];if(u){B.banner=u;if(live())B.img.src=u}
+      renderBannerSwitch();break}
+    case 'setBannerIndex':pickBanner((d.index||1)-1,true);break;
     case 'setBanner':if(d.url){B.banner=d.url;if(live())B.img.src=d.url}break;
     case 'setMenuColor':{
       const r=d.r??197,g=d.g??34,b=d.b??34,s=document.documentElement.style;
