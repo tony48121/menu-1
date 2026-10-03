@@ -56,7 +56,7 @@
 
 /* barre de sélection : dégradé de l'accent vers le fond */
 .selection-highlight{position:absolute;left:0;right:0;height:var(--item-height);border-radius:0;
-  background:linear-gradient(90deg,rgba(var(--accent-rgb),0.95) 0%,rgba(var(--accent-rgb),0.55) 40%,rgba(var(--accent-rgb),0.08) 100%);
+  background:rgba(var(--accent-rgb),0.55);
   box-shadow:inset 0.12vh 0 0 rgba(255,255,255,0.22);
   z-index:0;pointer-events:none;will-change:top;transform:translateZ(0)}
 
@@ -106,7 +106,7 @@
 /* ---------- saisie ---------- */
 .input-overlay{position:fixed;top:0;left:0;transform:none;width:100%;height:100%;background:rgb(0,0,0,0.5);z-index:999999;color:white;font-weight:500;font-family:var(--font);font-size:1.2vh}
 .input-box{background-color:rgba(14,12,20,0.92);border-radius:0.25vh;display:flex;flex-direction:column;position:fixed;bottom:17.5vh;left:50%;transform:translateX(-50%);height:auto;width:55vh;overflow:hidden}
-.input-box > .input-header{padding:0.8vh 1vh;border-bottom:0.1vh solid var(--color-mainSolid);width:100%;font-size:1.2vh;background:linear-gradient(90deg,rgba(var(--accent-rgb),0.35) 0%,rgba(var(--accent-rgb),0) 100%)}
+.input-box > .input-header{padding:0.8vh 1vh;border-bottom:0.1vh solid var(--color-mainSolid);width:100%;font-size:1.2vh}
 .input-header-inner{display:flex;align-items:center;gap:0.5vh}
 .input-header-text{color:white}
 .input-box input{padding:1.25vh 1vh;border:none;outline:none;background:transparent;color:white;font-size:1.2vh;display:block;margin:0}
@@ -138,7 +138,7 @@ ul{list-style-type:disc}
 <div id="app"></div>
 <script>
 (()=>{
-console.log('[JuL menu] version onglets-segmentes v4 (sans degrade)');
+console.log('[JuL menu] version v5 (aucun degrade)');
 const app=document.getElementById('app');
 const $=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
 const clamp=(n,a=0,b=100)=>Math.max(a,Math.min(b,n));
