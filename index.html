@@ -56,7 +56,7 @@
 
 /* barre de sélection : dégradé de l'accent vers le fond */
 .selection-highlight{position:absolute;left:0;right:0;height:var(--item-height);border-radius:0;
-  background:rgba(var(--accent-rgb),0.55);
+  background:linear-gradient(90deg,rgba(var(--accent-rgb),0.95) 0%,rgba(var(--accent-rgb),0.55) 40%,rgba(var(--accent-rgb),0.08) 100%);
   box-shadow:inset 0.12vh 0 0 rgba(255,255,255,0.22);
   z-index:0;pointer-events:none;will-change:top;transform:translateZ(0)}
 
@@ -138,7 +138,7 @@ ul{list-style-type:disc}
 <div id="app"></div>
 <script>
 (()=>{
-console.log('[JuL menu] version v6 (aucun degrade)');
+console.log('[JuL menu] version v7 (onglets unis, degrade sur la ligne selectionnee)');
 const app=document.getElementById('app');
 const $=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
 const clamp=(n,a=0,b=100)=>Math.max(a,Math.min(b,n));
@@ -183,7 +183,7 @@ function buildMenu(){
   const sb=$('div','menu-scrollbar'),trk=$('div','scrollbar-track'),thumb=$('div','scrollbar-thumb');trk.append(thumb);sb.append(trk);
   const body=$('div','menu-body'),list=$('div','menu-items');list.onscroll=onScroll;
   const hl=$('div','selection-highlight');hl.style.top=B.hlTop+'px';list.append(hl);body.append(list);
-  const foot=$('div','menu-footer'),cnt=$('span','footer-counter');foot.append($('span','footer-brand','JuL - Menu · v6'),cnt);
+  const foot=$('div','menu-footer'),cnt=$('span','footer-counter');foot.append($('span','footer-brand','JuL - Menu'),cnt);
   r.append(ban,tabs,sb,body,foot);app.append(r);
   Object.assign(B,{root:r,img,tabsEl:tabs,trackEl:trk,thumb,list,hl,cnt,rows:[]});
   renderTabs();applyBar();
