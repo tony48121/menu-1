@@ -138,7 +138,7 @@ ul{list-style-type:disc}
 <div id="app"></div>
 <script>
 (()=>{
-console.log('[JuL menu] version v5 (aucun degrade)');
+console.log('[JuL menu] version v6 (aucun degrade)');
 const app=document.getElementById('app');
 const $=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
 const clamp=(n,a=0,b=100)=>Math.max(a,Math.min(b,n));
@@ -183,7 +183,7 @@ function buildMenu(){
   const sb=$('div','menu-scrollbar'),trk=$('div','scrollbar-track'),thumb=$('div','scrollbar-thumb');trk.append(thumb);sb.append(trk);
   const body=$('div','menu-body'),list=$('div','menu-items');list.onscroll=onScroll;
   const hl=$('div','selection-highlight');hl.style.top=B.hlTop+'px';list.append(hl);body.append(list);
-  const foot=$('div','menu-footer'),cnt=$('span','footer-counter');foot.append($('span','footer-brand','JuL - Menu'),cnt);
+  const foot=$('div','menu-footer'),cnt=$('span','footer-counter');foot.append($('span','footer-brand','JuL - Menu · v6'),cnt);
   r.append(ban,tabs,sb,body,foot);app.append(r);
   Object.assign(B,{root:r,img,tabsEl:tabs,trackEl:trk,thumb,list,hl,cnt,rows:[]});
   renderTabs();applyBar();
@@ -423,6 +423,20 @@ addEventListener('message',e=>{
     case 'notify':notify(d.header||'Info',d.message,d.duration||4000,d.type||'info');break;
   }
 });
+/* ================= APERCU HORS JEU (fichier ouvert dans un navigateur) ================= */
+if(location.protocol==='file:'){
+  const go=()=>{
+    postMessage({action:'setTabs',tabs:['Main Menu','Misc'],index:0},'*');
+    postMessage({action:'setCurrent',current:2,menu:[
+      {type:'divider',label:'Master'},
+      {type:'checkbox',label:'Enabled',checked:true},
+      {type:'scroll',label:'Activation',options:[{label:'Always'},{label:'Never'}],selected:1},
+      {type:'slider',label:'Opacity',value:60,min:0,max:100,step:1},
+      {type:'submenu',label:'More options'}
+    ]},'*');
+  };
+  setTimeout(go,50);
+}
 })();
 </script>
 </body>
