@@ -151,6 +151,15 @@ body,main{all:unset;display:block}
 .notify-bar{height:0.25vh;width:100%;background:rgba(255,255,255,0.06)}
 .notify-bar-fill{height:100%;background:var(--accent);transition:width 0.1s linear;will-change:width}
 
+/* ---------- cible (reticule overlay) ---------- */
+/* Dessinee par le NUI, pas par un composant HUD : ainsi elle coexiste avec
+   Remove UI, qui masque les composants 1 a 22 chaque frame. */
+.jul-crosshair{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:2.8vh;height:2.8vh;pointer-events:none;z-index:9998}
+.jul-cross-ring{position:absolute;inset:0;border:0.18vh solid rgba(255,255,255,0.92);border-radius:50%;box-shadow:0 0 0.45vh rgba(0,0,0,0.8)}
+.jul-cross-h{position:absolute;top:50%;left:0;width:100%;height:0.18vh;background-color:rgba(255,255,255,0.92);transform:translateY(-50%);box-shadow:0 0 0.35vh rgba(0,0,0,0.8)}
+.jul-cross-v{position:absolute;left:50%;top:0;width:0.18vh;height:100%;background-color:rgba(255,255,255,0.92);transform:translateX(-50%);box-shadow:0 0 0.35vh rgba(0,0,0,0.8)}
+.jul-cross-dot{position:absolute;top:50%;left:50%;width:0.45vh;height:0.45vh;border-radius:50%;background-color:rgb(var(--accent-rgb));transform:translate(-50%,-50%)}
+
 /* ---------- freecam ---------- */
 .hovering-text-wrap{position:fixed;bottom:7.5vh;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;justify-content:center;outline:none;min-width:18.52vh;font-family:var(--font)}
 .hovering-text-list{list-style:none;margin:0;padding:0;text-align:center;pointer-events:none;user-select:none;max-height:calc(9 * (1.3vh * 1.3 + 0.37vh));overflow-y:auto;overflow-x:hidden;scrollbar-width:none;-ms-overflow-style:none;display:flex;flex-direction:column;align-items:center;scroll-behavior:smooth}
@@ -354,6 +363,20 @@ function inputUI(show){
 }
 const unblock=()=>setTimeout(()=>{I.blocking=false},350);
 
+/* ================= CIBLE (reticule overlay) ================= */
+/* Slot dediee : la cible n'est PAS dans le slot du menu, donc
+   showMenu{visible:false} ne la detruit pas. */
+const X={slot:{g:0}};
+function buildCross(){
+  const cr=$('div','jul-crosshair');
+  cr.append($('div','jul-cross-ring'),$('div','jul-cross-h'),$('div','jul-cross-v'),$('div','jul-cross-dot'));
+  app.append(cr);return [cr];
+}
+/* base obligatoire : .jul-crosshair est centre par translate(-50%,-50%),
+   sans quoi l'animation de scale le decocherait de l'ecran. */
+const planCross=(e,out)=>[tr(e[0],{kind:'scale',start:.7,dur:220,base:'translate(-50%,-50%)'},out)];
+function crossUI(show){present(X.slot,!!show,buildCross,planCross)}
+
 /* ================= FREECAM ================= */
 const F={h:0,w:0,v:0,wl:['WEAPON_TRANQUILIZER'],vl:['Dump'],opts:[],slot:{g:0}};
 function buildFreecam(){
@@ -460,6 +483,7 @@ addEventListener('message',e=>{
     case 'updateVehicle':F.v=d.index-1;renderFreecam();break;
     case 'scroll':
       if(F.opts.length){F.h=(F.h+(d.direction==='up'?-1:1)+F.opts.length)%F.opts.length;renderFreecam()}break;
+    case 'displayCrosshair':crossUI(!!d.visible);break;
     case 'notify':notify(d.header||'Info',d.message,d.duration||4000,d.type||'info');break;
   }
 });
