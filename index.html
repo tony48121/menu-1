@@ -576,7 +576,13 @@ function renderPlayerCard(){
   if(h)h.style.width=hpPct+'%';if(a)a.style.width=apPct+'%';
 }
 function playerCardShow(d){
-  PC.d=(d&&d.visible)?d:null;
+  /* Le Lua envoie les donnees IMBRIQUEES : { action, visible, data:{...} }.
+     Sans cette extraction, PC.d pointe sur le conteneur et renderPlayerCard
+     lit d.name / d.sid / d.hpN qui n'existent pas a ce niveau : tous les
+     champs restent "-". On garde "visible" du message externe. */
+  const v=d&&d.visible;
+  const p=(d&&d.data)?d.data:d;
+  PC.d=v?p:null;
   present(PC.slot,!!PC.d,buildPlayerCard,planPlayerCard);
   renderPlayerCard();
   if(!PC.d)return;
