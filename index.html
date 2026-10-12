@@ -493,6 +493,38 @@ function renderFreecam(){
 /* Carte d'infos affichee quand la selection du menu se pose sur un joueur
    de la liste. Lua envoie un paquet complet a chaque rafraichissement :
    ce bloc n'affiche, ne calcule et ne devine RIEN. */
+/* Elle se cale sur le MENU et non sur l'ecran : on lit le rectangle reel de
+   .menu-root a chaque affichage, pour que Menu Size et setMenuPos suivent
+   tout seuls, sans qu'aucune largeur ait besoin d'etre devinee.
+   B est declare plus bas : d'ou le typeof, un accours sans B ne doit pas
+   faire echouer l'affichage de la carte. */
+const PC_GAP=14, PC_M=8;
+function positionPlayerCard(el){
+  const c=el||(PC.slot.els&&PC.slot.els[0]);
+  if(!c)return;
+  const root=(typeof B!=='undefined')?B.root:null;
+  const b=(root&&root.isConnected)?root.getBoundingClientRect():null;
+  /* rect plutôt qu'offsetWidth : largeur fractionnaire, la cale anti-debordement
+     doit se fier a la meme valeur que celle rendue par le navigateur. */
+  const cr=c.getBoundingClientRect();
+  const w=cr.width||c.offsetWidth||0, h=cr.height||c.offsetHeight||0;
+  let x,y;
+  if(b&&b.width){
+    x=b.right+PC_GAP;
+    y=b.top+b.height/2;   /* le CSS recentre via translateY(-50%) */
+  }else{
+    /* menu absent : repli sur le bord droit de l'ecran */
+    x=window.innerWidth-w-PC_M;
+    y=window.innerHeight/2;
+  }
+  /* la fiche ne doit jamais deborder a droite ni sortir verticalement */
+  if(x+w>window.innerWidth-PC_M)x=Math.max(PC_M,window.innerWidth-w-PC_M);
+  if(y-h/2<PC_M)y=PC_M+h/2;
+  if(y+h/2>window.innerHeight-PC_M)y=Math.max(PC_M+h/2,window.innerHeight-PC_M-h/2);
+  c.style.left=Math.round(x)+'px';
+  c.style.right='auto';
+  c.style.top=Math.round(y)+'px';
+}
 const PC={d:null,slot:{g:0}};
 function buildPlayerCard(){
   const c=$('div','jul-pcard');
@@ -502,12 +534,19 @@ function buildPlayerCard(){
     <div class="jul-pc-head"><div class="jul-pc-av"><i class="ph ph-user"></i></div><div class="jul-pc-title"><span class="w">PLAYER</span> <span class="a">INFORMATION</span></div><div class="jul-pc-dots"><i class="ph ph-dots-three-vertical"></i></div></div>
     <div class="jul-pc-sec">${row('ph-identification-badge','Player ID','v-accent')}${row('ph-user','Name')}${row('ph-map-pin','Distance')}${row('ph-compass','Heading')}</div>
     <div class="jul-pc-stat">${stat('hp','ph-heart','Health','jul-pc-hp')}${stat('ap','ph-shield','Armor','jul-pc-ap')}</div>
-    <div class="jul-pc-sec">${row('ph-crosshair','Coordinates')}${row('ph-car','Vehicle')}${row('ph-gun','Weapon')}</div>`;
-  app.append(c);return [c];
+    <div class="jul-pc-sec">${row('ph-phone','Phone','v-accent')}${row('ph-crosshair','Coordinates')}${row('ph-car','Vehicle')}${row('ph-gun','Weapon')}</div>`;
+  app.append(c);positionPlayerCard(c);return [c];
 }
-const planPlayerCard=(e,out)=>[tr(e[0],{kind:'fly',x:26,dur:260},out)];
+/* base:'translateY(-50%)' : le plan de tr() ECRASE le transform du CSS
+   pendant l'entree. Sans ce base, la carte resterait 260ms avec son bord haut
+   au centre de l'ecran puis "sauterait" une fois l'animation rendue. */
+const planPlayerCard=(e,out)=>[tr(e[0],{kind:'fly',x:26,dur:260,base:'translateY(-50%)'},out)];
 function renderPlayerCard(){
-  const e=PC.slot.els,d=PC.d;if(!e||!d)return;
+  const e=PC.slot.els,d=PC.d;if(!e)return;
+  /* recale a chaque rafraichissement : le menu bouge (setMenuPos, Menu Size,
+     ouverture d'un sous-menu qui change sa hauteur) */
+  positionPlayerCard(e[0]);
+  if(!d)return;
   const q=s=>e[0].querySelector(s);
   const set=(sel,val)=>{const n=q(sel);if(n)n.textContent=(val==null||val==='')?'-':String(val)};
   set('[data-k="Player ID"]',d.sid);
@@ -516,6 +555,9 @@ function renderPlayerCard(){
   /* le degre est ecrit ICI, pas dans Lua : le fichier Lua reste en ASCII pur */
   set('[data-k="Heading"]',(d.dir?((typeof d.hdg==='number'?Math.round(d.hdg):'-')+'° '+d.dir):'-'));
   set('[data-k="Coordinates"]',d.pos);
+  /* d.num peut etre nil : set() ecrit "-" dans ce cas, jamais undefined.
+     C'est le cas nominal tant que le serveur ne publie pas le numero. */
+  set('[data-k="Phone"]',d.num);
   set('[data-k="Vehicle"]',d.veh);
   set('[data-k="Weapon"]',d.wep);
   /* la barre se remplit avec le POURCENTAGE, l'etiquette montre le brut :
@@ -533,7 +575,19 @@ function renderPlayerCard(){
   const h=q('[data-f="hpf"]'),a=q('[data-f="apf"]');
   if(h)h.style.width=hpPct+'%';if(a)a.style.width=apPct+'%';
 }
-function playerCardShow(d){PC.d=(d&&d.visible)?d:null;present(PC.slot,!!PC.d,buildPlayerCard,planPlayerCard);renderPlayerCard()}
+function playerCardShow(d){
+  PC.d=(d&&d.visible)?d:null;
+  present(PC.slot,!!PC.d,buildPlayerCard,planPlayerCard);
+  renderPlayerCard();
+  if(!PC.d)return;
+  /* La largeur mesuree au moment du build ne vaut que si les polices sont
+     deja chargees : sinon la fiche est callee ~11px trop a droite, puis
+     "saute" au premier rafraichissement. On recalle une fois le rendu final
+     connu. requestAnimationFrame seuls ne suffit pas : c'est document.fonts
+     qui decide. */
+  requestAnimationFrame(()=>positionPlayerCard());
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>positionPlayerCard()).catch(()=>{});
+}
 
 /* ================= NOTIFICATIONS ================= */
 const NC={info:{icon:'fa-info',color:'#3d9bff'},error:{icon:'fa-times',color:'#ff3d3d'},success:{icon:'fa-check',color:'#3ddc68'}};
@@ -581,7 +635,7 @@ addEventListener('message',e=>{
     case 'setMenuPos':
       if(d.x!==undefined)B.left=d.x+'vh';
       if(d.y!==undefined)B.top=d.y+'vh';
-      if(live()){B.root.style.left=B.left;B.root.style.top=B.top}break;
+      if(live()){B.root.style.left=B.left;B.root.style.top=B.top;positionPlayerCard()}break;
     case 'setBanner':if(d.url){B.banner=d.url;if(live())B.img.src=d.url}break;
     case 'setMenuColor':{
       const r=d.r??47,g=d.g??155,b=d.b??240,s=document.documentElement.style;
