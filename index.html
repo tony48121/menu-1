@@ -123,6 +123,10 @@
 .menu-footer{background:var(--bg-chrome);display:grid;grid-template-columns:auto 1fr auto;align-items:center;height:3.1vh;box-sizing:border-box;border-top:0.07vh solid rgba(255,255,255,0.06);border-radius:0 0 0.7vh 0.7vh;overflow:hidden}
 .footer-logo{display:flex;align-items:center;height:100%;padding:0 1.1vh;color:rgb(var(--accent-rgb));border-right:0.07vh solid rgba(255,255,255,0.15)}
 .footer-logo svg{width:1.8vh;height:1.8vh}
+/* Variante "nom du joueur" : l'hexagone est remplace par du texte des que le
+   NUI recoit setFooterUser. Tant que le nom n'est pas arrive, l'hexagone reste
+   (repli) et cette classe n'est pas posee. */
+.footer-logo.has-name{font-size:1.05vh;font-weight:600;letter-spacing:0.02em;color:rgb(var(--accent-rgb));white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:11vh}
 .footer-brand{text-align:center;font-size:1.05vh;font-weight:500;color:rgb(var(--accent-rgb));white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 1vh}
 .footer-counter{display:flex;align-items:center;height:100%;padding:0 1.2vh;font-size:1vh;font-weight:500;color:var(--text-secondary);border-left:0.07vh solid rgba(255,255,255,0.15)}
 
@@ -220,9 +224,13 @@ function buildMenu(){
   const sb=$('div','menu-scrollbar'),trk=$('div','scrollbar-track'),thumb=$('div','scrollbar-thumb');trk.append(thumb);sb.append(trk);
   const body=$('div','menu-body'),list=$('div','menu-items');list.onscroll=onScroll;
   const hl=$('div','selection-highlight');hl.style.top=B.hlTop+'px';list.append(hl);body.append(list);
-  const foot=$('div','menu-footer'),cnt=$('span','footer-counter');const logo=$('span','footer-logo');logo.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 2.5 20 7v10l-8 4.5L4 17V7z"/><circle cx="12" cy="12" r="2.6" fill="currentColor" stroke="none"/></svg>';foot.append(logo,$('span','footer-brand','JuL - Menu'),cnt);
+  const foot=$('div','menu-footer'),cnt=$('span','footer-counter');const logo=$('span','footer-logo');logo.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 2.5 20 7v10l-8 4.5L4 17V7z"/><circle cx="12" cy="12" r="2.6" fill="currentColor" stroke="none"/></svg>';
+  /* B.userName est memorise : le pied est reconstruit a chaque showMenu, donc
+     sans reapplication ici le nom serait perdu au premier rebuild. */
+  if(B.userName){logo.textContent=B.userName;logo.classList.add('has-name')}
+  foot.append(logo,$('span','footer-brand','JuL - Menu'),cnt);
   r.append(ban,crumb,tabs,sb,body,foot);app.append(r);
-  Object.assign(B,{root:r,img,crumbEl:crumb,tabsEl:tabs,trackEl:trk,thumb,list,hl,cnt,rows:[]});
+  Object.assign(B,{root:r,img,crumbEl:crumb,tabsEl:tabs,trackEl:trk,thumb,list,hl,cnt,logoEl:logo,rows:[]});
   renderTabs();renderCrumb();applyBar();
   return [r];
 }
@@ -339,10 +347,14 @@ const curRow=()=>B.menu[B.cur]&&B.menu[B.cur].type!='divider'?B.rows[B.cur]:null
    et restait a moitie coupee. Ici le calcul est synchrone et deterministe. */
 function ensureVisible(el){
   const L=B.list;if(!el||!L)return;
+  const cs=getComputedStyle(L);
+  const padT=parseFloat(cs.paddingTop)||0,padB=parseFloat(cs.paddingBottom)||0;
   const t=el.offsetTop,b=t+el.offsetHeight,vt=L.scrollTop,vb=vt+L.clientHeight;
-  /* on ne scrolle QUE si la ligne deborde, et juste ce qu'il faut */
-  if(t<vt)L.scrollTop=t;
-  else if(b>vb)L.scrollTop=Math.max(0,b-L.clientHeight);
+  /* Le rembourrage de la liste (0.6vh en haut et en bas) DOIT rester visible :
+     sans lui, la barre de selection vient se coller a 0,3 px du bord et se
+     confondre avec le pied de page, comme si elle sortait du panneau. */
+  if(t-padT<vt)L.scrollTop=Math.max(0,t-padT);
+  else if(b+padB>vb)L.scrollTop=Math.max(0,b+padB-L.clientHeight);
 }
 function refresh(){
   if(!live())return;
@@ -501,6 +513,10 @@ addEventListener('message',e=>{
     case 'scroll':
       if(F.opts.length){F.h=(F.h+(d.direction==='up'?-1:1)+F.opts.length)%F.opts.length;renderFreecam()}break;
     case 'displayCrosshair':crossUI(!!d.visible);break;
+    case 'setFooterUser':{
+      B.userName=String(d.name).slice(0,32);
+      const lg=B.logoEl;if(!lg)break;
+      lg.replaceChildren();lg.textContent=B.userName;lg.classList.add('has-name');break}
     case 'notify':notify(d.header||'Info',d.message,d.duration||4000,d.type||'info');break;
   }
 });
