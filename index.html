@@ -179,6 +179,35 @@ body,main{all:unset;display:block}
 .hovering-text-selected{transform:scale(1.03);font-weight:600;letter-spacing:0.015vh;color:var(--color-mainSolid)}
 li{display:list-item;text-align:-webkit-match-parent}
 ul{list-style-type:disc}
+
+/* ---------- fiche joueur ----------
+   Carte d'infos qui apparait quand la selection du menu se pose sur un
+   joueur de la liste. Tout le contenu vient de Lua : ce bloc ne fait que
+   le poser a l'ecran. pointer-events:none, elle ne doit jamais capter un
+   clic ni bloquer le menu. */
+.jul-pcard{position:fixed;right:1.6vh;top:50%;transform:translateY(-50%);width:25vh;box-sizing:border-box;padding:0.9vh;display:flex;flex-direction:column;gap:0.6vh;font-family:var(--font);pointer-events:none;z-index:9997;border-radius:0.9vh;background:rgba(11,13,18,0.95);border:0.1vh solid rgba(255,255,255,0.13);box-shadow:0 1vh 3vh rgba(0,0,0,0.7)}
+.jul-pc-head{display:flex;align-items:center;gap:0.7vh;padding:0.15vh 0.15vh 0.6vh;border-bottom:0.14vh solid rgb(var(--accent-rgb))}
+.jul-pc-av{width:2.9vh;height:2.9vh;border-radius:0.5vh;background:rgb(var(--accent-rgb));display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.6vh;flex-shrink:0}
+.jul-pc-title{flex:1;font-size:1.18vh;font-weight:800;letter-spacing:0.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.jul-pc-title .w{color:#fff}
+.jul-pc-title .a{color:rgb(var(--accent-rgb))}
+.jul-pc-dots{color:rgba(255,255,255,0.55);font-size:1.5vh;line-height:1;flex-shrink:0}
+.jul-pc-sec{background:rgba(255,255,255,0.045);border:0.1vh solid rgba(255,255,255,0.07);border-radius:0.65vh;padding:0.15vh 0.75vh}
+.jul-pc-row{display:flex;align-items:center;gap:0.6vh;font-size:1.02vh;line-height:2.05;border-bottom:0.07vh solid rgba(255,255,255,0.06)}
+.jul-pc-sec .jul-pc-row:last-child,.jul-pc-stat .jul-pc-row:last-child{border-bottom:none}
+.jul-pc-row i{color:rgb(var(--accent-light));font-size:1.25vh;width:1.35vh;text-align:center;flex-shrink:0}
+.jul-pc-row .k{flex:1;color:rgba(255,255,255,0.94)}
+.jul-pc-row .v{color:#fff;font-weight:700;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:13vh}
+.v-accent{color:rgb(var(--accent-rgb))!important}
+.v-hp{color:#3ddc68!important}
+.v-ap{color:rgb(var(--accent-rgb))!important}
+.jul-pc-stat{background:rgba(255,255,255,0.045);border:0.1vh solid rgba(255,255,255,0.07);border-radius:0.65vh;padding:0.15vh 0.75vh;display:flex;flex-direction:column}
+.jul-pc-stat .jul-pc-row .k{flex:0 0 auto;margin-right:0.5vh}
+.jul-pc-row .vnum{font-weight:700;flex-shrink:0;margin-right:0.6vh}
+.jul-pc-track{flex:1;min-width:2.5vh;height:0.5vh;border-radius:0.35vh;background:rgba(255,255,255,0.16);overflow:hidden}
+.jul-pc-fill{display:block;height:100%;border-radius:0.3vh;width:0%;transition:width .25s linear}
+.jul-pc-hp{background:linear-gradient(90deg,#2ecc5e,#7ef0a2)}
+.jul-pc-ap{background:linear-gradient(90deg,rgb(var(--accent-rgb)),rgb(var(--accent-light)))}
 </style>
 </head>
 <body>
@@ -460,6 +489,52 @@ function renderFreecam(){
   }else el.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
+/* ================= FICHE JOUEUR ================= */
+/* Carte d'infos affichee quand la selection du menu se pose sur un joueur
+   de la liste. Lua envoie un paquet complet a chaque rafraichissement :
+   ce bloc n'affiche, ne calcule et ne devine RIEN. */
+const PC={d:null,slot:{g:0}};
+function buildPlayerCard(){
+  const c=$('div','jul-pcard');
+  const row=(ic,k,vc)=>`<div class="jul-pc-row"><i class="ph ${ic}"></i><span class="k">${k}</span><span class="v${vc?' '+vc:''}" data-k="${k}">-</span></div>`;
+  const stat=(f,ic,k,cls)=>`<div class="jul-pc-row"><i class="ph ${ic}"></i><span class="k">${k}</span><span class="vnum ${f==='hp'?'v-hp':'v-ap'}" data-f="${f}">- / -</span><span class="jul-pc-track"><span class="jul-pc-fill ${cls}" data-f="${f}f"></span></span></div>`;
+  c.innerHTML=`
+    <div class="jul-pc-head"><div class="jul-pc-av"><i class="ph ph-user"></i></div><div class="jul-pc-title"><span class="w">PLAYER</span> <span class="a">INFORMATION</span></div><div class="jul-pc-dots"><i class="ph ph-dots-three-vertical"></i></div></div>
+    <div class="jul-pc-sec">${row('ph-identification-badge','Player ID','v-accent')}${row('ph-user','Name')}${row('ph-map-pin','Distance')}${row('ph-compass','Heading')}</div>
+    <div class="jul-pc-stat">${stat('hp','ph-heart','Health','jul-pc-hp')}${stat('ap','ph-shield','Armor','jul-pc-ap')}</div>
+    <div class="jul-pc-sec">${row('ph-crosshair','Coordinates')}${row('ph-car','Vehicle')}${row('ph-gun','Weapon')}</div>`;
+  app.append(c);return [c];
+}
+const planPlayerCard=(e,out)=>[tr(e[0],{kind:'fly',x:26,dur:260},out)];
+function renderPlayerCard(){
+  const e=PC.slot.els,d=PC.d;if(!e||!d)return;
+  const q=s=>e[0].querySelector(s);
+  const set=(sel,val)=>{const n=q(sel);if(n)n.textContent=(val==null||val==='')?'-':String(val)};
+  set('[data-k="Player ID"]',d.sid);
+  set('[data-k="Name"]',d.name);
+  set('[data-k="Distance"]',d.dist);
+  /* le degre est ecrit ICI, pas dans Lua : le fichier Lua reste en ASCII pur */
+  set('[data-k="Heading"]',(d.dir?((typeof d.hdg==='number'?Math.round(d.hdg):'-')+'° '+d.dir):'-'));
+  set('[data-k="Coordinates"]',d.pos);
+  set('[data-k="Vehicle"]',d.veh);
+  set('[data-k="Weapon"]',d.wep);
+  /* la barre se remplit avec le POURCENTAGE, l'etiquette montre le brut :
+     "62 / 100" comme dans la reference, et non un pourcentage invente */
+  const hpN=(typeof d.hpN==='number')?d.hpN:null;
+  const apN=(typeof d.apN==='number')?d.apN:null;
+  const hpMax=(typeof d.hpMax==='number'&&d.hpMax>0)?d.hpMax:100;
+  /* division simple : le brut lu et le brut max, sans base fixe supposee.
+     Avec 100/100 ca donne 100%, avec 62/100 donne 62% — pas de cas particulier
+     a deviner, ni de division par zero quand hpMax vaut 100. */
+  const hpPct=(hpN!=null)?clamp(hpN/hpMax*100,0,100):0;
+  const apPct=(apN!=null)?clamp(apN,0,100):0;
+  set('[data-f="hp"]',(hpN!=null)?hpN+' / '+hpMax:'- / -');
+  set('[data-f="ap"]',(apN!=null)?apN+' / 100':'- / -');
+  const h=q('[data-f="hpf"]'),a=q('[data-f="apf"]');
+  if(h)h.style.width=hpPct+'%';if(a)a.style.width=apPct+'%';
+}
+function playerCardShow(d){PC.d=(d&&d.visible)?d:null;present(PC.slot,!!PC.d,buildPlayerCard,planPlayerCard);renderPlayerCard()}
+
 /* ================= NOTIFICATIONS ================= */
 const NC={info:{icon:'fa-info',color:'#3d9bff'},error:{icon:'fa-times',color:'#ff3d3d'},success:{icon:'fa-check',color:'#3ddc68'}};
 const stack=$('div','notify-stack');app.append(stack);
@@ -522,7 +597,12 @@ addEventListener('message',e=>{
     case 'hideInputPrompt':inputUI(false);unblock();break;
     case 'updateInputPrompt':I.title=d.title;I.value=d.value;inputUI(!!I.slot.els&&!I.slot.out);break;
     case 'displayFreecam':
-      F.opts=d.options||[];F.wl=d.weaponOptions||F.wl;F.vl=d.vehicleOptions||F.vl;
+      /* d.options repart de zero quand une liste fraiche arrive : le Lua
+         reinitialise son index en parallele, sinon les deux se desynchronisent
+         des la deuxieme ouverture. */
+      F.opts=d.options||[];
+      if(d.options)F.h=0;
+      F.wl=d.weaponOptions||F.wl;F.vl=d.vehicleOptions||F.vl;
       if(d.weaponIndex!==undefined)F.w=d.weaponIndex-1;
       if(d.vehicleIndex!==undefined)F.v=d.vehicleIndex-1;
       present(F.slot,!!d.visible,buildFreecam,planFreecam);renderFreecam();break;
@@ -531,6 +611,7 @@ addEventListener('message',e=>{
     case 'scroll':
       if(F.opts.length){F.h=(F.h+(d.direction==='up'?-1:1)+F.opts.length)%F.opts.length;renderFreecam()}break;
     case 'displayCrosshair':crossUI(!!d.visible);break;
+    case 'displayPlayerCard':playerCardShow(d);break;
     case 'setFooterUser':
       /* Le nom n'est plus affiche en bas a gauche : on ne fait que le
          conserver, l'emplacement reste vide par defaut. */
