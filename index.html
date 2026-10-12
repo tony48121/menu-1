@@ -153,12 +153,13 @@ body,main{all:unset;display:block}
 
 /* ---------- cible (reticule overlay) ---------- */
 /* Dessinee par le NUI, pas par un composant HUD : ainsi elle coexiste avec
-   Remove UI, qui masque les composants 1 a 22 chaque frame. */
-.jul-crosshair{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:2.8vh;height:2.8vh;pointer-events:none;z-index:9998}
-.jul-cross-ring{position:absolute;inset:0;border:0.18vh solid rgba(255,255,255,0.92);border-radius:50%;box-shadow:0 0 0.45vh rgba(0,0,0,0.8)}
-.jul-cross-h{position:absolute;top:50%;left:0;width:100%;height:0.18vh;background-color:rgba(255,255,255,0.92);transform:translateY(-50%);box-shadow:0 0 0.35vh rgba(0,0,0,0.8)}
-.jul-cross-v{position:absolute;left:50%;top:0;width:0.18vh;height:100%;background-color:rgba(255,255,255,0.92);transform:translateX(-50%);box-shadow:0 0 0.35vh rgba(0,0,0,0.8)}
-.jul-cross-dot{position:absolute;top:50%;left:50%;width:0.45vh;height:0.45vh;border-radius:50%;background-color:rgb(var(--accent-rgb));transform:translate(-50%,-50%)}
+   Remove UI, qui masque les composants 1 a 22 chaque frame.
+   Disque blanc plein + croix sombre qui depasse du disque.
+   La croix est APRES le disque dans le DOM : elle doit le recouvrir. */
+.jul-crosshair{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:4.6vh;height:4.6vh;pointer-events:none;z-index:9998}
+.jul-cross-ring{position:absolute;top:50%;left:50%;width:2.3vh;height:2.3vh;border-radius:50%;background:#fff;transform:translate(-50%,-50%);box-shadow:0 0 0.55vh rgba(0,0,0,0.5)}
+.jul-cross-h{position:absolute;top:50%;left:0;width:100%;height:0.28vh;background-color:#0b0b0b;transform:translateY(-50%);box-shadow:0 0 0 0.08vh rgba(255,255,255,0.5)}
+.jul-cross-v{position:absolute;left:50%;top:0;width:0.28vh;height:100%;background-color:#0b0b0b;transform:translateX(-50%);box-shadow:0 0 0 0.08vh rgba(255,255,255,0.5)}
 
 /* ---------- freecam ---------- */
 .hovering-text-wrap{position:fixed;bottom:7.5vh;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;justify-content:center;outline:none;min-width:18.52vh;font-family:var(--font)}
@@ -369,7 +370,7 @@ const unblock=()=>setTimeout(()=>{I.blocking=false},350);
 const X={slot:{g:0}};
 function buildCross(){
   const cr=$('div','jul-crosshair');
-  cr.append($('div','jul-cross-ring'),$('div','jul-cross-h'),$('div','jul-cross-v'),$('div','jul-cross-dot'));
+  cr.append($('div','jul-cross-ring'),$('div','jul-cross-h'),$('div','jul-cross-v'));
   app.append(cr);return [cr];
 }
 /* base obligatoire : .jul-crosshair est centre par translate(-50%,-50%),
