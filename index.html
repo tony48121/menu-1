@@ -122,11 +122,17 @@
 /* ---------- pied : logo | texte centré | compteur ---------- */
 .menu-footer{background:var(--bg-chrome);display:grid;grid-template-columns:auto 1fr auto;align-items:center;height:3.1vh;box-sizing:border-box;border-top:0.07vh solid rgba(255,255,255,0.06);border-radius:0 0 0.7vh 0.7vh;overflow:hidden}
 .footer-logo{display:flex;align-items:center;height:100%;padding:0 1.1vh;color:rgb(var(--accent-rgb));border-right:0.07vh solid rgba(255,255,255,0.15)}
-.footer-logo svg{width:1.8vh;height:1.8vh}
-/* Variante "nom du joueur" : l'hexagone est remplace par du texte des que le
-   NUI recoit setFooterUser. Tant que le nom n'est pas arrive, l'hexagone reste
-   (repli) et cette classe n'est pas posee. */
-.footer-logo.has-name{font-size:1.05vh;font-weight:600;letter-spacing:0.02em;color:rgb(var(--accent-rgb));white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:11vh}
+/* Bas a gauche : volontairement vide. L'emplacement n'accueille un logo que
+   si une URL est explicitement fournie via FOOTER_LOGO_URL dans menu.lua ;
+   aucun contenu par defaut (ni hexagone, ni nom, ni marque).
+   :empty supprime aussi padding et filet, donc la colonne se reduit a zero et
+   il ne reste rien du tout a cet emplacement. Des qu'une image y est posee,
+   la regle generale ci-dessus reprend la main. */
+.footer-logo:empty{padding:0;border-right:none}
+/* Logo image en bas a gauche. Le visuel est blanc sur fond noir : "screen"
+   rend le noir entierement transparent, donc le cadre du fichier disparait
+   sur le pied et seul le lettrage subsiste. */
+.footer-logo img{height:2.2vh;width:auto;display:block;mix-blend-mode:screen}
 .footer-brand{text-align:center;font-size:1.05vh;font-weight:500;color:rgb(var(--accent-rgb));white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 1vh}
 .footer-counter{display:flex;align-items:center;height:100%;padding:0 1.2vh;font-size:1vh;font-weight:500;color:var(--text-secondary);border-left:0.07vh solid rgba(255,255,255,0.15)}
 
@@ -217,6 +223,17 @@ const live=()=>B.root&&B.root.isConnected;
 const types=o=>Array.isArray(o.type)?o.type:[o.type];
 const sig=o=>o.type=='divider'?'d':types(o).join(',')+(o.icon?'|i':'');
 
+/* Aucun contenu par defaut en bas a gauche. Un logo n'apparait que si une URL
+   est donnee (FOOTER_LOGO_URL dans menu.lua) : mix-blend-mode:screen est pose
+   en CSS et rend le noir du fichier transparent sur le pied. Si l'image ne
+   charge pas, on retombe sur le slot vide. */
+function applyFooterLogo(lg,url){
+  if(!lg||!url)return;
+  const im=$('img');im.alt='';
+  im.onerror=()=>{lg.replaceChildren();lg.classList.remove('has-img')};
+  im.src=url;
+  lg.replaceChildren(im);lg.classList.add('has-img');
+}
 function buildMenu(){
   const r=$('div','menu-root');r.style.cssText=`top:${B.top};left:${B.left};transform-origin:top left`;
   const ban=$('div','menu-banner'),img=$('img');img.alt='';img.src=B.banner;ban.append(img);
@@ -224,10 +241,11 @@ function buildMenu(){
   const sb=$('div','menu-scrollbar'),trk=$('div','scrollbar-track'),thumb=$('div','scrollbar-thumb');trk.append(thumb);sb.append(trk);
   const body=$('div','menu-body'),list=$('div','menu-items');list.onscroll=onScroll;
   const hl=$('div','selection-highlight');hl.style.top=B.hlTop+'px';list.append(hl);body.append(list);
-  const foot=$('div','menu-footer'),cnt=$('span','footer-counter');const logo=$('span','footer-logo');logo.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 2.5 20 7v10l-8 4.5L4 17V7z"/><circle cx="12" cy="12" r="2.6" fill="currentColor" stroke="none"/></svg>';
-  /* B.userName est memorise : le pied est reconstruit a chaque showMenu, donc
-     sans reapplication ici le nom serait perdu au premier rebuild. */
-  if(B.userName){logo.textContent=B.userName;logo.classList.add('has-name')}
+  const foot=$('div','menu-footer'),cnt=$('span','footer-counter');const logo=$('span','footer-logo');
+  /* Slot bas gauche laissee vide par defaut. B.logoUrl est memorise : le pied
+     est reconstruit a chaque showMenu, donc la reapplication ici est ce qui
+     fait survivre un logo configure. */
+  if(B.logoUrl)applyFooterLogo(logo,B.logoUrl);
   foot.append(logo,$('span','footer-brand','JuL - Menu'),cnt);
   r.append(ban,crumb,tabs,sb,body,foot);app.append(r);
   Object.assign(B,{root:r,img,crumbEl:crumb,tabsEl:tabs,trackEl:trk,thumb,list,hl,cnt,logoEl:logo,rows:[]});
@@ -513,10 +531,14 @@ addEventListener('message',e=>{
     case 'scroll':
       if(F.opts.length){F.h=(F.h+(d.direction==='up'?-1:1)+F.opts.length)%F.opts.length;renderFreecam()}break;
     case 'displayCrosshair':crossUI(!!d.visible);break;
-    case 'setFooterUser':{
-      B.userName=String(d.name).slice(0,32);
-      const lg=B.logoEl;if(!lg)break;
-      lg.replaceChildren();lg.textContent=B.userName;lg.classList.add('has-name');break}
+    case 'setFooterUser':
+      /* Le nom n'est plus affiche en bas a gauche : on ne fait que le
+         conserver, l'emplacement reste vide par defaut. */
+      B.userName=String(d.name).slice(0,32);break;
+    case 'setFooterLogo':{
+      if(!d.url)break;
+      B.logoUrl=String(d.url);
+      applyFooterLogo(B.logoEl,B.logoUrl);break}
     case 'notify':notify(d.header||'Info',d.message,d.duration||4000,d.type||'info');break;
   }
 });
