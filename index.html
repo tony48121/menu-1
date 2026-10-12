@@ -320,18 +320,34 @@ function onScroll(){
     B.thumbTop=clamp(Math.round(sc*ra),0,sc);applyBar();
   });
 }
+/* Le cadre de selection se deplace SANS animation. L'ancienne version faisait
+   un h.animate() de 220 ms avec fill:'forwards' : au rythme de reponse des
+   touches (85 ms) l'animation etait interrompue avant d'aller au bout, et le
+   cadre restait fige sur une ancienne position, en decalage avec la ligne
+   selectionnee. Le saut instantane est le seul etat toujours juste, meme en
+   maintenant la touche enfoncee. */
 function moveHl(t){
   const h=B.hl;if(!h){B.hlTop=t;return}
-  const from=parseFloat(getComputedStyle(h).top)||B.hlTop;
   h.getAnimations().forEach(a=>a.cancel());
   B.hlTop=t;h.style.top=t+'px';
-  h.animate([{top:from+'px'},{top:t+'px'}],{duration:220,easing:'ease-out',fill:'forwards'});
 }
 const curRow=()=>B.menu[B.cur]&&B.menu[B.cur].type!='divider'?B.rows[B.cur]:null;
+/* Garantit que la ligne selectionnee est TOUTE ENTIERE dans la zone visible.
+   L'ancien scrollIntoView({behavior:'smooth'}) est asynchrone : au rythme de
+   reponse des touches (85 ms), chaque nouvelle demande interrompt la
+   precedente et la liste ne rattrape jamais -> la selection sortait de l'ecran
+   et restait a moitie coupee. Ici le calcul est synchrone et deterministe. */
+function ensureVisible(el){
+  const L=B.list;if(!el||!L)return;
+  const t=el.offsetTop,b=t+el.offsetHeight,vt=L.scrollTop,vb=vt+L.clientHeight;
+  /* on ne scrolle QUE si la ligne deborde, et juste ce qu'il faut */
+  if(t<vt)L.scrollTop=t;
+  else if(b>vb)L.scrollTop=Math.max(0,b-L.clientHeight);
+}
 function refresh(){
   if(!live())return;
   renderItems();updCounter();
-  const el=curRow();if(el){moveHl(el.offsetTop);el.scrollIntoView({behavior:'smooth',block:'nearest'})}
+  const el=curRow();if(el){moveHl(el.offsetTop);ensureVisible(el)}
   bar();
 }
 const showMenu=()=>{present(B.slot,true,buildMenu,planMenu);refresh()};
