@@ -12,9 +12,9 @@
 ::-webkit-scrollbar{display:none;width:0;height:0}
 
 :root{
-  --accent-rgb:150,150,150;
-  --accent-light:208,208,208;
-  --line-rgb:208,208,208;
+  --accent-rgb:84,150,96;
+  --accent-light:178,208,183;
+  --line-rgb:178,208,183;
   --color-main:rgba(var(--accent-rgb),0.35);
   --color-border:rgba(var(--accent-rgb),0.35);
   --color-shadow:rgba(var(--accent-rgb),0.35);
@@ -22,21 +22,31 @@
   --color-notify-shadow:rgba(var(--accent-rgb),0.35);
   --color-mainSolid:rgb(var(--accent-rgb));
   --color-tab:rgba(var(--accent-rgb),0.35);
-  /* Fond quasi nul : le jeu se voit a travers. Il ne reste qu'un voile gris
-     tres leger, juste assez pour que le panneau existe sans etre opaque.
-     --bg-deep  = chrome (racine, onglets, fil d'Ariane, pied)
-     --bg-panel = zone de liste des items                                          */
-  /* SEUL LE FOND (la zone derriere la liste d'options) est translucide.
-     La barre d'onglets, le fil d'Ariane et le pied restent en noir plein :
-     ce sont des surfaces de navigation, pas du contenu a voir au travers.
-     La base (7,7,7) est quasi noire pour que ce fond reste sombre meme a
-     faible opacite — avec (38,38,38), un gris a 15 %, ca virait au lavis
-     clair et le texte devenait illisible sur une scene claire. */
-  --bg-deep:rgba(7,7,7,0.38);
-  --bg-panel:rgba(7,7,7,0.38);
-  --bg-chrome:#070707;
-  --text-primary:#fff;
-  --text-secondary:rgba(255,255,255,0.85);
+  /* ----- PALETTE DU MENU -----
+     Tout se calcule a partir d'UNE couleur, celle du menu (--accent-rgb), via
+     mnApplyColor() : meme famille de formules que le panneau de touche et les
+     notifications, donc changer la couleur du menu recolore tout d'un coup.
+     Les variables sont des triplets "r,g,b" : l'opacite se regle dans le CSS
+     avec rgba(var(--mn-x-rgb),alpha). Valeurs ci-dessous = repli (vert), elles
+     sont recalculees au chargement puis a chaque setMenuColor.
+       panel  = fond de la liste (couleur du menu assombrie)
+       head   = banniere, onglets, fil d'Ariane, pied (plus sombre)
+       text   = texte de la liste (blanc ou fonce selon le contraste)
+       htext  = texte des parties sombres (onglets, pied)
+       hi     = accent de la liste (selection, interrupteurs, icones)
+       on     = accent clair des parties sombres (onglet actif, curseur)
+       onfg   = texte pose SUR l'accent hi
+       border / rule = contour du panneau / filets sous les parties sombres */
+  --mn-panel-rgb:55,98,62;
+  --mn-head-rgb:32,57,36;
+  --mn-text-rgb:255,255,255;
+  --mn-htext-rgb:255,255,255;
+  --mn-hi-rgb:148,249,167;
+  --mn-on-rgb:148,249,167;
+  --mn-onfg-rgb:16,21,16;
+  --mn-border-rgb:178,208,183;
+  --mn-rule-rgb:204,224,207;
+  --mn-tshadow:0 0.1vh 0.25vh rgba(0,0,0,0.55);
   --item-height:3.2vh;
   --tabs-height:3.6vh;
   --banner-height:10vh;
@@ -45,32 +55,36 @@
 }
 
 /* ---------- conteneur ---------- */
-/* text-shadow herite a tous les descendants : indispensable une fois le fond
-   quasi transparent, sinon le texte blanc devient illisible sur une scene claire. */
-.menu-root{font-family:var(--font);color:var(--text-primary);position:fixed;width:34vh;z-index:1000;border-radius:0.8vh;background:var(--bg-deep);border:0.1vh solid rgba(255,255,255,0.16);box-shadow:0 1vh 3vh rgba(0,0,0,0.6);text-shadow:0 0.1vh 0.25vh rgba(0,0,0,0.92),0 0 0.45vh rgba(0,0,0,0.55)}
-.menu-banner{position:relative;border-radius:0.7vh 0.7vh 0 0;overflow:hidden;padding:0}
+/* Pas de fond sur la racine : la banniere, les onglets et le pied ont le ton
+   sombre (head), la liste a le ton translucide (panel). Un fond sur la racine
+   s'additionnerait a celui de la liste et la rendrait trop opaque.
+   Pas d'overflow:hidden non plus : la barre de defilement vit HORS du panneau. */
+.menu-root{font-family:var(--font);color:rgb(var(--mn-text-rgb));position:fixed;width:34vh;z-index:1000;border-radius:0.8vh;background:transparent;border:0.1vh solid rgba(var(--mn-border-rgb),0.35);box-shadow:0 0.35vh 1.4vh rgba(0,0,0,0.55);text-shadow:var(--mn-tshadow)}
+.menu-banner{position:relative;border-radius:0.7vh 0.7vh 0 0;overflow:hidden;padding:0;background:rgba(var(--mn-head-rgb),0.92)}
 .menu-banner img{width:100%;height:var(--banner-height);object-fit:cover;display:block}
-.menu-body{background:var(--bg-panel);overflow:hidden}
+/* filet sous la banniere, en pseudo-element : la hauteur de la banniere ne change pas */
+.menu-banner::after{content:"";position:absolute;left:0;right:0;bottom:0;height:0.07vh;background:rgba(var(--mn-rule-rgb),0.7)}
+.menu-body{background:rgba(var(--mn-panel-rgb),0.82);overflow:hidden}
 
 /* ---------- titre de page / fil d'Ariane (optionnel) ---------- */
-.menu-crumb{display:none;position:relative;align-items:center;justify-content:center;height:3.2vh;box-sizing:border-box;background:var(--bg-chrome);border-bottom:0.07vh solid rgba(var(--accent-rgb),0.5);z-index:2}
+.menu-crumb{display:none;position:relative;align-items:center;justify-content:center;height:3.2vh;box-sizing:border-box;background:rgba(var(--mn-head-rgb),0.92);border-bottom:0.07vh solid rgba(var(--mn-rule-rgb),0.7);z-index:2}
 .menu-crumb.on{display:flex}
-.crumb-title{font-size:1.35vh;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#fff}
-.crumb-parent{position:absolute;left:1.5vh;font-size:0.95vh;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.75)}
+.crumb-title{font-size:1.35vh;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:rgb(var(--mn-htext-rgb))}
+.crumb-parent{position:absolute;left:1.5vh;font-size:0.95vh;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:rgba(var(--mn-htext-rgb),0.72)}
 
-/* ---------- onglets : texte centré, soulignement d'accent sous l'onglet actif ---------- */
-.menu-tabs{display:flex;height:var(--tabs-height);box-sizing:border-box;background:var(--bg-chrome);overflow:hidden}
-.tab-item{flex:1;display:flex;align-items:center;justify-content:center;position:relative;font-size:1.2vh;font-weight:600;white-space:nowrap;color:rgba(255,255,255,0.85);user-select:none;border-bottom:0.3vh solid transparent;transition:color 0.2s ease,border-color 0.2s ease,box-shadow 0.2s ease}
-.tab-item.active{color:#fff;border-bottom-color:rgb(var(--accent-rgb));box-shadow:0 0.3vh 0.9vh -0.3vh rgba(var(--accent-rgb),0.7)}
+/* ---------- onglets : texte centré, soulignement clair sous l'onglet actif ---------- */
+.menu-tabs{display:flex;height:var(--tabs-height);box-sizing:border-box;background:rgba(var(--mn-head-rgb),0.92);border-bottom:0.07vh solid rgba(var(--mn-rule-rgb),0.7);overflow:hidden}
+.tab-item{flex:1;display:flex;align-items:center;justify-content:center;position:relative;font-size:1.2vh;font-weight:600;white-space:nowrap;color:rgba(var(--mn-htext-rgb),0.72);user-select:none;border-bottom:0.3vh solid transparent;transition:color 0.2s ease,border-color 0.2s ease,box-shadow 0.2s ease}
+.tab-item.active{color:rgb(var(--mn-htext-rgb));border-bottom-color:rgb(var(--mn-on-rgb));box-shadow:0 0.3vh 0.9vh -0.3vh rgba(var(--mn-on-rgb),0.7)}
 /* variante pilule (setTabStyle {style:'pill'}) */
 [data-tabs="pill"] .menu-tabs{padding:0.5vh 1vh}
 [data-tabs="pill"] .tab-item{text-transform:uppercase;letter-spacing:0.08em;font-size:1.05vh;border:0.1vh solid transparent;border-radius:2vh}
-[data-tabs="pill"] .tab-item.active{border-color:rgb(var(--accent-rgb));background:rgba(var(--accent-rgb),0.18);box-shadow:0 0 0.9vh rgba(var(--accent-rgb),0.45)}
+[data-tabs="pill"] .tab-item.active{border-color:rgb(var(--mn-on-rgb));background:rgba(var(--mn-on-rgb),0.18);box-shadow:0 0 0.9vh rgba(var(--mn-on-rgb),0.45)}
 
-/* ---------- barre de défilement ---------- */
+/* ---------- barre de défilement (hors du panneau, sur la scene : accent clair) ---------- */
 .menu-scrollbar{position:absolute;left:-1.2vh;top:calc(var(--banner-height) + var(--crumb-h) + var(--tabs-height) + 0.4vh);width:0.6vh;height:39vh;transition:opacity 0.3s cubic-bezier(0.4,0,0.2,1)}
-.scrollbar-track{width:100%;height:100%;background-color:rgba(0,0,0,0.8);border-radius:0.4vh;position:relative;transition:0.5s}
-.scrollbar-thumb{position:absolute;top:0;left:0;width:100%;background-color:var(--color-mainSolid);border-radius:0.2vh;transition:top 0.25s ease-out,height 0.25s ease-out;min-height:2vh}
+.scrollbar-track{width:100%;height:100%;background-color:rgba(var(--mn-head-rgb),0.85);border-radius:0.4vh;position:relative;transition:0.5s}
+.scrollbar-thumb{position:absolute;top:0;left:0;width:100%;background-color:rgb(var(--mn-on-rgb));border-radius:0.2vh;transition:top 0.25s ease-out,height 0.25s ease-out;min-height:2vh}
 
 /* ---------- liste ---------- */
 .menu-items{position:relative;max-height:calc(var(--item-height) * 12);overflow-y:auto;overflow-x:hidden;scrollbar-width:none;padding:0.6vh 0}
@@ -78,55 +92,54 @@
 /* etat "liste vide" : le cadre de selection flotte alors sur rien, on livre
    donc l'explication plutot qu'un panneau blanc avec 0/0. */
 .menu-empty{position:relative;z-index:1;display:flex;flex-direction:column;gap:0.35vh;align-items:center;text-align:center;padding:1.1vh 1.6vh}
-.menu-empty-title{font-size:1.15vh;font-weight:700;letter-spacing:0.08em;color:rgb(var(--accent-light))}
-.menu-empty-sub,.menu-empty-hint{font-size:1vh;font-weight:500;line-height:1.5;color:rgba(255,255,255,0.8)}
-/* sélection : fond marine à contour lumineux (défaut) ou dégradé plein (setSelectStyle {style:'gradient'}) */
+.menu-empty-title{font-size:1.15vh;font-weight:700;letter-spacing:0.08em;color:rgb(var(--mn-hi-rgb))}
+.menu-empty-sub,.menu-empty-hint{font-size:1vh;font-weight:500;line-height:1.5;color:rgba(var(--mn-text-rgb),0.8)}
+/* sélection : voile clair a contour lumineux (défaut) ou dégradé (setSelectStyle {style:'gradient'}) */
 .selection-highlight{position:absolute;left:0.6vh;right:0.6vh;height:var(--item-height);box-sizing:border-box;border-radius:0.5vh;
-  background:rgba(var(--accent-rgb),0.16);border:0.1vh solid rgba(var(--accent-rgb),0.9);box-shadow:0 0 1vh rgba(var(--accent-rgb),0.5);
+  background:rgba(var(--mn-hi-rgb),0.16);border:0.1vh solid rgba(var(--mn-hi-rgb),0.85);box-shadow:0 0 1vh rgba(var(--mn-hi-rgb),0.35);
   z-index:0;pointer-events:none;will-change:top;transform:translateZ(0)}
-[data-select="gradient"] .selection-highlight{left:0;right:0;border:none;border-radius:0;background:linear-gradient(90deg,rgba(var(--accent-rgb),0.95),rgba(var(--accent-rgb),0.5));box-shadow:inset 0.3vh 0 0 rgb(var(--accent-light))}
+[data-select="gradient"] .selection-highlight{left:0;right:0;border:none;border-radius:0;background:linear-gradient(90deg,rgba(var(--mn-hi-rgb),0.45),rgba(var(--mn-hi-rgb),0.1));box-shadow:inset 0.3vh 0 0 rgb(var(--mn-hi-rgb))}
 .menu-item{display:flex;justify-content:space-between;align-items:center;padding:0 1.7vh;height:var(--item-height);box-sizing:border-box;position:relative;z-index:1}
 .item-label{display:flex;align-items:center;gap:1vh;min-width:0;flex:1}
-.row-icon{font-size:1.6vh;width:1.8vh;color:rgb(var(--accent-light));flex-shrink:0;text-align:center}
-.menu-item .name{font-size:1.25vh;color:#fff;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.slider-val{color:rgba(255,255,255,0.95);font-size:1.1vh;font-weight:500}
+.row-icon{font-size:1.6vh;width:1.8vh;color:rgb(var(--mn-hi-rgb));flex-shrink:0;text-align:center}
+.menu-item .name{font-size:1.25vh;color:rgb(var(--mn-text-rgb));font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.slider-val{color:rgba(var(--mn-text-rgb),0.95);font-size:1.1vh;font-weight:500}
 .components-container{display:flex;align-items:center;gap:0.8vh;flex-shrink:0}
 .component{display:flex;align-items:center}
-.caret-icon{font-size:1.3vh;color:rgb(var(--accent-rgb))}
-.swatch{display:block;width:1.7vh;height:1.7vh;border-radius:0.45vh;box-shadow:inset 0 0 0 0.1vh rgba(255,255,255,0.18)}
+.caret-icon{font-size:1.3vh;color:rgb(var(--mn-hi-rgb))}
+.swatch{display:block;width:1.7vh;height:1.7vh;border-radius:0.45vh;box-shadow:inset 0 0 0 0.1vh rgba(var(--mn-text-rgb),0.3)}
 
-/* ---------- interrupteur ---------- */
+/* ---------- interrupteur : pastille eteinte (sombre) / allumee (accent + halo) ---------- */
 .toggle-switch{position:relative;display:inline-flex;align-items:center;cursor:pointer}
 .toggle-switch input{position:absolute;opacity:0;width:0;height:0}
-.toggle-track{display:block;width:3.4vh;height:1.7vh;background:#2a2b31;border-radius:1vh;position:relative;transition:background 0.22s ease,border-color 0.22s ease;border:0.1vh solid rgba(255,255,255,0.08);box-sizing:border-box}
-.toggle-thumb{position:absolute;top:50%;left:0.2vh;transform:translateY(-50%);width:1.2vh;height:1.2vh;border-radius:50%;background:#e6e7ea;transition:left 0.22s ease,background 0.22s ease}
-.toggle-switch input:checked ~ .toggle-track{background:rgb(var(--accent-rgb));border-color:transparent}
-.toggle-switch input:checked ~ .toggle-track .toggle-thumb{left:calc(100% - 1.2vh - 0.2vh);background:#fff}
-.menu-item.is-selected .toggle-switch input:checked ~ .toggle-track{background:rgba(255,255,255,0.6)}
+.toggle-track{display:block;width:3.4vh;height:1.7vh;background:rgba(var(--mn-text-rgb),0.16);border-radius:1vh;position:relative;transition:background 0.22s ease,border-color 0.22s ease,box-shadow 0.22s ease;border:0.1vh solid rgba(var(--mn-text-rgb),0.24);box-sizing:border-box}
+.toggle-thumb{position:absolute;top:50%;left:0.2vh;transform:translateY(-50%);width:1.2vh;height:1.2vh;border-radius:50%;background:rgba(var(--mn-text-rgb),0.72);transition:left 0.22s ease,background 0.22s ease}
+.toggle-switch input:checked ~ .toggle-track{background:rgb(var(--mn-hi-rgb));border-color:transparent;box-shadow:0 0 0.8vh rgba(var(--mn-hi-rgb),0.55)}
+.toggle-switch input:checked ~ .toggle-track .toggle-thumb{left:calc(100% - 1.2vh - 0.2vh);background:rgb(var(--mn-onfg-rgb))}
 
 /* ---------- slider ---------- */
 .range-component{position:relative;width:9vh;height:1.6vh;display:flex;align-items:center}
-.range-track{position:absolute;left:0;width:100%;height:0.35vh;background:rgba(255,255,255,0.28);border-radius:0.2vh;z-index:1}
-.range-fill{position:absolute;left:0;height:0.35vh;background:rgb(var(--accent-light));border-radius:0.2vh;z-index:2;pointer-events:none}
+.range-track{position:absolute;left:0;width:100%;height:0.35vh;background:rgba(var(--mn-text-rgb),0.28);border-radius:0.2vh;z-index:1}
+.range-fill{position:absolute;left:0;height:0.35vh;background:rgb(var(--mn-hi-rgb));border-radius:0.2vh;z-index:2;pointer-events:none}
 .range-component input[type="range"]{-webkit-appearance:none;appearance:none;position:relative;width:100%;height:0.35vh;background:transparent;outline:none;margin:0;padding:0;cursor:pointer;z-index:3}
-.range-component input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:1.25vh;height:1.25vh;border-radius:50%;background:#fff;box-shadow:0 0 0.1vh rgba(0,0,0,0.4);margin-top:-0.125vh;cursor:pointer}
-.range-component input[type="range"]::-moz-range-thumb{width:1.25vh;height:1.25vh;border-radius:50%;background:#fff;border:none;cursor:pointer}
+.range-component input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:1.25vh;height:1.25vh;border-radius:50%;background:rgb(var(--mn-text-rgb));box-shadow:0 0 0.1vh rgba(0,0,0,0.4);margin-top:-0.125vh;cursor:pointer}
+.range-component input[type="range"]::-moz-range-thumb{width:1.25vh;height:1.25vh;border-radius:50%;background:rgb(var(--mn-text-rgb));border:none;cursor:pointer}
 
 /* ---------- sélecteur - valeur - ---------- */
-.scroll-value{display:flex;align-items:center;gap:0.6vh;font-size:1.1vh;font-weight:700;letter-spacing:0.03em;color:rgba(255,255,255,0.85);max-width:17vh}
+.scroll-value{display:flex;align-items:center;gap:0.6vh;font-size:1.1vh;font-weight:700;letter-spacing:0.03em;color:rgba(var(--mn-text-rgb),0.72);max-width:17vh}
 .scroll-value .val{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .scroll-value .arrow{opacity:0.7}
-.menu-item.is-selected .scroll-value{color:#fff}
+.menu-item.is-selected .scroll-value{color:rgb(var(--mn-text-rgb))}
 
 /* ---------- séparateur : titre de section à gauche, filet qui s'estompe ---------- */
-.separator-container{display:flex;align-items:center;height:var(--item-height);padding:0 1.5vh;gap:1vh;box-sizing:border-box;background:rgba(var(--accent-rgb),0.14)}
+.separator-container{display:flex;align-items:center;height:var(--item-height);padding:0 1.5vh;gap:1vh;box-sizing:border-box;background:rgba(var(--mn-hi-rgb),0.14)}
 .separator-bar{display:none}
-.separator-bar:last-child{display:block;flex:1;height:0.07vh;background:linear-gradient(90deg,rgba(var(--accent-rgb),0.6),rgba(var(--accent-rgb),0))}
-.separator-text{color:rgb(var(--accent-light));font-size:1vh;font-weight:700;white-space:nowrap;letter-spacing:0.16em;text-transform:uppercase}
+.separator-bar:last-child{display:block;flex:1;height:0.07vh;background:linear-gradient(90deg,rgba(var(--mn-hi-rgb),0.6),rgba(var(--mn-hi-rgb),0))}
+.separator-text{color:rgb(var(--mn-hi-rgb));font-size:1vh;font-weight:700;white-space:nowrap;letter-spacing:0.16em;text-transform:uppercase}
 
 /* ---------- pied : logo | texte centré | compteur ---------- */
-.menu-footer{background:var(--bg-chrome);display:grid;grid-template-columns:auto 1fr auto;align-items:center;height:3.1vh;box-sizing:border-box;border-top:0.07vh solid rgba(255,255,255,0.06);border-radius:0 0 0.7vh 0.7vh;overflow:hidden}
-.footer-logo{display:flex;align-items:center;height:100%;padding:0 1.1vh;color:rgb(var(--accent-rgb));border-right:0.07vh solid rgba(255,255,255,0.15)}
+.menu-footer{background:rgba(var(--mn-head-rgb),0.92);display:grid;grid-template-columns:auto 1fr auto;align-items:center;height:3.1vh;box-sizing:border-box;border-top:0.07vh solid rgba(var(--mn-rule-rgb),0.7);border-radius:0 0 0.7vh 0.7vh;overflow:hidden}
+.footer-logo{display:flex;align-items:center;height:100%;padding:0 1.1vh;color:rgb(var(--mn-on-rgb));border-right:0.07vh solid rgba(var(--mn-htext-rgb),0.14)}
 /* Bas a gauche : volontairement vide. L'emplacement n'accueille un logo que
    si une URL est explicitement fournie via FOOTER_LOGO_URL dans menu.lua ;
    aucun contenu par defaut (ni hexagone, ni nom, ni marque).
@@ -138,8 +151,8 @@
    rend le noir entierement transparent, donc le cadre du fichier disparait
    sur le pied et seul le lettrage subsiste. */
 .footer-logo img{height:2.2vh;width:auto;display:block;mix-blend-mode:screen}
-.footer-brand{text-align:center;font-size:1.05vh;font-weight:500;color:rgb(var(--accent-rgb));white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 1vh}
-.footer-counter{display:flex;align-items:center;height:100%;padding:0 1.2vh;font-size:1vh;font-weight:500;color:var(--text-secondary);border-left:0.07vh solid rgba(255,255,255,0.15)}
+.footer-brand{text-align:center;font-size:1.05vh;font-weight:500;color:rgb(var(--mn-on-rgb));white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 1vh}
+.footer-counter{display:flex;align-items:center;height:100%;padding:0 1.2vh;font-size:1vh;font-weight:500;color:rgba(var(--mn-htext-rgb),0.72);border-left:0.07vh solid rgba(var(--mn-htext-rgb),0.14)}
 
 /* ---------- saisie ---------- */
 .input-overlay{position:fixed;top:0;left:0;transform:none;width:100%;height:100%;background:rgb(0,0,0,0.5);z-index:999999;color:white;font-weight:500;font-family:var(--font);font-size:1.2vh}
@@ -249,37 +262,37 @@ ul{list-style-type:disc}
    Carte d'infos qui apparait quand la selection du menu se pose sur un
    joueur de la liste. Tout le contenu vient de Lua : ce bloc ne fait que
    le poser a l'ecran. pointer-events:none, elle ne doit jamais capter un
-   clic ni bloquer le menu. */
-.jul-pcard{position:fixed;right:1.6vh;top:50%;transform:translateY(-50%);width:25vh;box-sizing:border-box;padding:0.9vh;display:flex;flex-direction:column;gap:0.6vh;font-family:var(--font);pointer-events:none;z-index:9997;border-radius:0.9vh;background:rgba(11,13,18,0.95);border:0.1vh solid rgba(255,255,255,0.13);box-shadow:0 1vh 3vh rgba(0,0,0,0.7)}
-.jul-pc-head{display:flex;align-items:center;gap:0.7vh;padding:0.15vh 0.15vh 0.6vh;border-bottom:0.14vh solid rgb(var(--accent-rgb))}
-.jul-pc-av{width:2.9vh;height:2.9vh;border-radius:0.5vh;background:rgb(var(--accent-rgb));display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.6vh;flex-shrink:0}
-.jul-pc-title{flex:1;font-size:1.18vh;font-weight:800;letter-spacing:0.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.jul-pc-title .w{color:#fff}
-.jul-pc-title .a{color:rgb(var(--accent-rgb))}
-.jul-pc-dots{color:rgba(255,255,255,0.55);font-size:1.5vh;line-height:1;flex-shrink:0}
-.jul-pc-sec{background:rgba(255,255,255,0.045);border:0.1vh solid rgba(255,255,255,0.07);border-radius:0.65vh;padding:0.15vh 0.75vh}
-.jul-pc-row{display:flex;align-items:center;gap:0.6vh;font-size:1.02vh;line-height:2.05;border-bottom:0.07vh solid rgba(255,255,255,0.06)}
+   clic ni bloquer le menu. Couleurs : meme palette que le menu (--mn-*). */
+.jul-pcard{position:fixed;right:1.6vh;top:50%;transform:translateY(-50%);width:25vh;box-sizing:border-box;padding:0.9vh;display:flex;flex-direction:column;gap:0.6vh;font-family:var(--font);color:rgb(var(--mn-text-rgb));text-shadow:var(--mn-tshadow);pointer-events:none;z-index:9997;border-radius:0.8vh;background:rgba(var(--mn-panel-rgb),0.88);border:0.1vh solid rgba(var(--mn-border-rgb),0.35);box-shadow:0 0.35vh 1.4vh rgba(0,0,0,0.55)}
+.jul-pc-head{display:flex;align-items:center;gap:0.7vh;padding:0.15vh 0.15vh 0.6vh;border-bottom:0.14vh solid rgb(var(--mn-hi-rgb))}
+.jul-pc-av{width:2.9vh;height:2.9vh;border-radius:0.5vh;background:rgba(var(--mn-head-rgb),0.92);border:0.1vh solid rgba(var(--mn-rule-rgb),0.7);box-sizing:border-box;display:flex;align-items:center;justify-content:center;color:rgb(var(--mn-on-rgb));font-size:1.6vh;flex-shrink:0}
+.jul-pc-title{flex:1;font-size:1.18vh;font-weight:700;letter-spacing:0.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.jul-pc-title .w{color:rgb(var(--mn-text-rgb))}
+.jul-pc-title .a{color:rgb(var(--mn-hi-rgb))}
+.jul-pc-dots{color:rgba(var(--mn-text-rgb),0.55);font-size:1.5vh;line-height:1;flex-shrink:0}
+.jul-pc-sec{background:rgba(var(--mn-text-rgb),0.06);border:0.1vh solid rgba(var(--mn-text-rgb),0.12);border-radius:0.65vh;padding:0.15vh 0.75vh}
+.jul-pc-row{display:flex;align-items:center;gap:0.6vh;font-size:1.02vh;line-height:2.05;border-bottom:0.07vh solid rgba(var(--mn-text-rgb),0.1)}
 .jul-pc-sec .jul-pc-row:last-child,.jul-pc-stat .jul-pc-row:last-child{border-bottom:none}
-.jul-pc-row i{color:rgb(var(--accent-light));font-size:1.25vh;width:1.35vh;text-align:center;flex-shrink:0}
-.jul-pc-row .k{flex:1;color:rgba(255,255,255,0.94)}
-.jul-pc-row .v{color:#fff;font-weight:700;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:13vh}
-.v-accent{color:rgb(var(--accent-rgb))!important}
+.jul-pc-row i{color:rgb(var(--mn-hi-rgb));font-size:1.25vh;width:1.35vh;text-align:center;flex-shrink:0}
+.jul-pc-row .k{flex:1;color:rgba(var(--mn-text-rgb),0.85)}
+.jul-pc-row .v{color:rgb(var(--mn-text-rgb));font-weight:700;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:13vh}
+.v-accent{color:rgb(var(--mn-hi-rgb))!important}
 .v-hp{color:#3ddc68!important}
-.v-ap{color:rgb(var(--accent-rgb))!important}
-.jul-pc-stat{background:rgba(255,255,255,0.045);border:0.1vh solid rgba(255,255,255,0.07);border-radius:0.65vh;padding:0.15vh 0.75vh;display:flex;flex-direction:column}
+.v-ap{color:rgb(var(--mn-hi-rgb))!important}
+.jul-pc-stat{background:rgba(var(--mn-text-rgb),0.06);border:0.1vh solid rgba(var(--mn-text-rgb),0.12);border-radius:0.65vh;padding:0.15vh 0.75vh;display:flex;flex-direction:column}
 .jul-pc-stat .jul-pc-row .k{flex:0 0 auto;margin-right:0.5vh}
 .jul-pc-row .vnum{font-weight:700;flex-shrink:0;margin-right:0.6vh}
-.jul-pc-track{flex:1;min-width:2.5vh;height:0.5vh;border-radius:0.35vh;background:rgba(255,255,255,0.16);overflow:hidden}
+.jul-pc-track{flex:1;min-width:2.5vh;height:0.5vh;border-radius:0.35vh;background:rgba(var(--mn-text-rgb),0.16);overflow:hidden}
 .jul-pc-fill{display:block;height:100%;border-radius:0.3vh;width:0%;transition:width .25s linear}
 .jul-pc-hp{background:linear-gradient(90deg,#2ecc5e,#7ef0a2)}
-.jul-pc-ap{background:linear-gradient(90deg,rgb(var(--accent-rgb)),rgb(var(--accent-light)))}
+.jul-pc-ap{background:linear-gradient(90deg,rgba(var(--mn-hi-rgb),0.7),rgb(var(--mn-hi-rgb)))}
 </style>
 </head>
 <body>
 <div id="app"></div>
 <script>
 (()=>{
-console.log('[JuL menu] version v12 (style wave : icones, double chevron, onglets soulignes)');
+console.log('[JuL menu] version v13 (style vert translucide : toutes les couleurs derivees de la couleur du menu)');
 const app=document.getElementById('app');
 const $=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
 const clamp=(n,a=0,b=100)=>Math.max(a,Math.min(b,n));
@@ -795,6 +808,39 @@ function ntApplyColor(r,g,b){
   s.setProperty('--nt-text-off',kbRgba(text,0.72));
   s.setProperty('--nt-on',kbRgba(on));
 }
+/* Palette du MENU PRINCIPAL (et de la fiche joueur) : memes formules que
+   kbApplyColor / ntApplyColor, donc tout reste assorti.
+   Chaque variable est un triplet "r,g,b" ; l'opacite est reglee dans le CSS. */
+function mnTextFor(bg){
+  /* blanc ou fonce, selon le meilleur contraste avec le fond */
+  const a=bg.map(v=>{v/=255;return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4)});
+  const L=0.2126*a[0]+0.7152*a[1]+0.0722*a[2];
+  return (1.05/(L+0.05))>=((L+0.05)/0.057)?[255,255,255]:[16,21,16];
+}
+function mnApplyColor(r,g,b){
+  const main=[r,g,b],black=[0,0,0],white=[255,255,255];
+  const panel=kbMix(main,black,0.35),head=kbMix(main,black,0.62);
+  const hsl=ntHsl(main);
+  /* accent clair : teinte du menu, tres lumineuse. Gris -> gris clair neutre
+     (forcer la saturation donnerait du rose). */
+  const on=hsl[1]<0.15?kbMix(main,white,0.75):ntHslRgb(hsl[0],Math.min(1,Math.max(0.9,hsl[1])),0.78);
+  const text=mnTextFor(panel),htext=mnTextFor(head);
+  /* menu tres clair : le texte de la liste devient fonce, l'accent aussi
+     (un accent clair disparaitrait sur un fond clair) */
+  const hi=text[0]===255?on:kbMix(main,black,0.75);
+  const t=c=>c.join(','),s=document.documentElement.style;
+  s.setProperty('--mn-panel-rgb',t(panel));
+  s.setProperty('--mn-head-rgb',t(head));
+  s.setProperty('--mn-text-rgb',t(text));
+  s.setProperty('--mn-htext-rgb',t(htext));
+  s.setProperty('--mn-hi-rgb',t(hi));
+  s.setProperty('--mn-on-rgb',t(on));
+  s.setProperty('--mn-onfg-rgb',t(mnTextFor(hi)));
+  s.setProperty('--mn-border-rgb',t(kbMix(main,white,0.55)));
+  s.setProperty('--mn-rule-rgb',t(kbMix(main,white,0.7)));
+  /* l'ombre du texte sert a le detacher d'un fond clair/mouvant ; sur texte fonce elle salirait */
+  s.setProperty('--mn-tshadow',text[0]===255?'0 0.1vh 0.25vh rgba(0,0,0,0.55)':'none');
+}
 function ntSchedule(t){
   if(!(t.remaining>0))return;
   t.startedAt=Date.now();
@@ -848,7 +894,8 @@ function notify(header,message,duration,type){
   while(ids.length>NT_MAX)dismissNt(ids.shift());
   return id;
 }
-ntApplyColor(150,150,150);
+/* defaut = le vert de reference ; le Lua le remplace via setMenuColor */
+ntApplyColor(84,150,96);mnApplyColor(84,150,96);
 
 /* ================= MESSAGES DU JEU ================= */
 addEventListener('message',e=>{
@@ -871,11 +918,13 @@ addEventListener('message',e=>{
       if(live()){B.root.style.left=B.left;B.root.style.top=B.top;positionPlayerCard()}break;
     case 'setBanner':if(d.url){B.banner=d.url;if(live())B.img.src=d.url}break;
     case 'setMenuColor':{
-      const r=d.r??150,g=d.g??150,b=d.b??150,s=document.documentElement.style;
+      /* canal invalide ou absent -> 150 ; borne a 0..255 pour que toutes les nuances restent calculables */
+      const ch=v=>{const n=Math.round(Number(v));return isFinite(n)?clamp(n,0,255):150};
+      const r=ch(d.r),g=ch(d.g),b=ch(d.b),s=document.documentElement.style;
       const lt=v=>Math.round(v+(255-v)*0.55);
       s.setProperty('--accent-rgb',`${r},${g},${b}`);
       s.setProperty('--accent-light',`${lt(r)},${lt(g)},${lt(b)}`);s.setProperty('--line-rgb',`${lt(r)},${lt(g)},${lt(b)}`);
-      kbApplyColor(r,g,b);ntApplyColor(r,g,b);break}
+      kbApplyColor(r,g,b);ntApplyColor(r,g,b);mnApplyColor(r,g,b);break}
     case 'setBreadcrumb':B.crumb=Array.isArray(d.parts)?d.parts:(d.path?String(d.path).split('>').map(s=>s.trim()):[]);renderCrumb();break;
     case 'setTabStyle':document.documentElement.dataset.tabs=d.style||'';break;
     case 'setSelectStyle':document.documentElement.dataset.select=d.style||'';break;
@@ -937,7 +986,10 @@ if(location.protocol==='file:'){
       {type:'submenu',label:'Online',icon:'ph-hard-drives'},
       {type:'submenu',label:'Vehicle',icon:'ph-car'},
       {type:'submenu',label:'World',icon:'ph-globe'},
+      {type:'divider',label:'Options'},
       {type:'checkbox',label:'Show Keybinds',icon:'ph-keyboard',checked:true},
+      {type:'checkbox',label:'Show Spectators',icon:'ph-eye',checked:false},
+      {type:'color',label:'Accent',icon:'ph-paint-bucket',color:'#549660'},
       {type:'slider',label:'Opacity',icon:'ph-circle-half',value:60,min:0,max:100,step:1},
       {type:'scroll',label:'Theme',icon:'ph-palette',options:[{label:'Dark'},{label:'Light'},{label:'Auto'}],selected:1},
       {type:'button',label:'Search',icon:'ph-list-magnifying-glass'}
