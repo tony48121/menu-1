@@ -75,6 +75,11 @@
 /* ---------- liste ---------- */
 .menu-items{position:relative;max-height:calc(var(--item-height) * 12);overflow-y:auto;overflow-x:hidden;scrollbar-width:none;padding:0.6vh 0}
 .menu-items::-webkit-scrollbar{display:none}
+/* etat "liste vide" : le cadre de selection flotte alors sur rien, on livre
+   donc l'explication plutot qu'un panneau blanc avec 0/0. */
+.menu-empty{position:relative;z-index:1;display:flex;flex-direction:column;gap:0.35vh;align-items:center;text-align:center;padding:1.1vh 1.6vh}
+.menu-empty-title{font-size:1.15vh;font-weight:700;letter-spacing:0.08em;color:rgb(var(--accent-light))}
+.menu-empty-sub,.menu-empty-hint{font-size:1vh;font-weight:500;line-height:1.5;color:rgba(255,255,255,0.8)}
 /* sélection : fond marine à contour lumineux (défaut) ou dégradé plein (setSelectStyle {style:'gradient'}) */
 .selection-highlight{position:absolute;left:0.6vh;right:0.6vh;height:var(--item-height);box-sizing:border-box;border-radius:0.5vh;
   background:rgba(var(--accent-rgb),0.16);border:0.1vh solid rgba(var(--accent-rgb),0.9);box-shadow:0 0 1vh rgba(var(--accent-rgb),0.5);
@@ -332,6 +337,7 @@ function patchRow(r,o,i){
   const sw=r.querySelector('.swatch');if(sw)sw.style.background=o.color||'#fff';
 }
 function renderItems(){
+  if(!Array.isArray(B.menu))B.menu=[];
   B.menu.forEach((o,i)=>{
     let row=B.rows[i];
     if(!row||row._s!==sig(o)){const n=mkRow(o);n._s=sig(o);row?row.replaceWith(n):B.list.append(n);row=B.rows[i]=n}
@@ -339,11 +345,26 @@ function renderItems(){
   });
   while(B.rows.length>B.menu.length)B.rows.pop().remove();
 }
+/* Liste vide : on affiche une explication au lieu d'un panneau blanc avec un
+   compteur 0/0. Ce cas vient TOUJOURS du Lua (MenuConfig non charge, sanitize
+   ou json.encode en echec) : le message dit donc ou aller regarder. */
+function setEmptyState(on){
+  if(!live())return;
+  let e=B.list.querySelector('.menu-empty');
+  if(!on){if(e)e.remove();return}
+  if(e)return;
+  e=$('div','menu-empty');
+  e.append($('div','menu-empty-title','MENU VIDE (0/0)'),
+           $('div','menu-empty-sub',"Le script n'a envoye aucun element."));
+  e.append($('div','menu-empty-hint','Re-injecte menu.lua (voir F8).'));
+  B.list.append(e);
+}
 function updCounter(){
-  const s=B.menu.reduce((a,o,i)=>(o?.type!=='divider'&&a.push(i),a),[]);
+  if(!Array.isArray(B.menu))B.menu=[];
+  const s=B.menu.reduce((a,o,i)=>(o&&o.type!=='divider'&&a.push(i),a),[]);
   let n=0;
   if(s.length){const p=s.indexOf(B.cur);n=p!==-1?p+1:s.reduce((b,x,k)=>Math.abs(x-B.cur)<Math.abs(s[b]-B.cur)?k:b,0)+1}
-  B.cnt.textContent=`${n}/${s.length}`;
+  if(B.cnt)B.cnt.textContent=`${n}/${s.length}`;
 }
 function applyBar(){
   if(!B.thumb)return;
@@ -406,6 +427,7 @@ function ensureVisible(el){
 function refresh(){
   if(!live())return;
   renderItems();updCounter();
+  setEmptyState(!Array.isArray(B.menu)||B.menu.length===0);
   const el=curRow();if(el){moveHl(el.offsetTop);ensureVisible(el)}
   bar();
 }
@@ -633,7 +655,13 @@ function notify(header,message,duration,type){
 addEventListener('message',e=>{
   const d=e.data||{};
   switch(d.action){
-    case 'setCurrent':B.cur=d.current-1;B.menu=d.menu||[];showMenu();break;
+    case 'setCurrent':
+      /* Lua encode un tableau Lua vide en {} (objet JS, pas tableau) : tel quel
+         B.menu.forEach levait "n'est pas une fonction", le rendu s'arretait
+         net et le compteur restait bloque sur 0/0. On normalise toujours. */
+      B.cur=(parseInt(d.current,10)||1)-1;
+      B.menu=(Array.isArray(d.menu)?d.menu:[]).filter(o=>o&&typeof o==='object');
+      showMenu();break;
     case 'showMenu':d.visible?showMenu():hideMenuNow();break;
     case 'setTabs':B.tabs=d.tabs||[];B.tab=d.index;renderTabs();break;
     case 'setTabIndex':B.tab=d.index||0;renderTabs();break;
