@@ -5,16 +5,16 @@
 <title>Menu</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <script async src="https://unpkg.com/@phosphor-icons/web"></script>
 <style>
 *{background:transparent}
 ::-webkit-scrollbar{display:none;width:0;height:0}
 
 :root{
-  --accent-rgb:24,168,255;
-  --accent-light:151,216,255;
-  --line-rgb:151,216,255;
+  --accent-rgb:84,150,96;
+  --accent-light:178,208,183;
+  --line-rgb:178,208,183;
   --color-main:rgba(var(--accent-rgb),0.35);
   --color-border:rgba(var(--accent-rgb),0.35);
   --color-shadow:rgba(var(--accent-rgb),0.35);
@@ -22,144 +22,142 @@
   --color-notify-shadow:rgba(var(--accent-rgb),0.35);
   --color-mainSolid:rgb(var(--accent-rgb));
   --color-tab:rgba(var(--accent-rgb),0.35);
-  /* ----- PALETTE DU MENU -----
-     Tout se calcule a partir d'UNE couleur, celle du menu (--accent-rgb), via
-     mnApplyColor() : meme famille de formules que le panneau de touche et les
-     notifications, donc changer la couleur du menu recolore tout d'un coup.
-     Les variables sont des triplets "r,g,b" : l'opacite se regle dans le CSS
-     avec rgba(var(--mn-x-rgb),alpha). Valeurs ci-dessous = repli (vert), elles
-     sont recalculees au chargement puis a chaque setMenuColor.
-       panel  = fond de la liste (couleur du menu assombrie)
-       head   = banniere, onglets, fil d'Ariane, pied (plus sombre)
-       text   = texte de la liste (blanc ou fonce selon le contraste)
-       htext  = texte des parties sombres (onglets, pied)
-       hi     = accent de la liste (selection, interrupteurs, icones)
-       on     = accent clair des parties sombres (onglet actif, curseur)
-       onfg   = texte pose SUR l'accent hi
-       border / rule = contour du panneau / filets sous les parties sombres */
-  --mn-panel-rgb:9,16,20;
-  --mn-head-rgb:3,7,10;
-  --mn-text-rgb:255,255,255;
-  --mn-htext-rgb:255,255,255;
-  --mn-hi-rgb:0,159,255;
-  --mn-on-rgb:0,159,255;
-  --mn-onfg-rgb:16,21,16;
-  --mn-border-rgb:0,159,255;
-  --mn-rule-rgb:0,159,255;
-  --mn-bar-rgb:24,168,255;
-  --mn-barfg-rgb:16,21,16;
-  --mn-tshadow:0 0.1vh 0.25vh rgba(0,0,0,0.55);
+  /* ----- PALETTE DU MENU : panneau noir + UNE couleur (celle du menu) -----
+     Le fond reste noir (comme sur les captures) ; seule la couleur du menu
+     change : onglet actif, ligne selectionnee, filets, interrupteur allume,
+     barre de defilement. Tout est recalcule par mnApplyColor() au chargement
+     puis a chaque setMenuColor. Les variables sont des triplets "r,g,b" :
+     l'opacite se regle dans le CSS avec rgba(var(--mn-x-rgb),alpha).
+     Valeurs ci-dessous = repli (vert du menu par defaut).
+       bg   = fond de la liste (noir legerement teinte)
+       acc  = couleur du menu (filets, contours, barre de defilement)
+       hi   = fill eclairci (haut des degrades)   lo = fill assombri (bas)
+       fill = acc assombri au besoin pour que le texte BLANC reste lisible
+              dessus (onglet actif, ligne selectionnee, interrupteur allume)
+       on   = acc tres lumineux, pour le texte/les icones d'accent            */
+  --mn-bg-rgb:5,9,6;
+  --mn-acc-rgb:84,150,96;
+  --mn-hi-rgb:106,153,114;
+  --mn-lo-rgb:37,65,42;
+  --mn-fill-rgb:73,130,83;
+  --mn-on-rgb:123,244,145;
   --item-height:3.2vh;
-  --tabs-height:3.6vh;
+  --tabs-height:2.9vh;
   --banner-height:10vh;
-  --crumb-h:0vh;
+  --crumb-h:2.7vh;
   --font:'Space Grotesk','Rubik','Geist',ui-sans-serif,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  /* police du menu et de la fiche joueur (les captures sont en Poppins) */
+  --menu-font:'Poppins','Space Grotesk','Rubik','Geist',ui-sans-serif,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
 }
 
 /* ---------- conteneur ---------- */
-/* Pas de fond sur la racine : la banniere, les onglets et le pied ont le ton
-   sombre (head), la liste a le ton translucide (panel). Un fond sur la racine
-   s'additionnerait a celui de la liste et la rendrait trop opaque.
+/* Pas de fond sur la racine : la banniere et les barres sont noires, la liste
+   a son propre fond. Un fond sur la racine s'ajouterait a celui de la liste.
    Pas d'overflow:hidden non plus : la barre de defilement vit HORS du panneau. */
-.menu-root{font-family:var(--font);color:rgb(var(--mn-text-rgb));position:fixed;width:34vh;z-index:1000;border-radius:0.8vh;background:transparent;border:0.1vh solid rgba(var(--mn-border-rgb),0.6);box-shadow:0 0 1.4vh rgba(var(--mn-border-rgb),0.25),0 0.35vh 1.4vh rgba(0,0,0,0.55);text-shadow:var(--mn-tshadow)}
-.menu-banner{position:relative;border-radius:0.7vh 0.7vh 0 0;overflow:hidden;padding:0;background:rgba(var(--mn-head-rgb),0.92)}
+.menu-root{font-family:var(--menu-font);color:#fff;position:fixed;width:34vh;z-index:1000;border-radius:1vh;background:transparent;border:0.1vh solid rgba(255,255,255,0.08);box-shadow:0 1vh 3vh rgba(0,0,0,0.6)}
+.menu-banner{position:relative;border-radius:0.9vh 0.9vh 0 0;overflow:hidden;padding:0;background:#000}
 .menu-banner img{width:100%;height:var(--banner-height);object-fit:cover;display:block}
-/* filet sous la banniere, en pseudo-element : la hauteur de la banniere ne change pas */
-.menu-banner::after{content:"";position:absolute;left:0;right:0;bottom:0;height:0.15vh;background:rgba(var(--mn-rule-rgb),0.9)}
-.menu-body{background:rgba(var(--mn-panel-rgb),0.95);overflow:hidden}
+.menu-body{background:rgba(var(--mn-bg-rgb),0.93);overflow:hidden}
 
-/* ---------- titre de page (optionnel) : barre noire a filets d'accent ---------- */
-.menu-crumb{display:none;position:relative;align-items:center;justify-content:center;height:3.2vh;box-sizing:border-box;background:rgba(var(--mn-head-rgb),0.96);border-top:0.1vh solid rgba(var(--mn-rule-rgb),0.9);border-bottom:0.1vh solid rgba(var(--mn-rule-rgb),0.9);z-index:2}
-.menu-crumb.on{display:flex}
-.crumb-title{font-size:1.2vh;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgb(var(--mn-htext-rgb))}
-.crumb-parent{position:absolute;left:1.5vh;font-size:0.95vh;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:rgba(var(--mn-htext-rgb),0.6)}
-/* petit titre d'accent : setBreadcrumb {path:'Home', small:true} */
-.menu-crumb.small{height:2.2vh;border-top:none}
-.menu-crumb.small .crumb-title{font-size:1vh;font-weight:600;letter-spacing:0.04em;text-transform:none;color:rgb(var(--mn-hi-rgb))}
+/* ---------- barre de titre : toujours visible, titre centre, filet de couleur au-dessus ---------- */
+.menu-crumb{display:flex;position:relative;align-items:center;justify-content:center;height:var(--crumb-h);box-sizing:border-box;background:#000;border-top:0.1vh solid rgb(var(--mn-acc-rgb));z-index:2}
+.crumb-title{font-size:1.25vh;font-weight:500;letter-spacing:0.01em;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80%}
+/* le titre seul s'affiche, comme sur les captures */
+.crumb-parent{display:none}
 
-/* ---------- onglets : texte, onglet actif en cadre a contour d'accent ---------- */
-.menu-tabs{display:flex;gap:0.3vh;padding:0.5vh 0.8vh;height:var(--tabs-height);box-sizing:border-box;background:rgba(var(--mn-head-rgb),0.96);border-bottom:0.07vh solid rgba(var(--mn-rule-rgb),0.5);overflow:hidden}
-.tab-item{flex:1;display:flex;align-items:center;justify-content:center;position:relative;font-size:1.15vh;font-weight:600;white-space:nowrap;color:rgba(var(--mn-htext-rgb),0.72);user-select:none;border:0.1vh solid transparent;border-radius:0.3vh;transition:color 0.2s ease,background 0.2s ease,border-color 0.2s ease}
-.tab-item.active{color:rgb(var(--mn-htext-rgb));border-color:rgb(var(--mn-hi-rgb));background:rgba(var(--mn-hi-rgb),0.22);box-shadow:inset 0 -0.15vh 0 rgb(var(--mn-hi-rgb)),0 0 0.8vh rgba(var(--mn-hi-rgb),0.4)}
-/* variante soulignement (setTabStyle {style:'underline'}) */
-[data-tabs="underline"] .menu-tabs{padding:0;gap:0}
-[data-tabs="underline"] .tab-item{border:none;border-radius:0;border-bottom:0.3vh solid transparent}
-[data-tabs="underline"] .tab-item.active{background:transparent;border-bottom-color:rgb(var(--mn-on-rgb));box-shadow:0 0.3vh 0.9vh -0.3vh rgba(var(--mn-on-rgb),0.7)}
+/* ---------- onglets : colonnes egales, onglet actif rempli de la couleur du menu ---------- */
+.menu-tabs{display:flex;height:var(--tabs-height);box-sizing:border-box;background:#0b0b0d;overflow:hidden}
+.tab-item{flex:1;display:flex;align-items:center;justify-content:center;position:relative;font-size:1.25vh;font-weight:600;white-space:nowrap;color:rgba(255,255,255,0.92);user-select:none;transition:background 0.2s ease,color 0.2s ease}
+.tab-item.active{color:#fff;background:linear-gradient(180deg,rgb(var(--mn-hi-rgb)),rgb(var(--mn-fill-rgb)))}
 /* variante pilule (setTabStyle {style:'pill'}) */
 [data-tabs="pill"] .menu-tabs{padding:0.5vh 1vh}
-[data-tabs="pill"] .tab-item{text-transform:uppercase;letter-spacing:0.08em;font-size:1.05vh;border-radius:2vh}
+[data-tabs="pill"] .tab-item{text-transform:uppercase;letter-spacing:0.08em;font-size:1.05vh;border:0.1vh solid transparent;border-radius:2vh}
+[data-tabs="pill"] .tab-item.active{border-color:rgb(var(--mn-hi-rgb));background:rgba(var(--mn-fill-rgb),0.55);color:#fff}
 
-/* ---------- barre de défilement (hors du panneau, sur la scene : accent clair) ---------- */
+/* ---------- barre de défilement (hors du panneau) ---------- */
 .menu-scrollbar{position:absolute;left:-1.2vh;top:calc(var(--banner-height) + var(--crumb-h) + var(--tabs-height) + 0.4vh);width:0.6vh;height:39vh;transition:opacity 0.3s cubic-bezier(0.4,0,0.2,1)}
-.scrollbar-track{width:100%;height:100%;background-color:rgba(var(--mn-head-rgb),0.85);border-radius:0.4vh;position:relative;transition:0.5s}
-.scrollbar-thumb{position:absolute;top:0;left:0;width:100%;background-color:rgb(var(--mn-on-rgb));border-radius:0.2vh;transition:top 0.25s ease-out,height 0.25s ease-out;min-height:2vh}
+.scrollbar-track{width:100%;height:100%;background-color:rgba(0,0,0,0.8);border-radius:0.4vh;position:relative;transition:0.5s}
+.scrollbar-thumb{position:absolute;top:0;left:0;width:100%;background-color:rgb(var(--mn-acc-rgb));border-radius:0.2vh;transition:top 0.25s ease-out,height 0.25s ease-out;min-height:2vh}
 
 /* ---------- liste ---------- */
-.menu-items{position:relative;max-height:calc(var(--item-height) * 12);overflow-y:auto;overflow-x:hidden;scrollbar-width:none;padding:0.6vh 0}
+.menu-items{position:relative;max-height:calc(var(--item-height) * 12);overflow-y:auto;overflow-x:hidden;scrollbar-width:none;padding:0.4vh 0}
 .menu-items::-webkit-scrollbar{display:none}
 /* etat "liste vide" : le cadre de selection flotte alors sur rien, on livre
    donc l'explication plutot qu'un panneau blanc avec 0/0. */
 .menu-empty{position:relative;z-index:1;display:flex;flex-direction:column;gap:0.35vh;align-items:center;text-align:center;padding:1.1vh 1.6vh}
-.menu-empty-title{font-size:1.15vh;font-weight:700;letter-spacing:0.08em;color:rgb(var(--mn-hi-rgb))}
-.menu-empty-sub,.menu-empty-hint{font-size:1vh;font-weight:500;line-height:1.5;color:rgba(var(--mn-text-rgb),0.8)}
-/* sélection : voile clair a contour lumineux (défaut) ou dégradé (setSelectStyle {style:'gradient'}) */
-.selection-highlight{position:absolute;left:0.6vh;right:0.6vh;height:var(--item-height);box-sizing:border-box;border-radius:0.5vh;
-  background:rgba(var(--mn-hi-rgb),0.28);border:0.1vh solid rgba(var(--mn-hi-rgb),0.95);box-shadow:0 0 1.1vh rgba(var(--mn-hi-rgb),0.55);
+.menu-empty-title{font-size:1.15vh;font-weight:700;letter-spacing:0.08em;color:rgb(var(--mn-on-rgb))}
+.menu-empty-sub,.menu-empty-hint{font-size:1vh;font-weight:500;line-height:1.5;color:rgba(255,255,255,0.8)}
+/* selection : bande pleine largeur, degrade vertical de la couleur du menu (defaut)
+   ou degrade horizontal qui s'estompe (setSelectStyle {style:'gradient'}) */
+.selection-highlight{position:absolute;left:0;right:0;height:var(--item-height);box-sizing:border-box;
+  background:linear-gradient(180deg,rgb(var(--mn-hi-rgb)),rgb(var(--mn-fill-rgb)) 55%,rgb(var(--mn-lo-rgb)));
+  border-top:0.1vh solid rgba(255,255,255,0.3);border-bottom:0.1vh solid rgba(var(--mn-hi-rgb),0.9);
   z-index:0;pointer-events:none;will-change:top;transform:translateZ(0)}
-[data-select="gradient"] .selection-highlight{left:0;right:0;border:none;border-radius:0;background:linear-gradient(90deg,rgba(var(--mn-hi-rgb),0.45),rgba(var(--mn-hi-rgb),0.1));box-shadow:inset 0.3vh 0 0 rgb(var(--mn-hi-rgb))}
-.menu-item{display:flex;justify-content:space-between;align-items:center;padding:0 1.7vh;height:var(--item-height);box-sizing:border-box;position:relative;z-index:1;box-shadow:inset 0 -0.05vh 0 rgba(var(--mn-text-rgb),0.07)}
-.menu-item.is-selected{box-shadow:none}
+[data-select="gradient"] .selection-highlight{border:none;background:linear-gradient(90deg,rgb(var(--mn-fill-rgb)),rgba(var(--mn-fill-rgb),0.12));box-shadow:inset 0.3vh 0 0 rgb(var(--mn-hi-rgb))}
+.menu-item{display:flex;justify-content:space-between;align-items:center;padding:0 2vh;height:var(--item-height);box-sizing:border-box;position:relative;z-index:1;border-bottom:0.07vh solid rgba(255,255,255,0.055)}
+.menu-item.is-selected{border-bottom-color:transparent}
+.menu-item.is-selected .name{font-weight:700}
 .item-label{display:flex;align-items:center;gap:1vh;min-width:0;flex:1}
-.row-icon{font-size:1.6vh;width:1.8vh;color:rgb(var(--mn-hi-rgb));flex-shrink:0;text-align:center}
-.menu-item .name{font-size:1.25vh;color:rgb(var(--mn-text-rgb));font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.slider-val{color:rgba(var(--mn-text-rgb),0.95);font-size:1.1vh;font-weight:500}
+/* pas d'icones devant les lignes, comme sur les captures (le Lua peut toujours en envoyer) */
+.row-icon{display:none}
+.menu-item .name{font-size:1.25vh;color:#fff;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.slider-val{color:rgba(255,255,255,0.95);font-size:1.1vh;font-weight:500}
 .components-container{display:flex;align-items:center;gap:0.8vh;flex-shrink:0}
 .component{display:flex;align-items:center}
-.caret-icon{font-size:1.3vh;color:rgb(var(--mn-hi-rgb))}
-.swatch{display:block;width:1.7vh;height:1.7vh;border-radius:0.45vh;box-shadow:inset 0 0 0 0.1vh rgba(var(--mn-text-rgb),0.3)}
+.caret-icon{font-size:1.25vh;font-weight:400;line-height:1;color:rgba(255,255,255,0.88)}
+.swatch{display:block;width:1.7vh;height:1.7vh;border-radius:0.45vh;box-shadow:inset 0 0 0 0.1vh rgba(255,255,255,0.3)}
+/* sur la ligne selectionnee, le texte prend la couleur lisible sur l'accent */
+.menu-item.is-selected .name,.menu-item.is-selected .caret-icon,.menu-item.is-selected .slider-val,.menu-item.is-selected .scroll-value{color:#fff}
 
-/* ---------- interrupteur : pastille eteinte (sombre) / allumee (accent + halo) ---------- */
+/* ---------- interrupteur : piste grise eteinte / couleur du menu allumee ---------- */
 .toggle-switch{position:relative;display:inline-flex;align-items:center;cursor:pointer}
 .toggle-switch input{position:absolute;opacity:0;width:0;height:0}
-.toggle-track{display:block;width:3.4vh;height:1.7vh;background:rgba(var(--mn-text-rgb),0.16);border-radius:1vh;position:relative;transition:background 0.22s ease,border-color 0.22s ease,box-shadow 0.22s ease;border:0.1vh solid rgba(var(--mn-text-rgb),0.24);box-sizing:border-box}
-.toggle-thumb{position:absolute;top:50%;left:0.2vh;transform:translateY(-50%);width:1.2vh;height:1.2vh;border-radius:50%;background:rgba(var(--mn-text-rgb),0.72);transition:left 0.22s ease,background 0.22s ease}
-.toggle-switch input:checked ~ .toggle-track{background:rgb(var(--mn-hi-rgb));border-color:transparent;box-shadow:0 0 0.8vh rgba(var(--mn-hi-rgb),0.55)}
-.toggle-switch input:checked ~ .toggle-track .toggle-thumb{left:calc(100% - 1.2vh - 0.2vh);background:rgb(var(--mn-onfg-rgb))}
+.toggle-track{display:block;width:3.7vh;height:1.9vh;background:#43444b;border-radius:1vh;position:relative;transition:background 0.22s ease;box-sizing:border-box}
+.toggle-thumb{position:absolute;top:50%;left:0.25vh;transform:translateY(-50%);width:1.35vh;height:1.35vh;border-radius:50%;background:#f2f2f4;transition:left 0.22s ease,background 0.22s ease}
+.toggle-switch input:checked ~ .toggle-track{background:rgb(var(--mn-fill-rgb))}
+.toggle-switch input:checked ~ .toggle-track .toggle-thumb{left:calc(100% - 1.35vh - 0.25vh);background:#fff}
+/* sur la ligne selectionnee la piste a la meme couleur que la bande : on l'inverse */
+.menu-item.is-selected .toggle-switch input:checked ~ .toggle-track{background:#fff}
+.menu-item.is-selected .toggle-switch input:checked ~ .toggle-track .toggle-thumb{background:rgb(var(--mn-fill-rgb))}
+.menu-item.is-selected .toggle-track{box-shadow:0 0 0 0.1vh rgba(255,255,255,0.35)}
 
 /* ---------- slider ---------- */
 .range-component{position:relative;width:9vh;height:1.6vh;display:flex;align-items:center}
-.range-track{position:absolute;left:0;width:100%;height:0.35vh;background:rgba(var(--mn-text-rgb),0.28);border-radius:0.2vh;z-index:1}
-.range-fill{position:absolute;left:0;height:0.35vh;background:rgb(var(--mn-hi-rgb));border-radius:0.2vh;z-index:2;pointer-events:none}
+.range-track{position:absolute;left:0;width:100%;height:0.35vh;background:rgba(255,255,255,0.28);border-radius:0.2vh;z-index:1}
+.range-fill{position:absolute;left:0;height:0.35vh;background:rgb(var(--mn-on-rgb));border-radius:0.2vh;z-index:2;pointer-events:none}
+.menu-item.is-selected .range-track{background:rgba(255,255,255,0.4)}
+.menu-item.is-selected .range-fill{background:#fff}
 .range-component input[type="range"]{-webkit-appearance:none;appearance:none;position:relative;width:100%;height:0.35vh;background:transparent;outline:none;margin:0;padding:0;cursor:pointer;z-index:3}
-.range-component input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:1.25vh;height:1.25vh;border-radius:50%;background:rgb(var(--mn-text-rgb));box-shadow:0 0 0.1vh rgba(0,0,0,0.4);margin-top:-0.125vh;cursor:pointer}
-.range-component input[type="range"]::-moz-range-thumb{width:1.25vh;height:1.25vh;border-radius:50%;background:rgb(var(--mn-text-rgb));border:none;cursor:pointer}
+.range-component input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:1.25vh;height:1.25vh;border-radius:50%;background:#fff;box-shadow:0 0 0.1vh rgba(0,0,0,0.4);margin-top:-0.125vh;cursor:pointer}
+.range-component input[type="range"]::-moz-range-thumb{width:1.25vh;height:1.25vh;border-radius:50%;background:#fff;border:none;cursor:pointer}
 
 /* ---------- sélecteur - valeur - ---------- */
-.scroll-value{display:flex;align-items:center;gap:0.6vh;font-size:1.1vh;font-weight:700;letter-spacing:0.03em;color:rgba(var(--mn-text-rgb),0.72);max-width:17vh}
+.scroll-value{display:flex;align-items:center;gap:0.6vh;font-size:1.1vh;font-weight:600;letter-spacing:0.02em;color:rgba(255,255,255,0.85);max-width:17vh}
 .scroll-value .val{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .scroll-value .arrow{opacity:0.7}
-.menu-item.is-selected .scroll-value{color:rgb(var(--mn-text-rgb))}
 
-/* ---------- séparateur : titre gris centre "--- Titre ---" (defaut) ---------- */
-.separator-container{display:flex;align-items:center;justify-content:center;height:var(--item-height);padding:0 1.5vh;box-sizing:border-box}
-.separator-bar{display:none}
-.separator-text{color:rgba(var(--mn-text-rgb),0.55);font-size:1.05vh;font-weight:600;white-space:nowrap;letter-spacing:0.04em}
-.separator-text::before{content:"--- "}
-.separator-text::after{content:" ---"}
-/* variante : titre d'accent a gauche, filet qui s'estompe (setSepStyle {style:'left'}) */
-[data-sep="left"] .separator-container{justify-content:flex-start;gap:1vh;background:rgba(var(--mn-hi-rgb),0.14)}
-[data-sep="left"] .separator-bar:last-child{display:block;flex:1;height:0.07vh;background:linear-gradient(90deg,rgba(var(--mn-hi-rgb),0.6),rgba(var(--mn-hi-rgb),0))}
-[data-sep="left"] .separator-text{color:rgb(var(--mn-hi-rgb));font-size:1vh;font-weight:700;letter-spacing:0.16em;text-transform:uppercase}
-[data-sep="left"] .separator-text::before,[data-sep="left"] .separator-text::after{content:none}
+/* ---------- séparateur : filet blanc - titre - filet blanc ---------- */
+.separator-container{display:flex;align-items:center;height:var(--item-height);padding:0 0 0 2vh;gap:1.4vh;box-sizing:border-box;background:transparent}
+.separator-bar{display:block;flex:1;height:0.14vh;background:#fff;border-radius:0.1vh}
+.separator-text{color:#fff;font-size:1.15vh;font-weight:600;white-space:nowrap;letter-spacing:0.02em}
 
-/* ---------- pied : texte a gauche, compteur a droite ---------- */
-.menu-footer{background:rgb(var(--mn-bar-rgb));display:grid;grid-template-columns:auto 1fr auto;align-items:center;height:3.1vh;box-sizing:border-box;border-top:0.07vh solid rgba(var(--mn-rule-rgb),0.6);border-radius:0 0 0.7vh 0.7vh;overflow:hidden}
-.footer-logo{display:flex;align-items:center;height:100%;padding:0 0 0 1.3vh;color:rgb(var(--mn-barfg-rgb))}
-/* emplacement du logo : vide par defaut (aucune marque), colonne reduite a zero */
+/* ---------- pied : texte a gauche | compteur a droite, filet de couleur au-dessus ---------- */
+.menu-footer{background:#000;display:grid;grid-template-columns:auto 1fr auto;align-items:center;height:3vh;box-sizing:border-box;border-top:0.15vh solid rgb(var(--mn-acc-rgb));border-radius:0 0 0.9vh 0.9vh;overflow:hidden}
+.footer-logo{display:flex;align-items:center;height:100%;padding:0 0 0 1.6vh;color:rgb(var(--mn-on-rgb))}
+/* Bas a gauche : volontairement vide. L'emplacement n'accueille un logo que
+   si une URL est explicitement fournie via FOOTER_LOGO_URL dans menu.lua ;
+   aucun contenu par defaut (ni hexagone, ni nom, ni marque).
+   :empty supprime aussi le padding, donc la colonne se reduit a zero et
+   il ne reste rien du tout a cet emplacement. Des qu'une image y est posee,
+   la regle generale ci-dessus reprend la main. */
 .footer-logo:empty{padding:0}
+/* Logo image en bas a gauche. Le visuel est blanc sur fond noir : "screen"
+   rend le noir entierement transparent, donc le cadre du fichier disparait
+   sur le pied et seul le lettrage subsiste. */
 .footer-logo img{height:2.2vh;width:auto;display:block;mix-blend-mode:screen}
-.footer-brand{text-align:left;font-size:1.05vh;font-weight:500;color:rgba(var(--mn-barfg-rgb),0.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 1.3vh}
-.footer-counter{display:flex;align-items:center;height:100%;padding:0 1.4vh;font-size:1.05vh;font-weight:600;color:rgb(var(--mn-barfg-rgb))}
+.footer-brand{text-align:left;font-size:1.1vh;font-weight:500;color:rgba(255,255,255,0.82);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 1.6vh}
+.footer-counter{display:flex;align-items:center;height:100%;padding:0 1.6vh;font-size:1.1vh;font-weight:600;color:#fff;letter-spacing:0.02em}
 
 /* ---------- saisie ---------- */
 .input-overlay{position:fixed;top:0;left:0;transform:none;width:100%;height:100%;background:rgb(0,0,0,0.5);z-index:999999;color:white;font-weight:500;font-family:var(--font);font-size:1.2vh}
@@ -269,101 +267,33 @@ ul{list-style-type:disc}
    Carte d'infos qui apparait quand la selection du menu se pose sur un
    joueur de la liste. Tout le contenu vient de Lua : ce bloc ne fait que
    le poser a l'ecran. pointer-events:none, elle ne doit jamais capter un
-   clic ni bloquer le menu. Couleurs : meme palette que le menu (--mn-*). */
-.jul-pcard{position:fixed;right:1.6vh;top:50%;transform:translateY(-50%);width:25vh;box-sizing:border-box;padding:0.9vh;display:flex;flex-direction:column;gap:0.6vh;font-family:var(--font);color:rgb(var(--mn-text-rgb));text-shadow:var(--mn-tshadow);pointer-events:none;z-index:9997;border-radius:0.8vh;background:rgba(var(--mn-panel-rgb),0.88);border:0.1vh solid rgba(var(--mn-border-rgb),0.35);box-shadow:0 0.35vh 1.4vh rgba(0,0,0,0.55)}
-.jul-pc-head{display:flex;align-items:center;gap:0.7vh;padding:0.15vh 0.15vh 0.6vh;border-bottom:0.14vh solid rgb(var(--mn-hi-rgb))}
-.jul-pc-av{width:2.9vh;height:2.9vh;border-radius:0.5vh;background:rgba(var(--mn-head-rgb),0.92);border:0.1vh solid rgba(var(--mn-rule-rgb),0.7);box-sizing:border-box;display:flex;align-items:center;justify-content:center;color:rgb(var(--mn-on-rgb));font-size:1.6vh;flex-shrink:0}
-.jul-pc-title{flex:1;font-size:1.18vh;font-weight:700;letter-spacing:0.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.jul-pc-title .w{color:rgb(var(--mn-text-rgb))}
-.jul-pc-title .a{color:rgb(var(--mn-hi-rgb))}
-.jul-pc-dots{color:rgba(var(--mn-text-rgb),0.55);font-size:1.5vh;line-height:1;flex-shrink:0}
-.jul-pc-sec{background:rgba(var(--mn-text-rgb),0.06);border:0.1vh solid rgba(var(--mn-text-rgb),0.12);border-radius:0.65vh;padding:0.15vh 0.75vh}
-.jul-pc-row{display:flex;align-items:center;gap:0.6vh;font-size:1.02vh;line-height:2.05;border-bottom:0.07vh solid rgba(var(--mn-text-rgb),0.1)}
-.jul-pc-sec .jul-pc-row:last-child,.jul-pc-stat .jul-pc-row:last-child{border-bottom:none}
-.jul-pc-row i{color:rgb(var(--mn-hi-rgb));font-size:1.25vh;width:1.35vh;text-align:center;flex-shrink:0}
-.jul-pc-row .k{flex:1;color:rgba(var(--mn-text-rgb),0.85)}
-.jul-pc-row .v{color:rgb(var(--mn-text-rgb));font-weight:700;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:13vh}
-.v-accent{color:rgb(var(--mn-hi-rgb))!important}
-.v-hp{color:#3ddc68!important}
-.v-ap{color:rgb(var(--mn-hi-rgb))!important}
-.jul-pc-stat{background:rgba(var(--mn-text-rgb),0.06);border:0.1vh solid rgba(var(--mn-text-rgb),0.12);border-radius:0.65vh;padding:0.15vh 0.75vh;display:flex;flex-direction:column}
-.jul-pc-stat .jul-pc-row .k{flex:0 0 auto;margin-right:0.5vh}
-.jul-pc-row .vnum{font-weight:700;flex-shrink:0;margin-right:0.6vh}
-.jul-pc-track{flex:1;min-width:2.5vh;height:0.5vh;border-radius:0.35vh;background:rgba(var(--mn-text-rgb),0.16);overflow:hidden}
-.jul-pc-fill{display:block;height:100%;border-radius:0.3vh;width:0%;transition:width .25s linear}
-.jul-pc-hp{background:linear-gradient(90deg,#2ecc5e,#7ef0a2)}
-.jul-pc-ap{background:linear-gradient(90deg,rgba(var(--mn-hi-rgb),0.7),rgb(var(--mn-hi-rgb)))}
-/* ===== Looks tires des captures (setLook, ou setTabStyle / setSelectStyle / setValueStyle / setChevron / setTitleStyle) ===== */
-/* boite de description sous le menu : item.desc */
-.menu-desc{position:absolute;top:100%;left:0;right:0;margin-top:0.7vh;box-sizing:border-box;padding:0.9vh 1.3vh;font-size:1.1vh;font-weight:500;line-height:1.4;color:rgba(var(--mn-text-rgb),0.9);background:rgba(var(--mn-head-rgb),0.96);border:0.1vh solid rgba(var(--mn-border-rgb),0.45);border-left:0.3vh solid rgb(var(--mn-hi-rgb));border-radius:0.5vh}
-/* selection "dark" : ligne noire, texte blanc, liseré d'accent */
-[data-select="dark"] .selection-highlight{left:0;right:0;border:none;border-radius:0;background:rgba(0,0,0,0.85);box-shadow:inset 0.3vh 0 0 rgb(var(--mn-hi-rgb))}
-/* selection "solid" : ligne blanche, texte noir */
-[data-select="solid"] .selection-highlight{left:0.5vh;right:0.5vh;border:none;border-radius:0.3vh;background:#f4f4f4;box-shadow:none}
-[data-select="solid"] .menu-item.is-selected .name,[data-select="solid"] .menu-item.is-selected .row-icon,[data-select="solid"] .menu-item.is-selected .caret-icon,[data-select="solid"] .menu-item.is-selected .scroll-value,[data-select="solid"] .menu-item.is-selected .slider-val{color:#0b0b0b;text-shadow:none}
-/* selection "fill" : aplat d'accent */
-[data-select="fill"] .selection-highlight{left:0;right:0;border:none;border-radius:0;background:rgba(var(--mn-hi-rgb),0.95);box-shadow:inset 0.3vh 0 0 rgba(255,255,255,0.6)}
-[data-select="fill"] .menu-item.is-selected .name,[data-select="fill"] .menu-item.is-selected .row-icon,[data-select="fill"] .menu-item.is-selected .caret-icon,[data-select="fill"] .menu-item.is-selected .scroll-value,[data-select="fill"] .menu-item.is-selected .slider-val{color:rgb(var(--mn-onfg-rgb));text-shadow:none}
-[data-select="fill"] .menu-item.is-selected .toggle-switch input:checked ~ .toggle-track{background:rgba(255,255,255,0.92)}
-/* onglets en blocs pleins */
-[data-tabs="block"] .menu-tabs{padding:0;gap:0;background:rgb(var(--mn-panel-rgb))}
-[data-tabs="block"] .tab-item{border:none;border-radius:0;background:rgba(var(--mn-text-rgb),0.07);color:rgba(var(--mn-htext-rgb),0.6)}
-[data-tabs="block"] .tab-item.active{background:#000;color:#fff;box-shadow:none}
-/* valeurs du selecteur : < valeur > */
-[data-value="arrows"] .scroll-value .arrow{font-size:0;opacity:1}
-[data-value="arrows"] .scroll-value .arrow::before{font-size:1.05vh;font-weight:700;line-height:1}
-[data-value="arrows"] .scroll-value .arrow:first-child::before{content:"<"}
-[data-value="arrows"] .scroll-value .arrow:last-child::before{content:">"}
-/* titre aligne a gauche */
-[data-title="left"] .menu-crumb{justify-content:flex-start;padding:0 1.5vh}
-/* ===== Look "rail" (capture verte) : rail d'accent a gauche de la liste, ligne en aplat translucide, onglets separes ===== */
-[data-select="rail"] .menu-body{box-shadow:inset 0.25vh 0 0 rgb(var(--mn-hi-rgb))}
-[data-select="rail"] .selection-highlight{left:0.25vh;right:0;border:none;border-radius:0;background:linear-gradient(90deg,rgba(var(--mn-hi-rgb),0.42),rgba(var(--mn-hi-rgb),0.3));box-shadow:inset 0 0.05vh 0 rgba(255,255,255,0.12),inset 0 -0.05vh 0 rgba(0,0,0,0.35)}
-[data-select="rail"] .menu-item{padding-left:1.9vh}
-[data-select="rail"] .caret-icon{font-size:1.1vh;color:rgba(var(--mn-text-rgb),0.8)}
-[data-tabs="split"] .menu-tabs{gap:0;padding:0.5vh 0.6vh}
-[data-tabs="split"] .tab-item{font-size:1vh;font-weight:700}
-[data-tabs="split"] .tab-item + .tab-item::before{content:"";position:absolute;left:0;top:25%;height:50%;width:0.07vh;background:rgba(var(--mn-htext-rgb),0.25)}
-[data-tabs="split"] .tab-item.active{background:rgba(var(--mn-hi-rgb),0.28);box-shadow:none}
-[data-tabs="split"] .tab-item.active::before,[data-tabs="split"] .tab-item.active + .tab-item::before{display:none}
-/* pied : nom en gras blanc */
-[data-footer="bold"] .footer-brand{color:rgb(var(--mn-barfg-rgb));font-weight:700}
-/* variante sombre (setFooterStyle {style:'dark'}) : ancienne barre quasi noire */
-[data-footer="dark"] .menu-footer{background:rgba(var(--mn-head-rgb),0.96)}
-[data-footer="dark"] .footer-brand{color:rgba(var(--mn-htext-rgb),0.6)}
-[data-footer="dark"] .footer-counter,[data-footer="dark"] .footer-logo{color:rgba(var(--mn-htext-rgb),0.85)}
-/* ===== Look "sky" (capture bleue) : onglets pleins, rail lumineux, ligne a halo, trait separateur, pied a pastille ===== */
-[data-tabs="solid"] .menu-tabs{padding:0;gap:0;background:rgb(var(--mn-head-rgb))}
-[data-tabs="solid"] .tab-item{border:none;border-radius:0;text-transform:uppercase;letter-spacing:0.1em;font-size:1.05vh;font-weight:700;color:rgba(var(--mn-htext-rgb),0.55)}
-[data-tabs="solid"] .tab-item.active{background:linear-gradient(180deg,rgb(var(--mn-hi-rgb)),rgba(var(--mn-hi-rgb),0.82));color:#fff;box-shadow:0 0 1vh rgba(var(--mn-hi-rgb),0.6)}
-[data-select="glow"] .menu-root{border-color:rgba(255,255,255,0.08);box-shadow:0 0.5vh 2vh rgba(0,0,0,0.6)}
-[data-select="glow"] .menu-banner::after{display:none}
-[data-select="glow"] .selection-highlight{left:0.5vh;right:0.5vh;border:0.1vh solid rgba(255,255,255,0.35);border-radius:0.45vh;background:linear-gradient(180deg,rgb(var(--mn-hi-rgb)),rgba(var(--mn-hi-rgb),0.82));box-shadow:0 0 1.4vh rgba(var(--mn-hi-rgb),0.75),0 0 0.3vh rgb(var(--mn-hi-rgb))}
-[data-select="glow"] .menu-item .name{font-size:1.3vh;font-weight:700}
-[data-select="glow"] .caret-icon{font-size:1.5vh;color:rgba(var(--mn-text-rgb),0.65)}
-[data-select="glow"] .menu-item.is-selected .name,[data-select="glow"] .menu-item.is-selected .row-icon,[data-select="glow"] .menu-item.is-selected .caret-icon,[data-select="glow"] .menu-item.is-selected .scroll-value,[data-select="glow"] .menu-item.is-selected .slider-val{color:#fff}
-/* rail : la barre de defilement, plus epaisse et lumineuse, sans fond */
-[data-select="glow"] .menu-scrollbar{left:-1.6vh;width:0.8vh}
-[data-select="glow"] .scrollbar-track{background-color:transparent}
-[data-select="glow"] .scrollbar-thumb{border-radius:0.4vh;box-shadow:0 0 1.1vh rgba(var(--mn-hi-rgb),0.85),0 0 0.3vh rgb(var(--mn-hi-rgb))}
-/* separateur "trait" : ligne fine d'accent, avec ou sans titre */
-[data-sep="line"] .separator-container{padding:0 3vh;gap:0}
-[data-sep="line"] .separator-bar{display:block;flex:1;height:0.07vh;background:rgba(var(--mn-hi-rgb),0.75)}
-[data-sep="line"] .separator-text{margin:0 1vh;color:rgba(var(--mn-text-rgb),0.7)}
-[data-sep="line"] .separator-text::before,[data-sep="line"] .separator-text::after{content:none}
-[data-sep="line"] .separator-text:empty{display:none}
-/* pied "pastille" : nom en pastille a contour, logo au centre, compteur a droite, filet d'accent lumineux */
-[data-footer="pill"] .menu-footer{background:rgb(var(--mn-bar-rgb));grid-template-columns:1fr auto 1fr;height:3.6vh;padding:0 1.2vh;border-top:0.1vh solid rgba(255,255,255,0.45);box-shadow:0 -0.15vh 0.9vh rgba(var(--mn-bar-rgb),0.45)}
-[data-footer="pill"] .footer-brand{order:1;justify-self:start;padding:0.3vh 1.1vh;border:0.1vh solid rgba(var(--mn-barfg-rgb),0.7);border-radius:0.5vh;background:rgba(var(--mn-barfg-rgb),0.12);font-weight:700;color:rgb(var(--mn-barfg-rgb))}
-[data-footer="pill"] .footer-logo{order:2;padding:0;justify-content:center}
-[data-footer="pill"] .footer-counter{order:3;justify-self:end;padding:0;font-weight:700;color:rgb(var(--mn-barfg-rgb))}
+   clic ni bloquer le menu. Fond noir, nom et barres a la couleur du menu. */
+.jul-pcard{position:fixed;right:1.6vh;top:50%;transform:translateY(-50%);width:29vh;box-sizing:border-box;padding:1.6vh;display:flex;flex-direction:column;gap:1.2vh;font-family:var(--menu-font);color:#fff;pointer-events:none;z-index:9997;border-radius:2vh;background:rgba(var(--mn-bg-rgb),0.96);border:0.12vh solid rgba(var(--mn-acc-rgb),0.5);box-shadow:0 1vh 3vh rgba(0,0,0,0.65)}
+.jul-pc-head{display:flex;align-items:center;gap:1.2vh}
+.jul-pc-av{flex:none;width:4.4vh;height:4.4vh;box-sizing:border-box;border-radius:1vh;border:0.12vh solid rgb(var(--mn-on-rgb));background:rgba(var(--mn-acc-rgb),0.14);display:grid;place-items:center;font-size:1.5vh;font-weight:700;color:rgb(var(--mn-on-rgb))}
+.jul-pc-who{flex:1;min-width:0}
+.jul-pc-name{font-size:1.7vh;font-weight:700;line-height:1.15;color:rgb(var(--mn-on-rgb));white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.jul-pc-sub{margin-top:0.25vh;font-size:1.05vh;color:rgba(255,255,255,0.6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.jul-pc-badge{flex:none;box-sizing:border-box;padding:0.5vh 1.1vh;border-radius:2vh;border:0.1vh solid rgba(255,255,255,0.18);font-family:var(--mono);font-size:1.1vh;font-weight:700}
+.jul-pc-stat{display:flex;flex-direction:column;gap:0.7vh}
+.jul-pc-line{display:flex;justify-content:space-between;align-items:baseline;font-size:1.15vh;color:rgba(255,255,255,0.6)}
+.jul-pc-line .vnum{font-family:var(--mono);font-weight:700;color:#fff}
+.jul-pc-bar{display:flex;gap:0.35vh}
+.jul-pc-seg{flex:1;height:0.85vh;border-radius:0.5vh;background:rgba(255,255,255,0.08)}
+.jul-pc-bar.hp .jul-pc-seg.on{background:#8fd18f}
+.jul-pc-bar.ap .jul-pc-seg.on{background:rgb(var(--mn-on-rgb))}
+.jul-pc-sec{display:flex;flex-direction:column;border-top:0.1vh solid rgba(255,255,255,0.08)}
+.jul-pc-row{display:flex;justify-content:space-between;align-items:center;gap:1vh;padding:0.95vh 0;font-size:1.15vh;border-bottom:0.1vh solid rgba(255,255,255,0.08)}
+.jul-pc-row:last-child{border-bottom:none}
+.jul-pc-row .k{color:rgba(255,255,255,0.6)}
+.jul-pc-row .v{font-family:var(--mono);font-weight:500;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:15vh}
 </style>
 </head>
 <body>
 <div id="app"></div>
 <script>
 (()=>{
-console.log('[JuL menu] version v20 (pied a pastille dans la couleur du menu)');
+console.log('[JuL menu] version v14 (panneau noir + couleur du menu : barre de titre, onglets pleins, selection en degrade)');
 const app=document.getElementById('app');
 const $=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
 const clamp=(n,a=0,b=100)=>Math.max(a,Math.min(b,n));
@@ -425,8 +355,8 @@ function buildMenu(){
      fait survivre un logo configure. */
   if(B.logoUrl)applyFooterLogo(logo,B.logoUrl);
   foot.append(logo,$('span','footer-brand','JuL - Menu'),cnt);
-  const desc=$('div','menu-desc');r.append(ban,crumb,tabs,sb,body,foot,desc);app.append(r);
-  Object.assign(B,{root:r,img,descEl:desc,crumbEl:crumb,tabsEl:tabs,trackEl:trk,thumb,list,hl,cnt,logoEl:logo,rows:[]});
+  r.append(ban,crumb,tabs,sb,body,foot);app.append(r);
+  Object.assign(B,{root:r,img,crumbEl:crumb,tabsEl:tabs,trackEl:trk,thumb,list,hl,cnt,logoEl:logo,rows:[]});
   renderTabs();renderCrumb();applyBar();
   return [r];
 }
@@ -438,13 +368,15 @@ function renderTabs(){
     const d=$('div','tab-item'+(i===B.tab?' active':''),t);
     return d;
   }));
+  renderCrumb();
 }
 function renderCrumb(){
   if(!live())return;
   const p=B.crumb,c=B.crumbEl;
-  c.classList.toggle('on',p.length>0);
-  c.classList.toggle('small',!!B.crumbSmall);B.root.style.setProperty('--crumb-h',p.length?(B.crumbSmall?'2.2vh':'3.2vh'):'0vh');
-  c.replaceChildren(...(p.length>1?[$('span','crumb-parent',p[p.length-2])]:[]),$('span','crumb-title',p[p.length-1]||''));
+  /* la barre de titre est toujours la, comme sur les captures : sans fil d'Ariane
+     envoye par le Lua, elle reprend le nom de l'onglet actif */
+  const title=p.length?String(p[p.length-1]):String(B.tabs[B.tab]||'Main');
+  c.replaceChildren($('span','crumb-title',title));
 }
 const comp=h=>{const d=$('div','component');d.innerHTML=h;return d};
 function mkRow(o){
@@ -452,8 +384,8 @@ function mkRow(o){
   const r=$('div','menu-item'),lab=$('div','item-label'),cc=$('div','components-container');
   lab.append($('span','name'));if(o.icon)lab.prepend($('i','ph '+o.icon+' row-icon'));
   types(o).forEach(t=>{
-    if(t==='submenu')cc.append(comp('<i class="ph '+(document.documentElement.dataset.chevron==='double'?'ph-caret-double-right':'ph-caret-right')+' caret-icon"></i>'));
-    else if(t==='action')cc.append(comp('<i class="ph ph-plus caret-icon"></i>'));
+    if(t==='submenu')cc.append(comp('<span class="caret-icon" aria-hidden="true">&gt;</span>'));
+    else if(t==='action')cc.append(comp('<span class="caret-icon" aria-hidden="true">+</span>'));
     else if(t==='color')cc.append(comp('<span class="swatch"></span>'));
     else if(t==='checkbox'){const c=comp('<label class="toggle-switch"><input type="checkbox"><span class="toggle-track"><span class="toggle-thumb"></span></span></label>');
       c.querySelector('input').onchange=e=>{r._o.checked=e.target.checked};cc.append(c)}
@@ -508,7 +440,7 @@ function updCounter(){
   const s=B.menu.reduce((a,o,i)=>(o&&o.type!=='divider'&&a.push(i),a),[]);
   let n=0;
   if(s.length){const p=s.indexOf(B.cur);n=p!==-1?p+1:s.reduce((b,x,k)=>Math.abs(x-B.cur)<Math.abs(s[b]-B.cur)?k:b,0)+1}
-  if(B.cnt)B.cnt.textContent=document.documentElement.dataset.footer==='pill'?`${n} / ${s.length}`:`${n}/${s.length}`;
+  if(B.cnt)B.cnt.textContent=`${n} / ${s.length}`;
 }
 function applyBar(){
   if(!B.thumb)return;
@@ -568,14 +500,9 @@ function ensureVisible(el){
   if(t-padT<vt)L.scrollTop=Math.max(0,t-padT);
   else if(b+padB>vb)L.scrollTop=Math.max(0,b+padB-L.clientHeight);
 }
-function updDesc(){
-  const e=B.descEl;if(!e)return;
-  const o=B.menu[B.cur],t=o&&o.desc?String(o.desc):'';
-  e.textContent=t;e.style.display=t?'':'none';
-}
 function refresh(){
   if(!live())return;
-  renderItems();updCounter();updDesc();
+  renderItems();updCounter();
   setEmptyState(!Array.isArray(B.menu)||B.menu.length===0);
   const el=curRow();if(el){moveHl(el.offsetTop);ensureVisible(el)}
   bar();
@@ -775,13 +702,15 @@ function positionPlayerCard(el){
 const PC={d:null,slot:{g:0}};
 function buildPlayerCard(){
   const c=$('div','jul-pcard');
-  const row=(ic,k,vc)=>`<div class="jul-pc-row"><i class="ph ${ic}"></i><span class="k">${k}</span><span class="v${vc?' '+vc:''}" data-k="${k}">-</span></div>`;
-  const stat=(f,ic,k,cls)=>`<div class="jul-pc-row"><i class="ph ${ic}"></i><span class="k">${k}</span><span class="vnum ${f==='hp'?'v-hp':'v-ap'}" data-f="${f}">- / -</span><span class="jul-pc-track"><span class="jul-pc-fill ${cls}" data-f="${f}f"></span></span></div>`;
+  const row=k=>`<div class="jul-pc-row"><span class="k">${k}</span><span class="v" data-k="${k}">-</span></div>`;
+  const segs=Array.from({length:10},()=>'<span class="jul-pc-seg"></span>').join('');
+  const stat=(f,k)=>`<div class="jul-pc-stat"><div class="jul-pc-line"><span class="k">${k}</span><span class="vnum" data-f="${f}">- / -</span></div><div class="jul-pc-bar ${f}" data-f="${f}f">${segs}</div></div>`;
+  /* en-tete : initiales | nom + vehicule/arme | numero ; puis vie et armure en
+     10 segments ; puis les lignes. Rien n'est devine : tout vient de Lua. */
   c.innerHTML=`
-    <div class="jul-pc-head"><div class="jul-pc-av"><i class="ph ph-user"></i></div><div class="jul-pc-title"><span class="w">PLAYER</span> <span class="a">INFORMATION</span></div><div class="jul-pc-dots"><i class="ph ph-dots-three-vertical"></i></div></div>
-    <div class="jul-pc-sec">${row('ph-identification-badge','Player ID','v-accent')}${row('ph-user','Name')}${row('ph-map-pin','Distance')}${row('ph-compass','Heading')}</div>
-    <div class="jul-pc-stat">${stat('hp','ph-heart','Health','jul-pc-hp')}${stat('ap','ph-shield','Armor','jul-pc-ap')}</div>
-    <div class="jul-pc-sec">${row('ph-phone','Phone','v-accent')}${row('ph-crosshair','Coordinates')}${row('ph-car','Vehicle')}${row('ph-gun','Weapon')}</div>`;
+    <div class="jul-pc-head"><div class="jul-pc-av" data-k="Initials">-</div><div class="jul-pc-who"><div class="jul-pc-name" data-k="Name">-</div><div class="jul-pc-sub" data-k="Sub">-</div></div><div class="jul-pc-badge" data-k="Player ID">-</div></div>
+    ${stat('hp','Health')}${stat('ap','Armor')}
+    <div class="jul-pc-sec">${row('Distance')}${row('Heading')}${row('Phone')}${row('Coordinates')}</div>`;
   app.append(c);positionPlayerCard(c);return [c];
 }
 /* base:'translateY(-50%)' : le plan de tr() ECRASE le transform du CSS
@@ -796,31 +725,36 @@ function renderPlayerCard(){
   if(!d)return;
   const q=s=>e[0].querySelector(s);
   const set=(sel,val)=>{const n=q(sel);if(n)n.textContent=(val==null||val==='')?'-':String(val)};
-  set('[data-k="Player ID"]',d.sid);
+  /* initiales : deux premiers mots, sinon deux premieres lettres */
+  const w=String(d.name==null?'':d.name).split(/[^A-Za-z0-9\u00C0-\u024F]+/).filter(Boolean);
+  set('[data-k="Initials"]',w.length>1?w[0][0]+w[1][0]:(w[0]||'').slice(0,2));
+  q('[data-k="Initials"]').textContent=q('[data-k="Initials"]').textContent.toUpperCase();
+  set('[data-k="Player ID"]',(d.sid==null||d.sid==='')?null:'#'+d.sid);
   set('[data-k="Name"]',d.name);
+  /* sous le nom : vehicule et arme, comme "A pied - Sans arme" sur la reference */
+  set('[data-k="Sub"]',[d.veh,d.wep].filter(x=>x!=null&&x!=='').join(' \u00b7 '));
   set('[data-k="Distance"]',d.dist);
   /* le degre est ecrit ICI, pas dans Lua : le fichier Lua reste en ASCII pur */
-  set('[data-k="Heading"]',(d.dir?((typeof d.hdg==='number'?Math.round(d.hdg):'-')+'° '+d.dir):'-'));
+  set('[data-k="Heading"]',(d.dir?((typeof d.hdg==='number'?Math.round(d.hdg):'-')+'\u00b0 '+d.dir):'-'));
   set('[data-k="Coordinates"]',d.pos);
   /* d.num peut etre nil : set() ecrit "-" dans ce cas, jamais undefined.
      C'est le cas nominal tant que le serveur ne publie pas le numero. */
   set('[data-k="Phone"]',d.num);
-  set('[data-k="Vehicle"]',d.veh);
-  set('[data-k="Weapon"]',d.wep);
-  /* la barre se remplit avec le POURCENTAGE, l'etiquette montre le brut :
-     "62 / 100" comme dans la reference, et non un pourcentage invente */
+  /* les barres se remplissent avec le POURCENTAGE (10 segments), l'etiquette
+     montre le brut : "62 / 100", et non un pourcentage invente */
   const hpN=(typeof d.hpN==='number')?d.hpN:null;
   const apN=(typeof d.apN==='number')?d.apN:null;
   const hpMax=(typeof d.hpMax==='number'&&d.hpMax>0)?d.hpMax:100;
-  /* division simple : le brut lu et le brut max, sans base fixe supposee.
-     Avec 100/100 ca donne 100%, avec 62/100 donne 62% — pas de cas particulier
-     a deviner, ni de division par zero quand hpMax vaut 100. */
   const hpPct=(hpN!=null)?clamp(hpN/hpMax*100,0,100):0;
   const apPct=(apN!=null)?clamp(apN,0,100):0;
   set('[data-f="hp"]',(hpN!=null)?hpN+' / '+hpMax:'- / -');
   set('[data-f="ap"]',(apN!=null)?apN+' / 100':'- / -');
-  const h=q('[data-f="hpf"]'),a=q('[data-f="apf"]');
-  if(h)h.style.width=hpPct+'%';if(a)a.style.width=apPct+'%';
+  const fillSegs=(sel,pct)=>{
+    const bar=q(sel);if(!bar)return;
+    const n=pct>0?Math.max(1,Math.round(pct/10)):0;
+    Array.prototype.forEach.call(bar.children,(sg,i)=>sg.classList.toggle('on',i<n));
+  };
+  fillSegs('[data-f="hpf"]',hpPct);fillSegs('[data-f="apf"]',apPct);
 }
 function playerCardShow(d){
   /* Le Lua envoie les donnees IMBRIQUEES : { action, visible, data:{...} }.
@@ -884,37 +818,31 @@ function ntApplyColor(r,g,b){
   s.setProperty('--nt-text-off',kbRgba(text,0.72));
   s.setProperty('--nt-on',kbRgba(on));
 }
-/* Palette du MENU PRINCIPAL (et de la fiche joueur) : memes formules que
-   kbApplyColor / ntApplyColor, donc tout reste assorti.
-   Chaque variable est un triplet "r,g,b" ; l'opacite est reglee dans le CSS. */
-function mnTextFor(bg){
-  /* blanc ou fonce, selon le meilleur contraste avec le fond */
-  const a=bg.map(v=>{v/=255;return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4)});
-  const L=0.2126*a[0]+0.7152*a[1]+0.0722*a[2];
-  return (1.05/(L+0.05))>=((L+0.05)/0.057)?[255,255,255]:[16,21,16];
-}
+/* Palette du MENU PRINCIPAL et de la fiche joueur : panneau noir + UNE couleur,
+   celle du menu. Memes bases que kbApplyColor / ntApplyColor, donc tout reste
+   assorti. Chaque variable est un triplet "r,g,b" ; l'opacite est reglee dans le CSS. */
 function mnApplyColor(r,g,b){
-  /* Look des captures : fonds quasi noirs a peine teintes + accent vif.
-     panel/head = la couleur du menu tres assombrie ; hi = sa teinte, saturee. */
-  const main=[r,g,b],white=[255,255,255];
-  const panel=kbMix(main,[8,8,8],0.95),head=kbMix(main,[2,2,2],0.97);
-  const hsl=ntHsl(main);
-  /* gris (saturation ~0) : gris clair neutre, forcer la saturation donnerait du rose */
-  const hi=hsl[1]<0.15?kbMix(main,white,0.6):ntHslRgb(hsl[0],Math.min(1,Math.max(0.75,hsl[1])),0.5);
-  const text=mnTextFor(panel),htext=mnTextFor(head);
+  const main=[r,g,b],black=[0,0,0],white=[255,255,255];
+  const lum=c=>{const a=c.map(v=>{v/=255;return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4)});
+                return 0.2126*a[0]+0.7152*a[1]+0.0722*a[2]};
+  /* une couleur presque noire disparaitrait sur le fond noir : on l'eclaircit */
+  const acc=lum(main)<0.03?kbMix(main,white,0.35):main;
+  /* le texte reste BLANC sur l'accent (comme sur les captures) : si la couleur est
+     trop claire pour ca (jaune, blanc...), le remplissage est assombri jusqu'a ce
+     que le blanc ait au moins 3,2:1 de contraste, meme sur le haut du degrade */
+  let fill=acc,k=0;
+  while(1.05/(lum(kbMix(fill,white,0.18))+0.05)<3.2&&k++<14)fill=kbMix(fill,black,0.07);
+  /* accent tres lumineux (texte, barres) : teinte du menu. Gris -> gris clair
+     neutre (forcer la saturation donnerait du rose). */
+  const hsl=ntHsl(acc);
+  const on=hsl[1]<0.15?kbMix(acc,white,0.75):ntHslRgb(hsl[0],Math.min(1,Math.max(0.85,hsl[1])),0.72);
   const t=c=>c.join(','),s=document.documentElement.style;
-  s.setProperty('--mn-panel-rgb',t(panel));
-  s.setProperty('--mn-head-rgb',t(head));
-  s.setProperty('--mn-text-rgb',t(text));
-  s.setProperty('--mn-htext-rgb',t(htext));
-  s.setProperty('--mn-hi-rgb',t(hi));
-  s.setProperty('--mn-on-rgb',t(hi));
-  s.setProperty('--mn-onfg-rgb',t(mnTextFor(hi)));
-  s.setProperty('--mn-border-rgb',t(hi));
-  s.setProperty('--mn-rule-rgb',t(hi));
-  /* barre du pied : la couleur du menu telle quelle, texte fonce ou clair selon le contraste */
-  s.setProperty('--mn-bar-rgb',t(main));s.setProperty('--mn-barfg-rgb',t(mnTextFor(main)));
-  s.setProperty('--mn-tshadow',text[0]===255?'0 0.1vh 0.25vh rgba(0,0,0,0.55)':'none');
+  s.setProperty('--mn-bg-rgb',t(kbMix(acc,black,0.94)));
+  s.setProperty('--mn-acc-rgb',t(acc));
+  s.setProperty('--mn-fill-rgb',t(fill));
+  s.setProperty('--mn-hi-rgb',t(kbMix(fill,white,0.18)));
+  s.setProperty('--mn-lo-rgb',t(kbMix(fill,black,0.5)));
+  s.setProperty('--mn-on-rgb',t(on));
 }
 function ntSchedule(t){
   if(!(t.remaining>0))return;
@@ -970,19 +898,8 @@ function notify(header,message,duration,type){
   return id;
 }
 /* defaut = le vert de reference ; le Lua le remplace via setMenuColor */
-ntApplyColor(24,168,255);mnApplyColor(24,168,255);
+ntApplyColor(84,150,96);mnApplyColor(84,150,96);
 
-/* Looks disponibles : {action:'setLook', name:'noir'|'crimson'|'azure'|'mono'|'emerald'} */
-const LOOKS={
-  noir:   {c:[170,170,170],tabs:'block',select:'dark'},
-  crimson:{c:[210,35,55],select:'gradient'},
-  azure:  {c:[47,155,240],tabs:'underline',select:'fill',chevron:'double'},
-  mono:   {c:[0,190,215],select:'solid',title:'left'},
-  emerald:{c:[44,176,74],select:'rail',tabs:'split',value:'arrows',footer:'bold'},
-  sky:    {c:[24,168,255],tabs:'solid',select:'glow',sep:'line',footer:'pill'}
-};
-/* Look par defaut = celui de la capture bleue (le Lua peut le changer avec setLook ou les messages setXxxStyle) */
-(()=>{const L=LOOKS.sky,ds=document.documentElement.dataset;['tabs','select','sep','value','chevron','title','footer'].forEach(k=>{ds[k]=L[k]||''})})();
 /* ================= MESSAGES DU JEU ================= */
 addEventListener('message',e=>{
   const d=e.data||{};
@@ -1011,22 +928,9 @@ addEventListener('message',e=>{
       s.setProperty('--accent-rgb',`${r},${g},${b}`);
       s.setProperty('--accent-light',`${lt(r)},${lt(g)},${lt(b)}`);s.setProperty('--line-rgb',`${lt(r)},${lt(g)},${lt(b)}`);
       kbApplyColor(r,g,b);ntApplyColor(r,g,b);mnApplyColor(r,g,b);break}
-    case 'setBreadcrumb':B.crumbSmall=!!d.small;B.crumb=Array.isArray(d.parts)?d.parts:(d.path?String(d.path).split('>').map(s=>s.trim()):[]);renderCrumb();break;
+    case 'setBreadcrumb':B.crumb=Array.isArray(d.parts)?d.parts:(d.path?String(d.path).split('>').map(s=>s.trim()):[]);renderCrumb();break;
     case 'setTabStyle':document.documentElement.dataset.tabs=d.style||'';break;
     case 'setSelectStyle':document.documentElement.dataset.select=d.style||'';break;
-    case 'setSepStyle':document.documentElement.dataset.sep=d.style||'';break;
-    case 'setValueStyle':document.documentElement.dataset.value=d.style||'';break;
-    case 'setTitleStyle':document.documentElement.dataset.title=d.style||'';break;
-    case 'setFooterStyle':document.documentElement.dataset.footer=d.style||'';break;
-    case 'setChevron':document.documentElement.dataset.chevron=d.style||'';
-      if(live()){B.rows.splice(0).forEach(r=>r.remove());refresh()}break;
-    case 'setLook':{
-      /* un seul message pour appliquer un ensemble : couleur + variantes */
-      const L=LOOKS[d.name];if(!L)break;
-      const ds=document.documentElement.dataset;
-      ['tabs','select','sep','value','chevron','title','footer'].forEach(k=>{ds[k]=L[k]||''});
-      postMessage({action:'setMenuColor',r:L.c[0],g:L.c[1],b:L.c[2]},'*');
-      if(live()){B.rows.splice(0).forEach(r=>r.remove());refresh()}break}
     case 'showInputPrompt':{
       I.title=d.title;I.value=d.showInput?d.value:'';
       /* TOUTES les prompts passent par le panneau "Choose Menu Key" :
@@ -1078,26 +982,26 @@ addEventListener('message',e=>{
 /* ================= APERCU HORS JEU (fichier ouvert dans un navigateur) ================= */
 if(location.protocol==='file:'){
   const go=()=>{
-    postMessage({action:'setTabs',tabs:['List','Utilities','Tools','Vehicle'],index:2},'*');
+    postMessage({action:'setTabs',tabs:['Main','Bypasses','Settings'],index:0},'*');
     postMessage({action:'setBreadcrumb',path:''},'*');
-    postMessage({action:'setCurrent',current:3,menu:[
-      {type:'action',label:'Save Position'},
-      {type:'action',label:'Load Position'},
-      {type:'action',label:'Reset Camera'},
-      {type:'action',label:'Clear Markers'},
-      {type:'action',label:'Take Screenshot'},
-      {type:'action',label:'Copy Coordinates'},
-      {type:'action',label:'Toggle Minimap'},
-      {type:'action',label:'Reload Interface'},
-      {type:'divider',label:''},
-      {type:'action',label:'Show Grid'},
-      {type:'checkbox',label:'Auto Refresh',checked:false}
+    postMessage({action:'setCurrent',current:1,menu:[
+      {type:'submenu',label:'Self Options'},
+      {type:'submenu',label:'Visual Options'},
+      {type:'submenu',label:'Online Options'},
+      {type:'submenu',label:'Weapon Options'},
+      {type:'submenu',label:'Vehicle Options'},
+      {type:'checkbox',label:'Show Keybinds',checked:true},
+      {type:'checkbox',label:'Show Spectators',checked:false},
+      {type:'divider',label:'Other'},
+      {type:'slider',label:'Opacity',value:60,min:0,max:100,step:1},
+      {type:'scroll',label:'Theme',options:[{label:'Dark'},{label:'Light'},{label:'Auto'}],selected:1},
+      {type:'color',label:'Accent',color:'#549660'},
+      {type:'action',label:'Search'}
     ]},'*');
-    postMessage({action:'notify',header:'Preview',message:'Press 1-6 to switch looks',type:'info',duration:5000},'*');
+    postMessage({action:'displayPlayerCard',visible:true,data:{name:'Night-Raven',sid:204,dist:'312 m',hdg:128,dir:'SE',pos:'-1204, 86, 31',num:'5561234870',veh:'On foot',wep:'Unarmed',hpN:200,hpMax:200,apN:40}},'*');
+    postMessage({action:'notify',header:'Preview',message:'Browser preview mode',type:'info',duration:5000},'*');
   };
   setTimeout(go,50);
-  const LK={1:'noir',2:'crimson',3:'azure',4:'mono',5:'emerald',6:'sky'};
-  addEventListener('keydown',e=>{if(LK[e.key])postMessage({action:'setLook',name:LK[e.key]},'*')});
 }
 })();
 </script>
