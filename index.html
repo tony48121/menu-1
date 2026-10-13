@@ -150,17 +150,16 @@
 .input-box input{padding:1.25vh 1vh;border:none;outline:none;background:transparent;color:white;font-size:1.2vh;font-family:var(--font);display:block;margin:0}
 
 /* ===== Panneau de saisie / capture de touche ("Choose Menu Key") =====
-   Reproduit menu-key (1).html, mais NETTEMENT PLUS PETIT : la reference
-   faisait 1126 x 95 px (en-tete 38 px), on est a 560 x 56 px (en-tete 21 px),
-   soit ~50 % en largeur et ~59 % en hauteur, polices et paddings reduits dans
-   les memes proportions pour garder les memes ratios.
+   Reproduit menu-key (1).html : la reference faisait 1126 x 95 px
+   (en-tete 38 px), on est a 640 x 64 px (en-tete 24 px). Polices et paddings
+   reduits dans les memes proportions pour garder les memes ratios.
    Il sert MAINTENANT pour TOUTES les prompts, keybinds compris : la saisie
    n'a pas besoin de <input> (c'est le Lua qui pousse le buffer via
    updateInputPrompt, avec cursorPos), donc le rendu est identique partout.
-   LA LARGEUR EST EN vw : min(560px, 46vw). Un simple width:560px serait
+   LA LARGEUR EST EN vw : min(640px, 52vw). Un simple width fixe serait
    ecrase par max-width sur les petits ecrans et le panneau SEMBLERAIT ne pas
-   reduire ; en vw il retrecit partout (46vw sur un ecran de 800px, plafonne
-   a 560px au-dela de ~1217px).
+   changer ; en vw il suit toutes les resolutions (52vw sur un ecran de 800px,
+   plafonne a 640px au-dela de ~1230px).
    VOILE : .kb-overlay fond un rideau sombre plein ecran derriere le panneau,
    comme l'ancien .input-overlay.
    Tout le panneau est calcule a partir d'UNE couleur, celle du menu
@@ -170,25 +169,25 @@
 .kb-overlay{box-sizing:border-box;position:fixed;top:0;left:0;width:100%;height:100%;z-index:999999;
   pointer-events:none;display:grid;place-items:center;background:rgba(0,0,0,0.55);
   font-family:var(--font);font-weight:500;color:var(--kb-text,#fff)}
-.kb-panel{box-sizing:border-box;width:min(560px,46vw);max-width:calc(100vw - 48px);height:56px;display:flex;
+.kb-panel{box-sizing:border-box;width:min(640px,52vw);max-width:calc(100vw - 48px);height:64px;display:flex;
   flex-direction:column;overflow:hidden;background:var(--kb-panel,rgba(98,98,98,0.82));
-  border:1px solid var(--kb-border,rgba(208,208,208,0.35));border-radius:4px;
+  border:1px solid var(--kb-border,rgba(208,208,208,0.35));border-radius:5px;
   box-shadow:0 0.35vh 1.4vh rgba(0,0,0,0.55)}
-.kb-head{flex:none;height:21px;display:flex;align-items:center;gap:10px;padding:0 11px;
+.kb-head{flex:none;height:24px;display:flex;align-items:center;gap:11px;padding:0 12px;
   background:var(--kb-head,rgba(57,57,57,0.92));border-bottom:1px solid var(--kb-rule,rgba(224,224,224,0.7))}
 .kb-head svg{flex:none;color:var(--kb-icon,#e5e5e5)}
-.kb-divider{flex:none;width:1px;height:13px;background:var(--kb-line,rgba(255,255,255,0.14))}
-.kb-title{margin:0;font-size:13px;font-weight:700;letter-spacing:0.01em;color:#fff}
-.kb-value{flex:1;min-height:0;display:flex;align-items:center;padding:0 14px;font-size:13px;font-weight:700}
+.kb-divider{flex:none;width:1px;height:15px;background:var(--kb-line,rgba(255,255,255,0.14))}
+.kb-title{margin:0;font-size:15px;font-weight:700;letter-spacing:0.01em;color:#fff}
+.kb-value{flex:1;min-height:0;display:flex;align-items:center;padding:0 16px;font-size:15px;font-weight:700}
 .kb-key{overflow:hidden;text-overflow:ellipsis;white-space:pre;display:inline-flex;align-items:center}
 .kb-key.placeholder{font-weight:400;color:var(--kb-text-off,rgba(255,255,255,0.72))}
-.kb-caret{flex:none;width:2px;height:15px;background:var(--kb-text,#fff);
+.kb-caret{flex:none;width:2px;height:17px;background:var(--kb-text,#fff);
   animation:kb-blink 1.1s steps(1) infinite}
 /* le curseur ne prend sa marge que quand il est en fin de texte : au milieu
    d'un mot il doit coller au caractere, sinon tout le texte glisse de 4px */
 .kb-key.kb-gap .kb-caret{margin-left:4px}
 @keyframes kb-blink{50%{opacity:0}}
-.kb-hint{margin-left:auto;padding-left:14px;font-size:11px;font-weight:500;white-space:nowrap;
+.kb-hint{margin-left:auto;padding-left:16px;font-size:12px;font-weight:500;white-space:nowrap;
   color:var(--kb-text-off,rgba(255,255,255,0.72))}
 @media (prefers-reduced-motion:reduce){.kb-caret{animation:none}}
 body,main{all:unset;display:block}
@@ -199,10 +198,10 @@ body,main{all:unset;display:block}
    blanc/fonce selon contraste. Niveaux : info (couleur du menu), success,
    warning, error, chacun avec sa propre icone SVG. Barre de temps en bas,
    en pause au survol. duration 0 = reste jusqu'a fermeture. */
-.notify-stack{position:fixed;top:24px;right:24px;width:340px;max-width:calc(100vw - 32px);
-  display:flex;flex-direction:column;gap:10px;z-index:9999;pointer-events:none;--slide:28px}
+.notify-stack{position:fixed;top:24px;right:24px;width:390px;max-width:calc(100vw - 32px);
+  display:flex;flex-direction:column;gap:12px;z-index:9999;pointer-events:none;--slide:32px}
 .nt-toast{--accent:var(--nt-on,#e0e0e0);position:relative;overflow:hidden;display:flex;
-  align-items:flex-start;gap:12px;padding:12px 10px 15px 12px;pointer-events:auto;
+  align-items:flex-start;gap:14px;padding:14px 12px 17px 14px;pointer-events:auto;
   background:var(--nt-panel,rgba(98,98,98,0.88));border:1px solid var(--nt-border,rgba(208,208,208,0.35));
   border-radius:10px;animation:nt-in 0.28s ease-out both;
   font-family:var(--font);color:var(--nt-text,#fff)}
@@ -212,14 +211,14 @@ body,main{all:unset;display:block}
 .nt-toast.leaving{animation:nt-out 0.22s ease-in forwards}
 @keyframes nt-in{from{opacity:0;transform:translateX(var(--slide))}to{opacity:1;transform:none}}
 @keyframes nt-out{from{opacity:1;transform:none}to{opacity:0;transform:translateX(var(--slide))}}
-.nt-icon{flex:none;width:30px;height:30px;display:grid;place-items:center;border-radius:8px;
+.nt-icon{flex:none;width:34px;height:34px;display:grid;place-items:center;border-radius:9px;
   background:rgba(0,0,0,0.28);color:var(--accent)}
-.nt-icon svg{width:20px;height:20px}
+.nt-icon svg{width:22px;height:22px}
 .nt-body{flex:1;min-width:0;padding-top:1px}
-.nt-title{margin:0;font-size:14.5px;font-weight:700;line-height:1.3;overflow-wrap:anywhere}
-.nt-msg{margin:3px 0 0;font-size:13px;line-height:1.4;color:var(--nt-text-off,rgba(255,255,255,0.72));overflow-wrap:anywhere}
-.nt-close{flex:none;width:26px;height:26px;border:0;border-radius:6px;background:transparent;
-  color:var(--nt-text-off,rgba(255,255,255,0.72));font:400 20px/1 var(--font);cursor:pointer}
+.nt-title{margin:0;font-size:16px;font-weight:700;line-height:1.3;overflow-wrap:anywhere}
+.nt-msg{margin:3px 0 0;font-size:14px;line-height:1.4;color:var(--nt-text-off,rgba(255,255,255,0.72));overflow-wrap:anywhere}
+.nt-close{flex:none;width:28px;height:28px;border:0;border-radius:6px;background:transparent;
+  color:var(--nt-text-off,rgba(255,255,255,0.72));font:400 22px/1 var(--font);cursor:pointer}
 .nt-close:hover{background:rgba(0,0,0,0.25);color:var(--nt-text,#fff)}
 .nt-timer{position:absolute;left:0;bottom:0;width:100%;height:3px;background:var(--accent);
   transform-origin:left center;animation:nt-shrink linear forwards}
@@ -553,7 +552,7 @@ function kbFromAccent(){
 function buildKey(){
   const ov=$('div','kb-overlay'),box=$('div','kb-panel'),head=$('div','kb-head');
   const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
-  svg.setAttribute('width','20');svg.setAttribute('height','14');
+  svg.setAttribute('width','22');svg.setAttribute('height','15');
   svg.setAttribute('viewBox','0 0 26 18');svg.setAttribute('fill','none');
   svg.setAttribute('stroke','currentColor');svg.setAttribute('stroke-width','1.5');
   svg.setAttribute('aria-hidden','true');
