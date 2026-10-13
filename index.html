@@ -12,9 +12,9 @@
 ::-webkit-scrollbar{display:none;width:0;height:0}
 
 :root{
-  --accent-rgb:47,155,240;
-  --accent-light:161,210,248;
-  --line-rgb:90,175,245;
+  --accent-rgb:150,150,150;
+  --accent-light:208,208,208;
+  --line-rgb:208,208,208;
   --color-main:rgba(var(--accent-rgb),0.35);
   --color-border:rgba(var(--accent-rgb),0.35);
   --color-shadow:rgba(var(--accent-rgb),0.35);
@@ -149,60 +149,83 @@
 .input-header-text{color:white}
 .input-box input{padding:1.25vh 1vh;border:none;outline:none;background:transparent;color:white;font-size:1.2vh;font-family:var(--font);display:block;margin:0}
 
-/* ===== Panneau de capture de touche ("Choose Menu Key") =====
+/* ===== Panneau de saisie / capture de touche ("Choose Menu Key") =====
    Reproduit menu-key (1).html, mais NETTEMENT PLUS PETIT : la reference
    faisait 1126 x 95 px (en-tete 38 px), on est a 560 x 56 px (en-tete 21 px),
    soit ~50 % en largeur et ~59 % en hauteur, polices et paddings reduits dans
    les memes proportions pour garder les memes ratios.
+   Il sert MAINTENANT pour TOUTES les prompts, keybinds compris : la saisie
+   n'a pas besoin de <input> (c'est le Lua qui pousse le buffer via
+   updateInputPrompt, avec cursorPos), donc le rendu est identique partout.
    LA LARGEUR EST EN vw : min(560px, 46vw). Un simple width:560px serait
    ecrase par max-width sur les petits ecrans et le panneau SEMBLERAIT ne pas
    reduire ; en vw il retrecit partout (46vw sur un ecran de 800px, plafonne
    a 560px au-dela de ~1217px).
+   VOILE : .kb-overlay fond un rideau sombre plein ecran derriere le panneau,
+   comme l'ancien .input-overlay.
    Tout le panneau est calcule a partir d'UNE couleur, celle du menu
-   (--accent-rgb), via kbApplyColor(). Il remplace l'ancien .input-box
-   UNIQUEMENT pour les keybinds ; les inputs textuels (nom de vehicule, URL,
-   plaque...) gardent l'ancien panneau. Pas de voile sombre : la reference a
-   le fond transparent, le jeu reste visible.
+   (--accent-rgb), via kbApplyColor().
    POSITION : centre exactement a l'ecran (place-items:center). La reference
    le collait en haut (padding-top:30px) ; ici on le veut au milieu. */
 .kb-overlay{box-sizing:border-box;position:fixed;top:0;left:0;width:100%;height:100%;z-index:999999;
-  pointer-events:none;display:grid;place-items:center;
+  pointer-events:none;display:grid;place-items:center;background:rgba(0,0,0,0.55);
   font-family:var(--font);font-weight:500;color:var(--kb-text,#fff)}
 .kb-panel{box-sizing:border-box;width:min(560px,46vw);max-width:calc(100vw - 48px);height:56px;display:flex;
-  flex-direction:column;overflow:hidden;background:var(--kb-panel,rgba(55,98,62,0.82));
-  border:1px solid var(--kb-border,rgba(178,207,183,0.35));border-radius:4px;
+  flex-direction:column;overflow:hidden;background:var(--kb-panel,rgba(98,98,98,0.82));
+  border:1px solid var(--kb-border,rgba(208,208,208,0.35));border-radius:4px;
   box-shadow:0 0.35vh 1.4vh rgba(0,0,0,0.55)}
 .kb-head{flex:none;height:21px;display:flex;align-items:center;gap:10px;padding:0 11px;
-  background:var(--kb-head,rgba(32,57,36,0.92));border-bottom:1px solid var(--kb-rule,rgba(205,226,209,0.7))}
-.kb-head svg{flex:none;color:var(--kb-icon,#d4e5d7)}
+  background:var(--kb-head,rgba(57,57,57,0.92));border-bottom:1px solid var(--kb-rule,rgba(224,224,224,0.7))}
+.kb-head svg{flex:none;color:var(--kb-icon,#e5e5e5)}
 .kb-divider{flex:none;width:1px;height:13px;background:var(--kb-line,rgba(255,255,255,0.14))}
 .kb-title{margin:0;font-size:13px;font-weight:700;letter-spacing:0.01em;color:#fff}
 .kb-value{flex:1;min-height:0;display:flex;align-items:center;padding:0 14px;font-size:13px;font-weight:700}
-.kb-key{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kb-key{overflow:hidden;text-overflow:ellipsis;white-space:pre;display:inline-flex;align-items:center}
 .kb-key.placeholder{font-weight:400;color:var(--kb-text-off,rgba(255,255,255,0.72))}
-.kb-caret{flex:none;width:2px;height:15px;margin-left:4px;background:var(--kb-text,#fff);
+.kb-caret{flex:none;width:2px;height:15px;background:var(--kb-text,#fff);
   animation:kb-blink 1.1s steps(1) infinite}
+/* le curseur ne prend sa marge que quand il est en fin de texte : au milieu
+   d'un mot il doit coller au caractere, sinon tout le texte glisse de 4px */
+.kb-key.kb-gap .kb-caret{margin-left:4px}
 @keyframes kb-blink{50%{opacity:0}}
 .kb-hint{margin-left:auto;padding-left:14px;font-size:11px;font-weight:500;white-space:nowrap;
   color:var(--kb-text-off,rgba(255,255,255,0.72))}
 @media (prefers-reduced-motion:reduce){.kb-caret{animation:none}}
 body,main{all:unset;display:block}
 
-/* ---------- notifications ---------- */
-.notify-stack{position:fixed;bottom:2vh;right:2vh;display:flex;flex-direction:column;gap:0.8vh;z-index:9999;pointer-events:none}
-/* box-sizing:border-box OBLIGATOIRE : sans lui la carte fait 32vh + bordures,
-   puis dismiss() la reconvertit en border-box -> saut de geometrie a la sortie.
-   Pas de backdrop-filter : sur le CEF de FiveM il composite le flou contre du
-   noir opaque (aucun fond derriere dans la page) d'ou la boite noire. */
-.notify-card{box-sizing:border-box;background:rgba(20,21,26,0.92);border:0.1vh solid rgba(255,255,255,0.08);border-left:0.3vh solid var(--accent);border-radius:0.6vh;color:#fff;font-family:var(--font);width:32vh;max-width:85vw;overflow:hidden;box-shadow:0 0.6vh 2vh rgba(0,0,0,0.5)}
-.notify-body{display:flex;flex-direction:row;align-items:center;padding:1vh 1.2vh 0.9vh;gap:1vh}
-.notify-icon-wrap{width:2.2vh;height:2.2vh;min-width:2.2vh;border-radius:0.5vh;background:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.notify-icon{font-size:1.1vh;color:#fff;line-height:1;display:block;text-align:center;width:1.1vh;height:1.1vh}
-.notify-text{display:flex;flex-direction:column;gap:0.2vh;min-width:0}
-.notify-header{font-size:1.35vh;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:0.02em}
-.notify-message{font-size:1.05vh;font-weight:400;color:rgba(200,200,200,0.85);line-height:1.4}
-.notify-bar{height:0.25vh;width:100%;background:rgba(255,255,255,0.06)}
-.notify-bar-fill{height:100%;background:var(--accent);transition:width 0.1s linear;will-change:width}
+/* ---------- notifications (maquette notifications.html) ----------
+   Pile en haut a droite, 340px. Tout se calcule a partir d'UNE couleur,
+   celle du menu (--accent-rgb), via ntApplyColor() : fond derive + texte
+   blanc/fonce selon contraste. Niveaux : info (couleur du menu), success,
+   warning, error, chacun avec sa propre icone SVG. Barre de temps en bas,
+   en pause au survol. duration 0 = reste jusqu'a fermeture. */
+.notify-stack{position:fixed;top:24px;right:24px;width:340px;max-width:calc(100vw - 32px);
+  display:flex;flex-direction:column;gap:10px;z-index:9999;pointer-events:none;--slide:28px}
+.nt-toast{--accent:var(--nt-on,#e0e0e0);position:relative;overflow:hidden;display:flex;
+  align-items:flex-start;gap:12px;padding:12px 10px 15px 12px;pointer-events:auto;
+  background:var(--nt-panel,rgba(98,98,98,0.88));border:1px solid var(--nt-border,rgba(208,208,208,0.35));
+  border-radius:10px;animation:nt-in 0.28s ease-out both;
+  font-family:var(--font);color:var(--nt-text,#fff)}
+.nt-toast[data-level="success"]{--accent:var(--nt-success,#7be38b)}
+.nt-toast[data-level="warning"]{--accent:var(--nt-warning,#ffcf5a)}
+.nt-toast[data-level="error"]{--accent:var(--nt-error,#ff7a70)}
+.nt-toast.leaving{animation:nt-out 0.22s ease-in forwards}
+@keyframes nt-in{from{opacity:0;transform:translateX(var(--slide))}to{opacity:1;transform:none}}
+@keyframes nt-out{from{opacity:1;transform:none}to{opacity:0;transform:translateX(var(--slide))}}
+.nt-icon{flex:none;width:30px;height:30px;display:grid;place-items:center;border-radius:8px;
+  background:rgba(0,0,0,0.28);color:var(--accent)}
+.nt-icon svg{width:20px;height:20px}
+.nt-body{flex:1;min-width:0;padding-top:1px}
+.nt-title{margin:0;font-size:14.5px;font-weight:700;line-height:1.3;overflow-wrap:anywhere}
+.nt-msg{margin:3px 0 0;font-size:13px;line-height:1.4;color:var(--nt-text-off,rgba(255,255,255,0.72));overflow-wrap:anywhere}
+.nt-close{flex:none;width:26px;height:26px;border:0;border-radius:6px;background:transparent;
+  color:var(--nt-text-off,rgba(255,255,255,0.72));font:400 20px/1 var(--font);cursor:pointer}
+.nt-close:hover{background:rgba(0,0,0,0.25);color:var(--nt-text,#fff)}
+.nt-timer{position:absolute;left:0;bottom:0;width:100%;height:3px;background:var(--accent);
+  transform-origin:left center;animation:nt-shrink linear forwards}
+.nt-toast:hover .nt-timer{animation-play-state:paused}
+@keyframes nt-shrink{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+@media (prefers-reduced-motion:reduce){.nt-toast,.nt-toast.leaving,.nt-timer{animation:none}.nt-toast.leaving{opacity:0}}
 
 /* ---------- cible (reticule overlay) ---------- */
 /* Dessinee par le NUI, pas par un composant HUD : ainsi elle coexiste avec
@@ -499,11 +522,11 @@ function inputUI(show){
 }
 const unblock=()=>setTimeout(()=>{I.blocking=false},350);
 
-/* ===== "Choose Menu Key" : panneau de capture de touche =====
-   Etat dedie, dans son propre slot, exactement comme la reticule : ainsi le
-   panneau de touche et l'input textuel ne peuvent jamais se chevaucher ni
-   se reconstruire l'un l'autre (present() ne reverifie pas le builder). */
-const K={title:'',value:'',hint:'',slot:{g:0}};
+/* ===== "Choose Menu Key" : panneau de saisie et de capture de touche =====
+   Etat dedie, dans son propre slot, exactement comme la reticule : le panneau
+   ne peut pas se reconstruire par accident (present() ne reverifie pas le
+   builder). Il sert desormais a TOUTES les prompts, texte compris. */
+const K={title:'',value:'',hint:'',mode:'typeable',cursor:0,slot:{g:0}};
 const kbMix=(a,b,t)=>a.map((v,i)=>Math.round(v*(1-t)+b[i]*t));
 const kbRgba=(c,a)=>`rgba(${c[0]},${c[1]},${c[2]},${a===undefined?1:a})`;
 function kbApplyColor(r,g,b){
@@ -525,7 +548,7 @@ function kbApplyColor(r,g,b){
 function kbFromAccent(){
   const raw=(getComputedStyle(document.documentElement).getPropertyValue('--accent-rgb')||'').trim();
   const p=raw.split(/[,\s]+/).map(Number);
-  kbApplyColor(isFinite(p[0])?p[0]:47,isFinite(p[1])?p[1]:155,isFinite(p[2])?p[2]:240);
+  kbApplyColor(isFinite(p[0])?p[0]:150,isFinite(p[1])?p[1]:150,isFinite(p[2])?p[2]:150);
 }
 function buildKey(){
   const ov=$('div','kb-overlay'),box=$('div','kb-panel'),head=$('div','kb-head');
@@ -539,7 +562,12 @@ function buildKey(){
   const ttl=$('h1','kb-title');
   head.append(svg,$('span','kb-divider'),ttl);
   const val=$('div','kb-value');
-  val.append($('span','kb-key'),$('span','kb-caret'),$('span','kb-hint'));
+  /* .kb-key contient le texte AVANT le curseur, le curseur, puis le texte
+     APRES : le Lua envoie cursorPos, donc le curseur se place vraiment ou
+     l'utilisateur a bouge les fleches, pas toujours en fin de ligne. */
+  const key=$('span','kb-key');
+  key.append($('span','kb-b'),$('span','kb-caret'),$('span','kb-a'));
+  val.append(key,$('span','kb-hint'));
   box.append(head,val);ov.append(box);app.append(ov);
   kbFromAccent();                 /* la couleur du menu peut changer entre deux ouvertures */
   return [ov,box];
@@ -549,9 +577,23 @@ const planKey=(e,out)=>[tr(e[0],{kind:'fade',dur:400},out),tr(e[1],{kind:'scale'
 function keyUI(show){
   present(K.slot,show,buildKey,planKey);
   const e=K.slot.els;if(!e)return;
-  const raw=String(K.value==null?'':K.value),k=e[1].querySelector('.kb-key');
-  k.textContent=raw||'Appuie sur une touche';
-  k.classList.toggle('placeholder',!raw);
+  const raw=String(K.value==null?'':K.value);
+  const isKey=K.mode==='keybind'||K.mode==='itemkeybind';
+  const key=e[1].querySelector('.kb-key');
+  const b=key.querySelector('.kb-b'),a=key.querySelector('.kb-a');
+  /* invite uniquement pour une capture de touche : sur une saisie texte le
+     champ vide + curseur clignotant est le comportement normal d'un champ. */
+  const ph=isKey&&!raw;
+  key.classList.toggle('placeholder',ph);
+  if(ph){
+    b.textContent='Appuie sur une touche';a.textContent='';
+    key.classList.add('kb-gap');
+  }else{
+    const cur=Math.max(0,Math.min(K.cursor==null?raw.length:K.cursor,raw.length));
+    b.textContent=raw.slice(0,cur);
+    a.textContent=raw.slice(cur);
+    key.classList.toggle('kb-gap',cur>=raw.length);
+  }
   e[1].querySelector('.kb-title').textContent=K.title||'Choose Menu Key';
   e[1].querySelector('.kb-hint').textContent=K.hint||'';
 }
@@ -712,39 +754,102 @@ function playerCardShow(d){
   if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>positionPlayerCard()).catch(()=>{});
 }
 
-/* ================= NOTIFICATIONS ================= */
-const NC={info:{icon:'fa-info',color:'#3d9bff'},error:{icon:'fa-times',color:'#ff3d3d'},success:{icon:'fa-check',color:'#3ddc68'}};
-const stack=$('div','notify-stack');app.append(stack);
-function flip(mutate){
-  const f=new Map([...stack.children].map(c=>[c,c.getBoundingClientRect()]));
-  mutate();
-  [...stack.children].forEach(c=>{
-    const o=f.get(c);if(!o)return;
-    const n=c.getBoundingClientRect(),dx=o.left-n.left,dy=o.top-n.top;
-    if(dx||dy)c.animate([{transform:`translate(${dx}px,${dy}px)`},{transform:'none'}],{duration:300,easing:E_OUT});
-  });
+/* ================= NOTIFICATIONS (maquette notifications.html) ================= */
+/* Couleurs derivees du menu : ntApplyColor(r,g,b) recalcule --nt-panel et
+   --nt-on a chaque setMenuColor. Defaut gris 150,150,150 comme le reste. */
+const ntStack=$('div','notify-stack');app.append(ntStack);
+const NT_LEVELS=['info','success','warning','error'];
+const NT_ICONS={
+  info:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>',
+  success:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/></svg>',
+  warning:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg>',
+  error:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>'};
+const ntToasts={};let ntNext=1;
+const NT_MAX=5,NT_DEFAULT=5000;
+function ntHsl(c){
+  const r=c[0]/255,g=c[1]/255,b=c[2]/255,mx=Math.max(r,g,b),mn=Math.min(r,g,b),l=(mx+mn)/2,d=mx-mn;
+  let h=0,s=0;
+  if(d){s=d/(1-Math.abs(2*l-1));
+    if(mx===r)h=((g-b)/d)%6;else if(mx===g)h=(b-r)/d+2;else h=(r-g)/d+4;h*=60;if(h<0)h+=360}
+  return [h,s,l];
 }
-function dismiss(card){
-  flip(()=>{
-    const {offsetWidth:w,offsetHeight:h,offsetLeft:l,offsetTop:t}=card;
-    Object.assign(card.style,{position:'absolute',boxSizing:'border-box',left:l+'px',top:t+'px',width:w+'px',height:h+'px'});
-  });
-  tr(card,{kind:'fly',x:80,dur:250},true).finished.then(()=>card.remove()).catch(()=>{});
+function ntHslRgb(h,s,l){
+  const c=(1-Math.abs(2*l-1))*s,x=c*(1-Math.abs((h/60)%2-1)),m=l-c/2;
+  let r=0,g=0,b=0;
+  if(h<60){r=c;g=x}else if(h<120){r=x;g=c}else if(h<180){g=c;b=x}
+  else if(h<240){g=x;b=c}else if(h<300){r=x;b=c}else{r=c;b=x}
+  return [Math.round((r+m)*255),Math.round((g+m)*255),Math.round((b+m)*255)];
 }
+function ntApplyColor(r,g,b){
+  const main=[r,g,b],black=[0,0,0],white=[255,255,255],panel=kbMix(main,black,0.35);
+  const hsl=ntHsl(main);
+  /* Gris (saturation ~0) : forcer une saturation 0.9 donnerait du rose.
+     On prend un gris clair neutre, comme l'icone du panneau de touche. */
+  const on=hsl[1]<0.15?kbMix(main,white,0.75):ntHslRgb(hsl[0],Math.min(1,Math.max(0.9,hsl[1])),0.78);
+  const a=panel.map(v=>{v/=255;return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4)});
+  const L=0.2126*a[0]+0.7152*a[1]+0.0722*a[2];
+  const text=(1.05/(L+0.05))>=((L+0.05)/0.057)?[255,255,255]:[16,21,16];
+  const s=document.documentElement.style;
+  s.setProperty('--nt-panel',kbRgba(panel,0.88));
+  s.setProperty('--nt-border',kbRgba(kbMix(main,white,0.55),0.35));
+  s.setProperty('--nt-text',kbRgba(text));
+  s.setProperty('--nt-text-off',kbRgba(text,0.72));
+  s.setProperty('--nt-on',kbRgba(on));
+}
+function ntSchedule(t){
+  if(!(t.remaining>0))return;
+  t.startedAt=Date.now();
+  t.timeout=setTimeout(()=>dismissNt(t.id),t.remaining);
+}
+function dismissNt(id){
+  const t=ntToasts[id];if(!t)return;
+  delete ntToasts[id];clearTimeout(t.timeout);
+  t.el.classList.add('leaving');
+  setTimeout(()=>{if(t.el.parentNode)t.el.parentNode.removeChild(t.el)},240);
+}
+/* Signature inchangee (header,message,duration,type) : le Lua n'a rien a changer. */
 function notify(header,message,duration,type){
-  const cfg=NC[type]||NC.info,card=$('div','notify-card');
-  card.style.setProperty('--accent',cfg.color);
-  card.innerHTML=`<div class="notify-body"><div class="notify-icon-wrap"><i class="fa ${cfg.icon} notify-icon"></i></div><div class="notify-text"><span class="notify-header"></span><span class="notify-message"></span></div></div><div class="notify-bar"><div class="notify-bar-fill" style="width:100%"></div></div>`;
-  card.querySelector('.notify-header').textContent=header;
-  card.querySelector('.notify-message').textContent=message??'';
-  flip(()=>stack.prepend(card));
-  tr(card,{kind:'fly',x:80,dur:350},false);
-  const fill=card.querySelector('.notify-bar-fill'),step=100/(duration/100);let p=100;
-  const iv=setInterval(()=>{
-    if(p>0){p=Math.max(p-step,0);fill.style.width=p+'%'}
-    else{clearInterval(iv);setTimeout(()=>dismiss(card),100)}
-  },100);
+  const level=NT_LEVELS.indexOf(type)>=0?type:'info';
+  let dur=Number(duration);
+  if(duration===undefined||duration===null||!isFinite(dur))dur=NT_DEFAULT;
+  dur=dur<=0?0:Math.max(500,Math.min(60000,dur));
+  const title=String(header==null?'':header),msg=String(message==null?'':message);
+  if(!title&&!msg)return null;
+  const id=ntNext++,el=document.createElement('div');
+  el.className='nt-toast';el.setAttribute('data-level',level);
+  el.setAttribute('role',level==='error'?'alert':'status');
+  const icon=document.createElement('span');
+  icon.className='nt-icon';icon.setAttribute('aria-hidden','true');
+  icon.innerHTML=NT_ICONS[level];
+  const body=document.createElement('div');body.className='nt-body';
+  const tEl=document.createElement('p');tEl.className='nt-title';
+  tEl.textContent=title||msg;body.appendChild(tEl);
+  if(title&&msg){const mEl=document.createElement('p');mEl.className='nt-msg';mEl.textContent=msg;body.appendChild(mEl)}
+  const close=document.createElement('button');
+  close.type='button';close.className='nt-close';close.setAttribute('aria-label','Fermer');
+  close.textContent='×';close.addEventListener('click',()=>dismissNt(id));
+  el.append(icon,body,close);
+  if(dur>0){
+    const timer=document.createElement('span');
+    timer.className='nt-timer';timer.setAttribute('aria-hidden','true');
+    timer.style.animationDuration=dur+'ms';el.appendChild(timer);
+  }
+  const t={id,el,duration:dur,remaining:dur,startedAt:0,timeout:null};
+  ntToasts[id]=t;
+  el.addEventListener('mouseenter',()=>{
+    if(!t.timeout)return;
+    clearTimeout(t.timeout);t.timeout=null;t.remaining-=Date.now()-t.startedAt;
+  });
+  el.addEventListener('mouseleave',()=>{
+    if(t.duration>0&&!t.timeout&&!el.classList.contains('leaving'))ntSchedule(t);
+  });
+  ntStack.insertBefore(el,ntStack.firstChild);
+  ntSchedule(t);
+  const ids=Object.keys(ntToasts).map(Number).sort((a,b)=>a-b);
+  while(ids.length>NT_MAX)dismissNt(ids.shift());
+  return id;
 }
+ntApplyColor(150,150,150);
 
 /* ================= MESSAGES DU JEU ================= */
 addEventListener('message',e=>{
@@ -767,33 +872,33 @@ addEventListener('message',e=>{
       if(live()){B.root.style.left=B.left;B.root.style.top=B.top;positionPlayerCard()}break;
     case 'setBanner':if(d.url){B.banner=d.url;if(live())B.img.src=d.url}break;
     case 'setMenuColor':{
-      const r=d.r??47,g=d.g??155,b=d.b??240,s=document.documentElement.style;
+      const r=d.r??150,g=d.g??150,b=d.b??150,s=document.documentElement.style;
       const lt=v=>Math.round(v+(255-v)*0.55);
       s.setProperty('--accent-rgb',`${r},${g},${b}`);
       s.setProperty('--accent-light',`${lt(r)},${lt(g)},${lt(b)}`);s.setProperty('--line-rgb',`${lt(r)},${lt(g)},${lt(b)}`);
-      kbApplyColor(r,g,b);break}
+      kbApplyColor(r,g,b);ntApplyColor(r,g,b);break}
     case 'setBreadcrumb':B.crumb=Array.isArray(d.parts)?d.parts:(d.path?String(d.path).split('>').map(s=>s.trim()):[]);renderCrumb();break;
     case 'setTabStyle':document.documentElement.dataset.tabs=d.style||'';break;
     case 'setSelectStyle':document.documentElement.dataset.select=d.style||'';break;
     case 'showInputPrompt':{
       I.title=d.title;I.value=d.showInput?d.value:'';
-      /* mode keybind -> nouveau panneau "Choose Menu Key" ; tout le reste
-         (nom de vehicule, URL, plaque...) garde l'ancien input. */
-      const mode=d.mode||'typeable',kb=mode==='keybind'||mode==='itemkeybind';
-      if(kb){
-        K.title=I.title;K.value=I.value;
-        K.hint=mode==='itemkeybind'?'Touche pour lier  ·  Échap pour annuler'
-                                     :'Entrée pour valider  ·  Échap pour annuler';
-        keyUI(!!d.showInput);inputUI(false);
-      }else{inputUI(!!d.showInput);keyUI(false)}
+      /* TOUTES les prompts passent par le panneau "Choose Menu Key" :
+         keybinds ET saisie texte (Spawn Vehicle, URL, plaque...). Aucun
+         <input> n'est nécessaire : c'est le Lua qui pousse le buffer et le
+         curseur via updateInputPrompt. */
+      const mode=d.mode||'typeable';
+      K.title=I.title;K.value=I.value;K.mode=mode;
+      K.cursor=d.cursor==null?String(I.value||'').length:d.cursor;
+      K.hint=mode==='itemkeybind'?'Touche pour lier  ·  Échap pour annuler'
+                                   :'Entrée pour valider  ·  Échap pour annuler';
+      keyUI(!!d.showInput);inputUI(false);
       if(d.showInput)I.blocking=true;else unblock();break}
     case 'hideInputPrompt':inputUI(false);keyUI(false);unblock();break;
     case 'updateInputPrompt':{
       I.title=d.title;I.value=d.value;
-      /* le rafraichissement doit partir vers le panneau qui est ouvert :
-         sans ca, la mise a jour d'une touche envoyee le signal a l'input
-         textuel et la touche appuyee n'apparaissait jamais. */
-      if(K.slot.els&&!K.slot.out){K.title=I.title;K.value=I.value;keyUI(true)}
+      K.title=I.title;K.value=I.value;
+      K.cursor=d.cursor==null?String(I.value||'').length:d.cursor;
+      if(K.slot.els&&!K.slot.out)keyUI(true);
       else inputUI(!!I.slot.els&&!I.slot.out);
       break}
     case 'displayFreecam':
@@ -820,7 +925,7 @@ addEventListener('message',e=>{
       if(!d.url)break;
       B.logoUrl=String(d.url);
       applyFooterLogo(B.logoEl,B.logoUrl);break}
-    case 'notify':notify(d.header||'Info',d.message,d.duration||4000,d.type||'info');break;
+    case 'notify':notify(d.header||'Info',d.message,d.duration??4000,d.type||'info');break;
   }
 });
 /* ================= APERCU HORS JEU (fichier ouvert dans un navigateur) ================= */
