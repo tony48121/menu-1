@@ -23,19 +23,21 @@
   --color-mainSolid:rgb(var(--accent-rgb));
   --color-tab:rgba(var(--accent-rgb),0.35);
   /* ----- PALETTE DU MENU : panneau noir + UNE couleur (celle du menu) -----
-     Le fond reste noir (comme sur les captures) ; seule la couleur du menu
+     Le fond reste noir (demande), mais TEINTE par la couleur du menu ; seule
+     cette couleur change
      change : onglet actif, ligne selectionnee, filets, interrupteur allume,
      barre de defilement. Tout est recalcule par mnApplyColor() au chargement
      puis a chaque setMenuColor. Les variables sont des triplets "r,g,b" :
      l'opacite se regle dans le CSS avec rgba(var(--mn-x-rgb),alpha).
      Valeurs ci-dessous = repli (vert du menu par defaut).
-       bg   = fond de la liste (noir legerement teinte)
+       bg   = fond de la carte joueur (noir teinte a 6 %)
        acc  = couleur du menu (filets, contours, barre de defilement)
        hi   = fill eclairci (haut des degrades)   lo = fill assombri (bas)
-       fill = acc assombri au besoin pour que le texte BLANC reste lisible
-              dessus (onglet actif, ligne selectionnee, interrupteur allume)
+       fill = acc ASSOMBRI EN HSL (saturation gardee) pour que le texte BLANC
+              reste lisible dessus (selection, onglet actif, interrupteur)
        on   = acc tres lumineux, pour le texte/les icones d'accent            */
   --mn-bg-rgb:5,9,6;
+  --mn-char-rgb:18,26,34;
   --mn-acc-rgb:84,150,96;
   --mn-hi-rgb:106,153,114;
   --mn-lo-rgb:37,65,42;
@@ -56,11 +58,19 @@
 /* ---------- conteneur ---------- */
 /* Pas de fond sur la racine : la banniere et les barres sont noires, la liste
    a son propre fond. Un fond sur la racine s'ajouterait a celui de la liste.
-   Pas d'overflow:hidden non plus : la barre de defilement vit HORS du panneau. */
-.menu-root{font-family:var(--menu-font);color:#fff;position:fixed;width:34vh;z-index:1000;border-radius:1vh;background:transparent;border:0.1vh solid rgba(255,255,255,0.08);box-shadow:0 1vh 3vh rgba(0,0,0,0.6)}
+   Pas d'overflow:hidden non plus : le creux et la barre sont dessines a
+   l'interieur du panneau, rien ne depasse du cadre. */
+.menu-root{font-family:var(--menu-font);color:#fff;position:fixed;width:34vh;z-index:1000;border-radius:1vh;background:transparent;border:0.1vh solid rgba(255,255,255,0.08);border-right:0.3vh solid rgb(var(--mn-acc-rgb));box-shadow:0.2vh 0 1.1vh -0.2vh rgba(var(--mn-acc-rgb),0.6),0 1vh 3vh rgba(0,0,0,0.6)}
 .menu-banner{position:relative;border-radius:0.9vh 0.9vh 0 0;overflow:hidden;padding:0;background:#000}
 .menu-banner img{width:100%;height:var(--banner-height);object-fit:cover;display:block}
-.menu-body{background:rgba(var(--mn-bg-rgb),0.93);overflow:hidden}
+.menu-body{position:relative;background:rgba(var(--mn-char-rgb),0.94);overflow:hidden;padding-left:1.2vh}
+/* creux : petite gouttiere creusee dans le bord gauche du panneau. Le degrade
+   part du plus sombre (fond du creux) vers le plus clair, un filet clair
+   marque le bord interne : c'est ce bord qui donne la profondeur. La liste
+   est decalee d'autant pour que la selection n'entre jamais dans le creux. */
+.menu-body::before{content:'';position:absolute;left:0;top:0;bottom:0;width:1.2vh;box-sizing:border-box;pointer-events:none;
+  background:linear-gradient(90deg,rgba(0,0,0,0.72),rgba(0,0,0,0.30));
+  border-right:0.1vh solid rgba(255,255,255,0.07)}
 
 /* ---------- barre de titre : SUPPRIMEE a la demande (la photo demandait la
    disparition du bandeau "Main Menu"). On garde le noeud dans le DOM (le Lua
@@ -72,7 +82,7 @@
 .crumb-parent{display:none}
 
 /* ---------- onglets : colonnes egales, onglet actif rempli de la couleur du menu ---------- */
-.menu-tabs{display:flex;height:var(--tabs-height);box-sizing:border-box;background:#0b0b0d;overflow:hidden}
+.menu-tabs{display:flex;height:var(--tabs-height);box-sizing:border-box;background:rgb(var(--mn-char-rgb));overflow:hidden}
 .tab-item{flex:1;display:flex;align-items:center;justify-content:center;position:relative;font-size:1.25vh;font-weight:600;white-space:nowrap;color:rgba(255,255,255,0.92);user-select:none;transition:background 0.2s ease,color 0.2s ease}
 .tab-item.active{color:#fff;background:linear-gradient(180deg,rgb(var(--mn-hi-rgb)),rgb(var(--mn-fill-rgb)))}
 /* variante pilule (setTabStyle {style:'pill'}) */
@@ -80,9 +90,19 @@
 [data-tabs="pill"] .tab-item{text-transform:uppercase;letter-spacing:0.08em;font-size:1.05vh;border:0.1vh solid transparent;border-radius:2vh}
 [data-tabs="pill"] .tab-item.active{border-color:rgb(var(--mn-hi-rgb));background:rgba(var(--mn-fill-rgb),0.55);color:#fff}
 
-/* ---------- barre de défilement (hors du panneau) ---------- */
-.menu-scrollbar{position:absolute;left:-1.2vh;top:calc(var(--banner-height) + var(--crumb-h) + var(--tabs-height) + 0.4vh);width:0.6vh;height:39vh;transition:opacity 0.3s cubic-bezier(0.4,0,0.2,1)}
-.scrollbar-track{width:100%;height:100%;background-color:rgba(0,0,0,0.8);border-radius:0.4vh;position:relative;transition:0.5s}
+/* ---------- barre de defilement (dans le creux a gauche) ---------- */
+/* barre logee DANS le creux : top = bord haut du corps de liste (sans le
+   0.4vh de padding), donc le track recouvre exactement la gouttiere et ne
+   deborde plus sur le pied de page. z-index:5 car la barre est un frere de
+   .menu-body place AVANT lui dans le DOM : sans le, le corps passerait
+   par-dessus et masquerait la barre. */
+/* bottom:3vh = hauteur du pied de page : le conteneur s'arrete au haut du
+   pied, donc il ne deborde JAMAIS sur lui, quelle que soit la longueur de
+   la liste (le track est de toute facon recalcule en px par applyBar).
+   pointer-events:none : la barre n'est qu'un affichage, le defilement se
+   fait sur la liste ; sinon le conteneur masquerait le clic sur le pied. */
+.menu-scrollbar{position:absolute;left:0.3vh;top:calc(var(--banner-height) + var(--crumb-h) + var(--tabs-height));bottom:3vh;width:0.6vh;z-index:5;pointer-events:none;overflow:hidden;transition:opacity 0.3s cubic-bezier(0.4,0,0.2,1)}
+.scrollbar-track{width:100%;height:100%;background-color:rgba(0,0,0,0.55);border-radius:0.3vh;position:relative}
 .scrollbar-thumb{position:absolute;top:0;left:0;width:100%;background-color:rgb(var(--mn-acc-rgb));border-radius:0.2vh;transition:top 0.25s ease-out,height 0.25s ease-out;min-height:2vh}
 
 /* ---------- liste ---------- */
@@ -118,7 +138,7 @@
 /* ---------- interrupteur : piste grise eteinte / couleur du menu allumee ---------- */
 .toggle-switch{position:relative;display:inline-flex;align-items:center;cursor:pointer}
 .toggle-switch input{position:absolute;opacity:0;width:0;height:0}
-.toggle-track{display:block;width:3.7vh;height:1.9vh;background:#43444b;border-radius:1vh;position:relative;transition:background 0.22s ease;box-sizing:border-box}
+.toggle-track{display:block;width:3.7vh;height:1.9vh;background:#62636c;border-radius:1vh;position:relative;transition:background 0.22s ease;box-sizing:border-box}
 .toggle-thumb{position:absolute;top:50%;left:0.25vh;transform:translateY(-50%);width:1.35vh;height:1.35vh;border-radius:50%;background:#f2f2f4;transition:left 0.22s ease,background 0.22s ease}
 .toggle-switch input:checked ~ .toggle-track{background:rgb(var(--mn-fill-rgb))}
 .toggle-switch input:checked ~ .toggle-track .toggle-thumb{left:calc(100% - 1.35vh - 0.25vh);background:#fff}
@@ -294,6 +314,21 @@ ul{list-style-type:disc}
 .jul-pc-row:last-child{border-bottom:none}
 .jul-pc-row .k{color:rgba(255,255,255,0.6)}
 .jul-pc-row .v{font-family:var(--mono);font-weight:500;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:15vh}
+/* ---------- contour du menu : a droite (defaut), tout autour, ou aucun (setEdgeStyle) ---------- */
+[data-edge="all"] .menu-root{border-color:rgb(var(--mn-acc-rgb));border-width:0.3vh;box-shadow:0 0 1.1vh rgba(var(--mn-acc-rgb),0.55),0 1vh 3vh rgba(0,0,0,0.6)}
+[data-edge="off"] .menu-root{border-right:0.1vh solid rgba(255,255,255,0.08);box-shadow:0 1vh 3vh rgba(0,0,0,0.6)}
+/* ===== Ecarts avec les captures du menu a 4 couleurs ===== */
+/* valeurs "< x >" pour les listes : item.arrows = true (sinon "- x -") */
+.scroll-value.arrows .arrow{font-size:0;opacity:1}
+.scroll-value.arrows .arrow::before{font-size:1.15vh;font-weight:700;line-height:1}
+.scroll-value.arrows .arrow:first-child::before{content:"<"}
+.scroll-value.arrows .arrow:last-child::before{content:">"}
+/* titre de page (setTitleStyle {style:'on'}) : barre noire, titre centre en gras */
+[data-title="on"] .menu-crumb{display:flex;align-items:center;justify-content:center;height:3vh;box-sizing:border-box;background:#000}
+[data-title="on"] .crumb-title{font-size:1.3vh;font-weight:700;color:#fff}
+/* ancien fond noir (setBgStyle {style:'black'}) */
+[data-bg="black"] .menu-body{background:rgba(var(--mn-bg-rgb),0.93)}
+[data-bg="black"] .menu-tabs{background:#0b0b0d}
 </style>
 </head>
 <body>
@@ -384,6 +419,7 @@ function renderCrumb(){
      envoye par le Lua, elle reprend le nom de l'onglet actif */
   const title=p.length?String(p[p.length-1]):String(B.tabs[B.tab]||'Main');
   c.replaceChildren($('span','crumb-title',title));
+  B.root.style.setProperty('--crumb-h',document.documentElement.dataset.title==='on'?'3vh':'0vh');
 }
 const comp=h=>{const d=$('div','component');d.innerHTML=h;return d};
 function mkRow(o){
@@ -416,6 +452,7 @@ function patchRow(r,o,i){
     r.querySelector('.range-fill').style.width=o.max>o.min?((o.value-o.min)/(o.max-o.min))*100+'%':'0%';
   }
   const sc=r.querySelector('.scroll-value .val');
+  if(sc)sc.parentElement.classList.toggle('arrows',!!o.arrows);
   if(sc)sc.textContent=o.options?.[o.selected-1]?.label||o.options?.[0]?.label||(!o.options||o.options.length===0?'Loading...':'None');
   const sw=r.querySelector('.swatch');if(sw)sw.style.background=o.color||'#fff';
 }
@@ -454,7 +491,10 @@ function applyBar(){
   B.trackEl.style.height=B.trackH+'px';B.thumb.style.top=B.thumbTop+'px';B.thumb.style.height=B.thumbH+'px';
 }
 function bar(){
-  if(!live()||B.lock)return;
+  if(!live())return;
+  /* on annule le rAF en attente au lieu d'etre avale : sinon trackH garde
+     la hauteur de l'ancien menu et le track deborde sur le pied. */
+  if(B.lock){cancelAnimationFrame(B.lock);B.lock=null}
   B.lock=requestAnimationFrame(()=>{
     B.lock=null;const L=B.list;if(!live())return;
     const cH=L.clientHeight,sH=L.scrollHeight,n=B.menu.length;
@@ -832,23 +872,55 @@ function mnApplyColor(r,g,b){
   const main=[r,g,b],black=[0,0,0],white=[255,255,255];
   const lum=c=>{const a=c.map(v=>{v/=255;return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4)});
                 return 0.2126*a[0]+0.7152*a[1]+0.0722*a[2]};
+  /* ---- COULEURS VIVES ----
+     L'ancienne version melangeait la couleur au NOIR pour l'assombrir. Sur un
+     bleu (95,190,255) cela donnait un bleu acier terne (46,92,123) : tout le
+     menu avait un aspect gris. On assombrit desormais en HAUTEUR DE LUEUR
+     (HSL) en gardant la SATURATION a fond : le bleu reste bleu, le rouge reste
+     rouge, seule la luminosite baisse. Resultat : couleurs franches sur fond
+     noir. */
+  const grey=ntHsl(main)[1]<0.10;
   /* une couleur presque noire disparaitrait sur le fond noir : on l'eclaircit */
-  const acc=lum(main)<0.03?kbMix(main,white,0.35):main;
+  let acc=main;
+  if(!grey){
+    const h0=ntHsl(main);
+    /* saturation minimale 0.9, lueur cadrnee 0.55..0.72 : la teinte choisie
+       reste toujours nette, jamais passe-partout */
+    acc=ntHslRgb(h0[0],Math.min(1,Math.max(0.9,h0[1])),Math.min(0.72,Math.max(0.55,h0[2])));
+  }
+  if(lum(acc)<0.03)acc=kbMix(acc,white,0.35);
   /* le texte reste BLANC sur l'accent (comme sur les captures) : si la couleur est
      trop claire pour ca (jaune, blanc...), le remplissage est assombri jusqu'a ce
-     que le blanc ait au moins 3,2:1 de contraste, meme sur le haut du degrade */
+     que le blanc ait au moins 3,2:1 de contraste, meme sur le haut du degrade.
+     On garde la saturation pleine a chaque etape (+0.08 compense l'ecartement
+     HSL quand la lueur descend sous 0.5). */
   let fill=acc,k=0;
-  while(1.05/(lum(kbMix(fill,white,0.18))+0.05)<3.2&&k++<14)fill=kbMix(fill,black,0.07);
+  if(grey){
+    while(1.05/(lum(kbMix(fill,white,0.18))+0.05)<3.2&&k++<14)fill=kbMix(fill,black,0.07);
+  }else{
+    while(1.05/(lum(kbMix(fill,white,0.18))+0.05)<3.2&&k++<24){
+      const fh=ntHsl(fill);
+      fill=ntHslRgb(fh[0],Math.min(1,fh[1]+0.08),Math.max(0.22,fh[2]-0.03));
+    }
+  }
+  /* haut et bas du degrade de la selection : meme teinte vive, lueur +-0.13 */
+  const ph=ntHsl(fill);
+  const hi=ntHslRgb(ph[0],ph[1],Math.min(0.88,ph[2]+0.13));
+  const lo=ntHslRgb(ph[0],ph[1],Math.max(0.13,ph[2]-0.13));
   /* accent tres lumineux (texte, barres) : teinte du menu. Gris -> gris clair
      neutre (forcer la saturation donnerait du rose). */
   const hsl=ntHsl(acc);
   const on=hsl[1]<0.15?kbMix(acc,white,0.75):ntHslRgb(hsl[0],Math.min(1,Math.max(0.85,hsl[1])),0.72);
   const t=c=>c.join(','),s=document.documentElement.style;
   s.setProperty('--mn-bg-rgb',t(kbMix(acc,black,0.94)));
+  /* fond du panneau : quasi-noir TEINTE a 10 % par la couleur, au lieu d'un
+     anthracite gris plat (30,31,36). Ca reste un fond noir (demande), mais il
+     n'est plus gris : il porte la couleur du menu. */
+  s.setProperty('--mn-char-rgb',t(kbMix(acc,[8,9,12],0.90)));
   s.setProperty('--mn-acc-rgb',t(acc));
   s.setProperty('--mn-fill-rgb',t(fill));
-  s.setProperty('--mn-hi-rgb',t(kbMix(fill,white,0.18)));
-  s.setProperty('--mn-lo-rgb',t(kbMix(fill,black,0.5)));
+  s.setProperty('--mn-hi-rgb',t(hi));
+  s.setProperty('--mn-lo-rgb',t(lo));
   s.setProperty('--mn-on-rgb',t(on));
 }
 function ntSchedule(t){
@@ -938,6 +1010,9 @@ addEventListener('message',e=>{
     case 'setBreadcrumb':B.crumb=Array.isArray(d.parts)?d.parts:(d.path?String(d.path).split('>').map(s=>s.trim()):[]);renderCrumb();break;
     case 'setTabStyle':document.documentElement.dataset.tabs=d.style||'';break;
     case 'setSelectStyle':document.documentElement.dataset.select=d.style||'';break;
+    case 'setEdgeStyle':document.documentElement.dataset.edge=d.style||'';break;
+    case 'setTitleStyle':document.documentElement.dataset.title=d.style||'';renderCrumb();break;
+    case 'setBgStyle':document.documentElement.dataset.bg=d.style||'';break;
     case 'showInputPrompt':{
       I.title=d.title;I.value=d.showInput?d.value:'';
       /* TOUTES les prompts passent par le panneau "Choose Menu Key" :
