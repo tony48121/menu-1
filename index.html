@@ -109,7 +109,7 @@
 .scrollbar-thumb{position:absolute;top:0;left:0;width:100%;background-color:rgb(var(--mn-acc-rgb));border-radius:0.26vh;transition:top 0.25s ease-out,height 0.25s ease-out;min-height:2.6vh}
 
 /* ---------- liste ---------- */
-.menu-items{position:relative;max-height:calc(var(--item-height) * 12);overflow-y:auto;overflow-x:hidden;scrollbar-width:none;padding:0.52vh 0}
+.menu-items{position:relative;max-height:calc(var(--item-height) * 13);overflow-y:auto;overflow-x:hidden;scrollbar-width:none;padding:0.52vh 0}
 .menu-items::-webkit-scrollbar{display:none}
 /* etat "liste vide" : le cadre de selection flotte alors sur rien, on livre
    donc l'explication plutot qu'un panneau blanc avec 0/0. */
@@ -746,14 +746,16 @@ function kblRender(rows){
 
 /* ===== Echelle de l'interface (option Menu Size) =====
    L'option ne regle pas que le menu : elle met a l'echelle TOUTE
-   l'interface (panneau de saisie + liste des touches). On utilise `zoom`
-   et pas `transform:scale` : zoom recalcule la mise en page et le texte
-   reste net, alors que transform ne ferait qu'etirer l'image (flou).
-   Les toasts, la fiche joueur et la freecam sont des affichages de jeu :
+   l'interface (panneau de saisie + liste des touches + fiche joueur).
+   On utilise `zoom` et pas `transform:scale` : zoom recalcule la mise en
+   page et le texte reste net, alors que transform ne ferait qu'etirer
+   l'image (flou). positionPlayerCard travaille sur le rectangle rendu,
+   donc la fiche reste calee a droite du menu une fois zoomee.
+   Les toasts, la freecam et le viseur sont des affichages de jeu :
    ils gardent leur taille. */
 const UI={scale:1};
 function uiApplyScale(){
-  document.querySelectorAll('.kb-panel,.kb-list').forEach(function(e){e.style.zoom=UI.scale});
+  document.querySelectorAll('.kb-panel,.kb-list,.jul-pcard').forEach(function(e){e.style.zoom=UI.scale});
 }
 
 function keyUI(show){
@@ -843,6 +845,11 @@ const PC_GAP=14, PC_M=8;
 function positionPlayerCard(el){
   const c=el||(PC.slot.els&&PC.slot.els[0]);
   if(!c)return;
+  /* le zoom de l'option Menu Size (style.zoom) multiplie AUSSI les offsets
+     positionnes : un left ecrit 339px avec zoom 0.7 rend 237px. On ecrit donc
+     les coordonnees divisees par l'echelle pour retomber juste. Mesure :
+     339 x 0.7 = 237.3 au dixieme. */
+  const z=(typeof UI!=='undefined'&&UI.scale>0)?UI.scale:1;
   const root=(typeof B!=='undefined')?B.root:null;
   const b=(root&&root.isConnected)?root.getBoundingClientRect():null;
   /* rect plutôt qu'offsetWidth : largeur fractionnaire, la cale anti-debordement
@@ -862,9 +869,9 @@ function positionPlayerCard(el){
   if(x+w>window.innerWidth-PC_M)x=Math.max(PC_M,window.innerWidth-w-PC_M);
   if(y-h/2<PC_M)y=PC_M+h/2;
   if(y+h/2>window.innerHeight-PC_M)y=Math.max(PC_M+h/2,window.innerHeight-PC_M-h/2);
-  c.style.left=Math.round(x)+'px';
+  c.style.left=Math.round(x/z)+'px';
   c.style.right='auto';
-  c.style.top=Math.round(y)+'px';
+  c.style.top=Math.round(y/z)+'px';
 }
 const PC={d:null,slot:{g:0}};
 function buildPlayerCard(){
