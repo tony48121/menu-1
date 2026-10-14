@@ -43,9 +43,9 @@
   --mn-lo-rgb:37,65,42;
   --mn-fill-rgb:73,130,83;
   --mn-on-rgb:123,244,145;
-  --item-height:3.2vh;
-  --tabs-height:2.9vh;
-  --banner-height:10vh;
+  --item-height:4.16vh;
+  --tabs-height:3.77vh;
+  --banner-height:13vh;
   /* bandeau de titre ("Main Menu") SUPPRIME a la demande : hauteur 0 pour que
      la barre de defilement et la liste remontent d'elles-memes. */
   --crumb-h:0vh;
@@ -60,116 +60,116 @@
    a son propre fond. Un fond sur la racine s'ajouterait a celui de la liste.
    Pas d'overflow:hidden non plus : le creux et la barre sont dessines a
    l'interieur du panneau, rien ne depasse du cadre. */
-.menu-root{font-family:var(--menu-font);color:#fff;position:fixed;width:34vh;z-index:1000;border-radius:1vh;background:transparent;border:0.1vh solid rgba(255,255,255,0.08);border-right:0.3vh solid rgb(var(--mn-acc-rgb));box-shadow:0.2vh 0 1.1vh -0.2vh rgba(var(--mn-acc-rgb),0.6),0 1vh 3vh rgba(0,0,0,0.6)}
-.menu-banner{position:relative;border-radius:0.9vh 0.9vh 0 0;overflow:hidden;padding:0;background:#000}
+.menu-root{font-family:var(--menu-font);color:#fff;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;position:fixed;width:44.2vh;z-index:1000;border-radius:1.3vh;background:transparent;border:0.13vh solid rgba(255,255,255,0.08);border-right:0.39vh solid rgb(var(--mn-acc-rgb));box-shadow:0.26vh 0 1.43vh -0.26vh rgba(var(--mn-acc-rgb),0.6),0 1.3vh 3.9vh rgba(0,0,0,0.6)}
+.menu-banner{position:relative;border-radius:1.17vh 1.17vh 0 0;overflow:hidden;padding:0;background:#000}
 .menu-banner img{width:100%;height:var(--banner-height);object-fit:cover;display:block}
-.menu-body{position:relative;background:rgba(var(--mn-char-rgb),0.94);overflow:hidden;padding-left:1.2vh}
+.menu-body{position:relative;background:rgba(var(--mn-char-rgb),0.94);overflow:hidden;padding-left:1.56vh}
 /* creux : petite gouttiere creusee dans le bord gauche du panneau. Le degrade
    part du plus sombre (fond du creux) vers le plus clair, un filet clair
    marque le bord interne : c'est ce bord qui donne la profondeur. La liste
    est decalee d'autant pour que la selection n'entre jamais dans le creux. */
-.menu-body::before{content:'';position:absolute;left:0;top:0;bottom:0;width:1.2vh;box-sizing:border-box;pointer-events:none;
+.menu-body::before{content:'';position:absolute;left:0;top:0;bottom:0;width:1.56vh;box-sizing:border-box;pointer-events:none;
   background:linear-gradient(90deg,rgba(0,0,0,0.72),rgba(0,0,0,0.30));
-  border-right:0.1vh solid rgba(255,255,255,0.07)}
+  border-right:0.13vh solid rgba(255,255,255,0.07)}
 
 /* ---------- barre de titre : SUPPRIMEE a la demande (la photo demandait la
    disparition du bandeau "Main Menu"). On garde le noeud dans le DOM (le Lua
    envoie encore setBreadcrumb / renderCrumb) mais il ne rend PLUS rien : le
    --crumb-h:0 fait remonter la barre de defilement et la liste. ---------- */
 .menu-crumb{display:none}
-.crumb-title{font-size:1.25vh;font-weight:500;letter-spacing:0.01em;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80%}
+.crumb-title{font-size:1.63vh;font-weight:500;letter-spacing:0.01em;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80%}
 /* le titre seul s'affiche, comme sur les captures */
 .crumb-parent{display:none}
 
 /* ---------- onglets : colonnes egales, onglet actif rempli de la couleur du menu ---------- */
 .menu-tabs{display:flex;height:var(--tabs-height);box-sizing:border-box;background:rgb(var(--mn-char-rgb));overflow:hidden}
-.tab-item{flex:1;display:flex;align-items:center;justify-content:center;position:relative;font-size:1.25vh;font-weight:600;white-space:nowrap;color:rgba(255,255,255,0.92);user-select:none;transition:background 0.2s ease,color 0.2s ease}
+.tab-item{flex:1;display:flex;align-items:center;justify-content:center;position:relative;font-size:1.63vh;font-weight:600;white-space:nowrap;color:rgba(255,255,255,0.92);user-select:none;transition:background 0.2s ease,color 0.2s ease}
 .tab-item.active{color:#fff;background:linear-gradient(180deg,rgb(var(--mn-hi-rgb)),rgb(var(--mn-fill-rgb)))}
 /* variante pilule (setTabStyle {style:'pill'}) */
-[data-tabs="pill"] .menu-tabs{padding:0.5vh 1vh}
-[data-tabs="pill"] .tab-item{text-transform:uppercase;letter-spacing:0.08em;font-size:1.05vh;border:0.1vh solid transparent;border-radius:2vh}
+[data-tabs="pill"] .menu-tabs{padding:0.65vh 1.3vh}
+[data-tabs="pill"] .tab-item{text-transform:uppercase;letter-spacing:0.08em;font-size:1.37vh;border:0.13vh solid transparent;border-radius:2.6vh}
 [data-tabs="pill"] .tab-item.active{border-color:rgb(var(--mn-hi-rgb));background:rgba(var(--mn-fill-rgb),0.55);color:#fff}
 
 /* ---------- barre de defilement (dans le creux a gauche) ---------- */
 /* barre logee DANS le creux : top = bord haut du corps de liste (sans le
-   0.4vh de padding), donc le track recouvre exactement la gouttiere et ne
+   0.52vh de padding), donc le track recouvre exactement la gouttiere et ne
    deborde plus sur le pied de page. z-index:5 car la barre est un frere de
    .menu-body place AVANT lui dans le DOM : sans le, le corps passerait
    par-dessus et masquerait la barre. */
-/* bottom:3vh = hauteur du pied de page : le conteneur s'arrete au haut du
+/* bottom:3.9vh = hauteur du pied de page : le conteneur s'arrete au haut du
    pied, donc il ne deborde JAMAIS sur lui, quelle que soit la longueur de
    la liste (le track est de toute facon recalcule en px par applyBar).
    pointer-events:none : la barre n'est qu'un affichage, le defilement se
    fait sur la liste ; sinon le conteneur masquerait le clic sur le pied. */
-.menu-scrollbar{position:absolute;left:0.3vh;top:calc(var(--banner-height) + var(--crumb-h) + var(--tabs-height));bottom:3vh;width:0.6vh;z-index:5;pointer-events:none;overflow:hidden;transition:opacity 0.3s cubic-bezier(0.4,0,0.2,1)}
-.scrollbar-track{width:100%;height:100%;background-color:rgba(0,0,0,0.55);border-radius:0.3vh;position:relative}
-.scrollbar-thumb{position:absolute;top:0;left:0;width:100%;background-color:rgb(var(--mn-acc-rgb));border-radius:0.2vh;transition:top 0.25s ease-out,height 0.25s ease-out;min-height:2vh}
+.menu-scrollbar{position:absolute;left:0.39vh;top:calc(var(--banner-height) + var(--crumb-h) + var(--tabs-height));bottom:3.9vh;width:0.78vh;z-index:5;pointer-events:none;overflow:hidden;transition:opacity 0.3s cubic-bezier(0.4,0,0.2,1)}
+.scrollbar-track{width:100%;height:100%;background-color:rgba(0,0,0,0.55);border-radius:0.39vh;position:relative}
+.scrollbar-thumb{position:absolute;top:0;left:0;width:100%;background-color:rgb(var(--mn-acc-rgb));border-radius:0.26vh;transition:top 0.25s ease-out,height 0.25s ease-out;min-height:2.6vh}
 
 /* ---------- liste ---------- */
-.menu-items{position:relative;max-height:calc(var(--item-height) * 12);overflow-y:auto;overflow-x:hidden;scrollbar-width:none;padding:0.4vh 0}
+.menu-items{position:relative;max-height:calc(var(--item-height) * 12);overflow-y:auto;overflow-x:hidden;scrollbar-width:none;padding:0.52vh 0}
 .menu-items::-webkit-scrollbar{display:none}
 /* etat "liste vide" : le cadre de selection flotte alors sur rien, on livre
    donc l'explication plutot qu'un panneau blanc avec 0/0. */
-.menu-empty{position:relative;z-index:1;display:flex;flex-direction:column;gap:0.35vh;align-items:center;text-align:center;padding:1.1vh 1.6vh}
-.menu-empty-title{font-size:1.15vh;font-weight:700;letter-spacing:0.08em;color:rgb(var(--mn-on-rgb))}
-.menu-empty-sub,.menu-empty-hint{font-size:1vh;font-weight:500;line-height:1.5;color:rgba(255,255,255,0.8)}
+.menu-empty{position:relative;z-index:1;display:flex;flex-direction:column;gap:0.46vh;align-items:center;text-align:center;padding:1.43vh 2.08vh}
+.menu-empty-title{font-size:1.5vh;font-weight:700;letter-spacing:0.08em;color:rgb(var(--mn-on-rgb))}
+.menu-empty-sub,.menu-empty-hint{font-size:1.3vh;font-weight:500;line-height:1.5;color:rgba(255,255,255,0.8)}
 /* selection : bande pleine largeur, degrade vertical de la couleur du menu (defaut)
    ou degrade horizontal qui s'estompe (setSelectStyle {style:'gradient'}) */
 .selection-highlight{position:absolute;left:0;right:0;height:var(--item-height);box-sizing:border-box;
   background:linear-gradient(180deg,rgb(var(--mn-hi-rgb)),rgb(var(--mn-fill-rgb)) 55%,rgb(var(--mn-lo-rgb)));
-  border-top:0.1vh solid rgba(255,255,255,0.3);border-bottom:0.1vh solid rgba(var(--mn-hi-rgb),0.9);
+  border-top:0.13vh solid rgba(255,255,255,0.3);border-bottom:0.13vh solid rgba(var(--mn-hi-rgb),0.9);
   z-index:0;pointer-events:none;will-change:top;transform:translateZ(0)}
-[data-select="gradient"] .selection-highlight{border:none;background:linear-gradient(90deg,rgb(var(--mn-fill-rgb)),rgba(var(--mn-fill-rgb),0.12));box-shadow:inset 0.3vh 0 0 rgb(var(--mn-hi-rgb))}
-.menu-item{display:flex;justify-content:space-between;align-items:center;padding:0 2vh;height:var(--item-height);box-sizing:border-box;position:relative;z-index:1;border-bottom:0.07vh solid rgba(255,255,255,0.055)}
+[data-select="gradient"] .selection-highlight{border:none;background:linear-gradient(90deg,rgb(var(--mn-fill-rgb)),rgba(var(--mn-fill-rgb),0.12));box-shadow:inset 0.39vh 0 0 rgb(var(--mn-hi-rgb))}
+.menu-item{display:flex;justify-content:space-between;align-items:center;padding:0 2.6vh;height:var(--item-height);box-sizing:border-box;position:relative;z-index:1;border-bottom:0.09vh solid rgba(255,255,255,0.055)}
 .menu-item.is-selected{border-bottom-color:transparent}
 .menu-item.is-selected .name{font-weight:700}
-.item-label{display:flex;align-items:center;gap:1vh;min-width:0;flex:1}
+.item-label{display:flex;align-items:center;gap:1.3vh;min-width:0;flex:1}
 /* pas d'icones devant les lignes, comme sur les captures (le Lua peut toujours en envoyer) */
 .row-icon{display:none}
-.menu-item .name{font-size:1.25vh;color:#fff;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.slider-val{color:rgba(255,255,255,0.95);font-size:1.1vh;font-weight:500}
-.components-container{display:flex;align-items:center;gap:0.8vh;flex-shrink:0}
+.menu-item .name{font-size:1.63vh;color:#fff;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.slider-val{color:rgba(255,255,255,0.95);font-size:1.43vh;font-weight:500}
+.components-container{display:flex;align-items:center;gap:1.04vh;flex-shrink:0}
 .component{display:flex;align-items:center}
-.caret-icon{font-size:1.25vh;font-weight:400;line-height:1;color:rgba(255,255,255,0.88)}
-.swatch{display:block;width:1.7vh;height:1.7vh;border-radius:0.45vh;box-shadow:inset 0 0 0 0.1vh rgba(255,255,255,0.3)}
+.caret-icon{font-size:1.63vh;font-weight:400;line-height:1;color:rgba(255,255,255,0.88)}
+.swatch{display:block;width:2.21vh;height:2.21vh;border-radius:0.59vh;box-shadow:inset 0 0 0 0.13vh rgba(255,255,255,0.3)}
 /* sur la ligne selectionnee, le texte prend la couleur lisible sur l'accent */
 .menu-item.is-selected .name,.menu-item.is-selected .caret-icon,.menu-item.is-selected .slider-val,.menu-item.is-selected .scroll-value{color:#fff}
 
 /* ---------- interrupteur : piste grise eteinte / couleur du menu allumee ---------- */
 .toggle-switch{position:relative;display:inline-flex;align-items:center;cursor:pointer}
 .toggle-switch input{position:absolute;opacity:0;width:0;height:0}
-.toggle-track{display:block;width:3.7vh;height:1.9vh;background:#62636c;border-radius:1vh;position:relative;transition:background 0.22s ease;box-sizing:border-box}
-.toggle-thumb{position:absolute;top:50%;left:0.25vh;transform:translateY(-50%);width:1.35vh;height:1.35vh;border-radius:50%;background:#f2f2f4;transition:left 0.22s ease,background 0.22s ease}
+.toggle-track{display:block;width:4.81vh;height:2.47vh;background:#62636c;border-radius:1.3vh;position:relative;transition:background 0.22s ease;box-sizing:border-box}
+.toggle-thumb{position:absolute;top:50%;left:0.33vh;transform:translateY(-50%);width:1.76vh;height:1.76vh;border-radius:50%;background:#f2f2f4;transition:left 0.22s ease,background 0.22s ease}
 .toggle-switch input:checked ~ .toggle-track{background:rgb(var(--mn-fill-rgb))}
-.toggle-switch input:checked ~ .toggle-track .toggle-thumb{left:calc(100% - 1.35vh - 0.25vh);background:#fff}
+.toggle-switch input:checked ~ .toggle-track .toggle-thumb{left:calc(100% - 1.76vh - 0.33vh);background:#fff}
 /* sur la ligne selectionnee la piste a la meme couleur que la bande : on l'inverse */
 .menu-item.is-selected .toggle-switch input:checked ~ .toggle-track{background:#fff}
 .menu-item.is-selected .toggle-switch input:checked ~ .toggle-track .toggle-thumb{background:rgb(var(--mn-fill-rgb))}
-.menu-item.is-selected .toggle-track{box-shadow:0 0 0 0.1vh rgba(255,255,255,0.35)}
+.menu-item.is-selected .toggle-track{box-shadow:0 0 0 0.13vh rgba(255,255,255,0.35)}
 
 /* ---------- slider ---------- */
-.range-component{position:relative;width:9vh;height:1.6vh;display:flex;align-items:center}
-.range-track{position:absolute;left:0;width:100%;height:0.35vh;background:rgba(255,255,255,0.28);border-radius:0.2vh;z-index:1}
-.range-fill{position:absolute;left:0;height:0.35vh;background:rgb(var(--mn-on-rgb));border-radius:0.2vh;z-index:2;pointer-events:none}
+.range-component{position:relative;width:11.7vh;height:2.08vh;display:flex;align-items:center}
+.range-track{position:absolute;left:0;width:100%;height:0.46vh;background:rgba(255,255,255,0.28);border-radius:0.26vh;z-index:1}
+.range-fill{position:absolute;left:0;height:0.46vh;background:rgb(var(--mn-on-rgb));border-radius:0.26vh;z-index:2;pointer-events:none}
 .menu-item.is-selected .range-track{background:rgba(255,255,255,0.4)}
 .menu-item.is-selected .range-fill{background:#fff}
-.range-component input[type="range"]{-webkit-appearance:none;appearance:none;position:relative;width:100%;height:0.35vh;background:transparent;outline:none;margin:0;padding:0;cursor:pointer;z-index:3}
-.range-component input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:1.25vh;height:1.25vh;border-radius:50%;background:#fff;box-shadow:0 0 0.1vh rgba(0,0,0,0.4);margin-top:-0.125vh;cursor:pointer}
-.range-component input[type="range"]::-moz-range-thumb{width:1.25vh;height:1.25vh;border-radius:50%;background:#fff;border:none;cursor:pointer}
+.range-component input[type="range"]{-webkit-appearance:none;appearance:none;position:relative;width:100%;height:0.46vh;background:transparent;outline:none;margin:0;padding:0;cursor:pointer;z-index:3}
+.range-component input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:1.63vh;height:1.63vh;border-radius:50%;background:#fff;box-shadow:0 0 0.13vh rgba(0,0,0,0.4);margin-top:-0.16vh;cursor:pointer}
+.range-component input[type="range"]::-moz-range-thumb{width:1.63vh;height:1.63vh;border-radius:50%;background:#fff;border:none;cursor:pointer}
 
 /* ---------- sélecteur - valeur - ---------- */
-.scroll-value{display:flex;align-items:center;gap:0.6vh;font-size:1.1vh;font-weight:600;letter-spacing:0.02em;color:rgba(255,255,255,0.85);max-width:17vh}
+.scroll-value{display:flex;align-items:center;gap:0.78vh;font-size:1.43vh;font-weight:600;letter-spacing:0.02em;color:rgba(255,255,255,0.85);max-width:22.1vh}
 .scroll-value .val{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .scroll-value .arrow{opacity:0.7}
 
 /* ---------- séparateur : filet blanc - titre - filet blanc ---------- */
-.separator-container{display:flex;align-items:center;height:var(--item-height);padding:0 0 0 2vh;gap:1.4vh;box-sizing:border-box;background:transparent}
-.separator-bar{display:block;flex:1;height:0.14vh;background:#fff;border-radius:0.1vh}
-.separator-text{color:#fff;font-size:1.15vh;font-weight:600;white-space:nowrap;letter-spacing:0.02em}
+.separator-container{display:flex;align-items:center;height:var(--item-height);padding:0 0 0 2.6vh;gap:1.82vh;box-sizing:border-box;background:transparent}
+.separator-bar{display:block;flex:1;height:0.18vh;background:#fff;border-radius:0.13vh}
+.separator-text{color:#fff;font-size:1.5vh;font-weight:600;white-space:nowrap;letter-spacing:0.02em}
 
 /* ---------- pied : texte a gauche | compteur a droite, filet de couleur au-dessus ---------- */
-.menu-footer{background:#000;display:grid;grid-template-columns:auto 1fr auto;align-items:center;height:3vh;box-sizing:border-box;border-top:0.15vh solid rgb(var(--mn-acc-rgb));border-radius:0 0 0.9vh 0.9vh;overflow:hidden}
-.footer-logo{display:flex;align-items:center;height:100%;padding:0 0 0 1.6vh;color:rgb(var(--mn-on-rgb))}
+.menu-footer{background:#000;display:grid;grid-template-columns:auto 1fr auto;align-items:center;height:3.9vh;box-sizing:border-box;border-top:0.2vh solid rgb(var(--mn-acc-rgb));border-radius:0 0 1.17vh 1.17vh;overflow:hidden}
+.footer-logo{display:flex;align-items:center;height:100%;padding:0 0 0 2.08vh;color:rgb(var(--mn-on-rgb))}
 /* Bas a gauche : volontairement vide. L'emplacement n'accueille un logo que
    si une URL est explicitement fournie via FOOTER_LOGO_URL dans menu.lua ;
    aucun contenu par defaut (ni hexagone, ni nom, ni marque).
@@ -180,9 +180,9 @@
 /* Logo image en bas a gauche. Le visuel est blanc sur fond noir : "screen"
    rend le noir entierement transparent, donc le cadre du fichier disparait
    sur le pied et seul le lettrage subsiste. */
-.footer-logo img{height:2.2vh;width:auto;display:block;mix-blend-mode:screen}
-.footer-brand{text-align:left;font-size:1.1vh;font-weight:500;color:rgba(255,255,255,0.82);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 1.6vh}
-.footer-counter{display:flex;align-items:center;height:100%;padding:0 1.6vh;font-size:1.1vh;font-weight:600;color:#fff;letter-spacing:0.02em}
+.footer-logo img{height:2.86vh;width:auto;display:block;mix-blend-mode:screen}
+.footer-brand{text-align:left;font-size:1.43vh;font-weight:500;color:rgba(255,255,255,0.82);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 2.08vh}
+.footer-counter{display:flex;align-items:center;height:100%;padding:0 2.08vh;font-size:1.43vh;font-weight:600;color:#fff;letter-spacing:0.02em}
 
 /* ---------- saisie ---------- */
 .input-overlay{position:fixed;top:0;left:0;transform:none;width:100%;height:100%;background:rgb(0,0,0,0.5);z-index:999999;color:white;font-weight:500;font-family:var(--font);font-size:1.2vh}
@@ -356,17 +356,17 @@ ul{list-style-type:disc}
 .jul-pc-row .k{color:rgba(255,255,255,0.6)}
 .jul-pc-row .v{font-family:var(--mono);font-weight:500;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:15vh}
 /* ---------- contour du menu : a droite (defaut), tout autour, ou aucun (setEdgeStyle) ---------- */
-[data-edge="all"] .menu-root{border-color:rgb(var(--mn-acc-rgb));border-width:0.3vh;box-shadow:0 0 1.1vh rgba(var(--mn-acc-rgb),0.55),0 1vh 3vh rgba(0,0,0,0.6)}
-[data-edge="off"] .menu-root{border-right:0.1vh solid rgba(255,255,255,0.08);box-shadow:0 1vh 3vh rgba(0,0,0,0.6)}
+[data-edge="all"] .menu-root{border-color:rgb(var(--mn-acc-rgb));border-width:0.39vh;box-shadow:0 0 1.43vh rgba(var(--mn-acc-rgb),0.55),0 1.3vh 3.9vh rgba(0,0,0,0.6)}
+[data-edge="off"] .menu-root{border-right:0.13vh solid rgba(255,255,255,0.08);box-shadow:0 1.3vh 3.9vh rgba(0,0,0,0.6)}
 /* ===== Ecarts avec les captures du menu a 4 couleurs ===== */
 /* valeurs "< x >" pour les listes : item.arrows = true (sinon "- x -") */
 .scroll-value.arrows .arrow{font-size:0;opacity:1}
-.scroll-value.arrows .arrow::before{font-size:1.15vh;font-weight:700;line-height:1}
+.scroll-value.arrows .arrow::before{font-size:1.5vh;font-weight:700;line-height:1}
 .scroll-value.arrows .arrow:first-child::before{content:"<"}
 .scroll-value.arrows .arrow:last-child::before{content:">"}
 /* titre de page (setTitleStyle {style:'on'}) : barre noire, titre centre en gras */
-[data-title="on"] .menu-crumb{display:flex;align-items:center;justify-content:center;height:3vh;box-sizing:border-box;background:#000}
-[data-title="on"] .crumb-title{font-size:1.3vh;font-weight:700;color:#fff}
+[data-title="on"] .menu-crumb{display:flex;align-items:center;justify-content:center;height:3.9vh;box-sizing:border-box;background:#000}
+[data-title="on"] .crumb-title{font-size:1.69vh;font-weight:700;color:#fff}
 /* ancien fond noir (setBgStyle {style:'black'}) */
 [data-bg="black"] .menu-body{background:rgba(var(--mn-bg-rgb),0.93)}
 [data-bg="black"] .menu-tabs{background:#0b0b0d}
