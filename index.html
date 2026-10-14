@@ -474,7 +474,10 @@ function renderCrumb(){
      peu importe l'onglet actif (demande). */
   const t=B.tabs;
   const isPlayer=(t.length===3&&t[0]==='Status'&&t[1]==='Misc'&&t[2]==='Appearance');
-  const title=isPlayer?'Player':(p.length?String(p[p.length-1]):String(B.tabs[B.tab]||'Main'));
+  /* Online (List/Safe/Player/Vehicle) : le bandeau ecrit toujours "Online",
+     peu importe l'onglet actif (demande, miroir de Player). */
+  const isOnline=(t.length===4&&t[0]==='List'&&t[1]==='Safe'&&t[2]==='Player'&&t[3]==='Vehicle');
+  const title=isPlayer?'Player':(isOnline?'Online':(p.length?String(p[p.length-1]):String(B.tabs[B.tab]||'Main')));
   /* page Main Menu : le bandeau-titre noir RESTE, mais l'onglet unique perd
      son fond bleu (demande : "supprimer que la bande bleue"). Le flag
      data-main pilote le CSS des onglets. Repose a chaque rendu car le
