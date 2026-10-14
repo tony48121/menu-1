@@ -481,7 +481,9 @@ function renderCrumb(){
   const isSettings=(t.length===4&&t[0]==='Settings'&&t[1]==='Banners'&&t[2]==='Misc'&&t[3]==='Resources');
   /* Misc (General/Freecam) : pareil, "Misc" fixe. */
   const isMisc=(t.length===2&&t[0]==='General'&&t[1]==='Freecam');
-  const title=isPlayer?'Player':(isOnline?'Online':(isSettings?'Settings':(isMisc?'Misc':(p.length?String(p[p.length-1]):String(B.tabs[B.tab]||'Main')))));
+  /* Vehicle (Vehicle/Mods) : pareil, "Vehicle" fixe. */
+  const isVehicle=(t.length===2&&t[0]==='Vehicle'&&t[1]==='Mods');
+  const title=isPlayer?'Player':(isOnline?'Online':(isSettings?'Settings':(isMisc?'Misc':(isVehicle?'Vehicle':(p.length?String(p[p.length-1]):String(B.tabs[B.tab]||'Main'))))));
   /* page Main Menu : le bandeau-titre noir RESTE, mais l'onglet unique perd
      son fond bleu (demande : "supprimer que la bande bleue"). Le flag
      data-main pilote le CSS des onglets. Repose a chaque rendu car le
