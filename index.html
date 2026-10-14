@@ -359,6 +359,18 @@ body,main{all:unset;display:block}
   background:#f4f4f7;box-shadow:0 0 8px rgba(var(--c),.95);transform:translateY(-50%)}
 @media (prefers-reduced-motion:reduce){.nt-toast,.nt-toast.out{animation:none}}
 
+/* ---------- mode design (option Settings > Misc > Design Mode) ----------
+   Le Lua donne le focus souris (SetNuiFocus) : on voit le curseur et les
+   panneaux deviennent attrappables PAR LEUR EN-TETE (banniere du menu,
+   barre Keybinds) pour ne pas casser les clics sur les options. Le contour
+   en pointilles marque ce qui se deplace. Les positions survivent a la
+   sortie du mode (cuites dans B / le style) : c'est la sauvegarde.
+   .kb-list est en pointer-events:none en temps normal : on le reactive ici,
+   sinon la souris ne l'atteint jamais (il n'a pas d'enfants cliquables). */
+[data-design="on"] .menu-banner{cursor:move;outline:0.15vh dashed rgba(var(--mn-hi-rgb),0.9);outline-offset:-0.15vh}
+[data-design="on"] .kbl-head{cursor:move;outline:0.15vh dashed var(--kbl-acc,#4663b5);outline-offset:-0.15vh}
+[data-design="on"] .kb-list{pointer-events:auto}
+
 /* ---------- cible (reticule overlay) ---------- */
 /* Dessinee par le NUI, pas par un composant HUD : ainsi elle coexiste avec
    Remove UI, qui masque les composants 1 a 22 chaque frame.
@@ -460,6 +472,7 @@ function present(s,show,build,plan){
 
 /* ================= MENU PRINCIPAL (Base) ================= */
 const B={cur:0,menu:[],tabs:['Main Menu'],tab:0,crumb:[],top:'23vh',left:'6.25vh',
+  userX:null,userY:null,design:false,
   banner:'https://raw.githubusercontent.com/tony48121/Dragon-Ball-jul/refs/heads/main/jul_menu_v2.png',
   trackH:0,thumbTop:0,thumbH:24,over:false,hlTop:0,lock:null,rows:[],slot:{g:0}};
 const live=()=>B.root&&B.root.isConnected;
@@ -1184,6 +1197,76 @@ mnApplyColor(84,150,96);ldApplyColor(84,150,96);
    fichier), on ne l'affiche pas pour garder la previsualisation nette. */
 if(location.protocol!=='file:'){LD.status='Connexion a l\u2019interface...';LD.pct=0;ldUI(true)}
 
+/* ================= MODE DESIGN (drag & drop des panneaux) =================
+   Attrape : banniere du menu (.menu-banner), barre Keybinds (.kbl-head).
+   Menu : fige en px pendant le geste, cuit en vh au drop dans B.left/B.top
+   (unite d'echange Lua) + B.userX/B.userY (place deposee, restauree aux
+   shows, prioritaire sur les coords Lua perimees). La fiche joueur suit
+   toute seule (positionPlayerCard lit le rectangle reel).
+   Keybinds : pas de circuit Lua, on garde les px (divises par le zoom Menu
+   Size, comme positionPlayerCard). Delegation sur document : les panneaux
+   sont reconstruits, les ecouteurs directs ne survivraient pas. */
+const DG={el:null,key:null,z:1,sx:0,sy:0,ox:0,oy:0};
+function dgStart(e,key){
+  if(!B.design||e.button!==0)return;
+  const el=key==='menu'?B.root:document.getElementById('kbl');
+  if(!el||!el.isConnected)return;
+  e.preventDefault();
+  /* la kb-list subit le zoom Menu Size : son rectangle rendu est divise par
+     l'echelle, mais style.left/top s'ecrivent en px NON zoome (cf. le
+     commentaire de positionPlayerCard). On travaille donc en px non zoomes :
+     sinon le panneau fuirait sous la souris (-228px rendus pour -150 vises
+     avec un zoom 0.8). Le menu n'est jamais zoome (z=1). */
+  const z=(key==='kbl'&&typeof UI!=='undefined'&&UI.scale>0)?UI.scale:1;
+  const r=el.getBoundingClientRect();
+  DG.el=el;DG.key=key;DG.z=z;DG.sx=e.clientX;DG.sy=e.clientY;
+  DG.ox=r.left/z;DG.oy=r.top/z;
+  el.style.left=DG.ox+'px';el.style.top=DG.oy+'px';
+  if(key==='kbl')el.style.right='auto';
+  document.documentElement.style.userSelect='none';
+  document.addEventListener('mousemove',dgMove);
+  document.addEventListener('mouseup',dgEnd,{once:true});
+}
+function dgMove(e){
+  if(!DG.el)return;
+  const r=DG.el.getBoundingClientRect(),z=DG.z;
+  const w=r.width/z,h=r.height/z;
+  const nx=Math.max((-w+80)/z,Math.min((window.innerWidth-80)/z,DG.ox+(e.clientX-DG.sx)/z));
+  const ny=Math.max(0,Math.min((window.innerHeight-40)/z,DG.oy+(e.clientY-DG.sy)/z));
+  DG.el.style.left=nx+'px';DG.el.style.top=ny+'px';
+  if(DG.key==='menu'&&typeof positionPlayerCard==='function')positionPlayerCard();
+}
+function dgEnd(){
+  document.removeEventListener('mousemove',dgMove);
+  document.documentElement.style.userSelect='';
+  if(!DG.el)return;
+  const el=DG.el;
+  if(DG.key==='menu'){
+    /* X en vw (largeur d'ecran) : le systeme historique met des vh MEME en X,
+       ce qui ecraserait la position au drop (facteur hauteur/largeur). Y reste
+       en vh, correct. B.left/B.top prennent les chaines telles quelles : tout
+       consommateur (style, buildMenu, restau) les reutilise a l'identique. */
+    B.userX=(el.getBoundingClientRect().left*100/window.innerWidth)+'vw';
+    B.userY=(el.getBoundingClientRect().top*100/window.innerHeight)+'vh';
+    B.left=B.userX;B.top=B.userY;
+    el.style.left=B.left;el.style.top=B.top;
+    if(typeof positionPlayerCard==='function')positionPlayerCard();
+  }else{
+    const z=(typeof UI!=='undefined'&&UI.scale>0)?UI.scale:1;
+    const r=el.getBoundingClientRect();
+    el.style.left=(r.left/z)+'px';el.style.top=(r.top/z)+'px';el.style.right='auto';
+  }
+  DG.el=null;DG.key=null;
+}
+document.addEventListener('mousedown',e=>{
+  if(!B.design||e.button!==0)return;
+  const t=e.target;
+  if(t&&t.closest){
+    if(t.closest('.menu-banner')){dgStart(e,'menu');return}
+    if(t.closest('.kbl-head')){dgStart(e,'kbl');return}
+  }
+});
+
 /* ================= MESSAGES DU JEU ================= */
 addEventListener('message',e=>{
   const d=e.data||{};
@@ -1199,10 +1282,33 @@ addEventListener('message',e=>{
     case 'setTabs':B.tabs=d.tabs||[];B.tab=d.index;renderTabs();break;
     case 'setTabIndex':B.tab=d.index||0;renderTabs();break;
     case 'resetTabs':B.tabs=['Main Menu'];B.tab=0;renderTabs();break;
-    case 'setMenuPos':
-      if(d.x!==undefined)B.left=d.x+'vh';
-      if(d.y!==undefined)B.top=d.y+'vh';
-      if(live()){B.root.style.left=B.left;B.root.style.top=B.top;positionPlayerCard()}break;
+    case 'setMenuPos':{
+      const off=d.x!==undefined&&Number(d.x)<=-100;
+      if(d.force){
+        /* reglage explicite (sliders Position, Menu Size) : applique et
+           remplace la place deposee (les sliders redeviennent la verite) */
+        if(d.x!==undefined)B.left=d.x+'vh';
+        if(d.y!==undefined)B.top=d.y+'vh';
+        B.userX=null;B.userY=null;
+      }else if(off){
+        /* masquage (-500) : toujours applique ; userX/userY intacts, la place
+           deposee est restauree au prochain show, jamais de menu perdu */
+        if(d.x!==undefined)B.left=d.x+'vh';
+        if(d.y!==undefined)B.top=d.y+'vh';
+      }else if(B.userX==null||B.userY==null){
+        if(d.x!==undefined)B.left=d.x+'vh';
+        if(d.y!==undefined)B.top=d.y+'vh';
+      }else{
+        /* rafraichissement de routine (ShowUI) : les coords Lua sont perimees
+           depuis le deplacement, on restaure la place deposee (chaines CSS
+           completes, unites d'origine) */
+        B.left=B.userX;B.top=B.userY;
+      }
+      if(live()){B.root.style.left=B.left;B.root.style.top=B.top;positionPlayerCard()}break}
+    case 'designMode':
+      B.design=!!d.enabled;
+      document.documentElement.dataset.design=d.enabled?'on':'';
+      break;
     case 'setBanner':if(d.url){B.banner=d.url;if(live())B.img.src=d.url}break;
     case 'setMenuColor':{
       /* canal invalide ou absent -> 150 ; borne a 0..255 pour que toutes les nuances restent calculables */
