@@ -126,7 +126,7 @@
 /* selection : bande pleine largeur, degrade vertical de la couleur du menu (defaut)
    ou degrade horizontal qui s'estompe (setSelectStyle {style:'gradient'}) */
 .selection-highlight{position:absolute;left:0;right:0;height:var(--item-height);box-sizing:border-box;
-  background:linear-gradient(90deg,rgb(var(--mn-hi-rgb)),rgb(var(--mn-lo-rgb)));
+  background:linear-gradient(90deg,rgba(0,0,0,0) 55%,rgba(0,0,0,0.35)),linear-gradient(90deg,rgb(var(--mn-hi-rgb)),rgb(var(--mn-lo-rgb)));
   border-top:0.13vh solid rgba(255,255,255,0.3);border-bottom:0.13vh solid rgba(var(--mn-hi-rgb),0.9);
   z-index:0;pointer-events:none;will-change:top;transform:translateZ(0)}
 [data-select="gradient"] .selection-highlight{border:none;background:linear-gradient(90deg,rgb(var(--mn-fill-rgb)),rgba(var(--mn-fill-rgb),0.12));box-shadow:inset 0.39vh 0 0 rgb(var(--mn-hi-rgb))}
