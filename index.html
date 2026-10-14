@@ -113,7 +113,9 @@
    fait sur la liste ; sinon le conteneur masquerait le clic sur le pied. */
 .menu-scrollbar{position:absolute;left:0.39vh;top:calc(var(--banner-height) + var(--crumb-h) + var(--tabs-height));bottom:3.9vh;width:0.78vh;z-index:5;pointer-events:none;overflow:hidden;transition:opacity 0.3s cubic-bezier(0.4,0,0.2,1)}
 .scrollbar-track{width:100%;height:100%;background-color:rgba(0,0,0,0.55);border-radius:0.39vh;position:relative}
-.scrollbar-thumb{position:absolute;top:0;left:0;width:100%;background-color:rgb(var(--mn-acc-rgb));border-radius:0.26vh;transition:top 0.25s ease-out,height 0.25s ease-out;min-height:2.6vh}
+/* curseur : ton clair du degrade de selection (hi), entre l'accent vif
+   (trop clair) et le bas du degrade (trop sombre) */
+.scrollbar-thumb{position:absolute;top:0;left:0;width:100%;background-color:rgb(var(--mn-hi-rgb));border-radius:0.26vh;transition:top 0.25s ease-out,height 0.25s ease-out;min-height:2.6vh}
 
 /* ---------- liste ---------- */
 .menu-items{position:relative;max-height:calc(var(--item-height) * 13);overflow-y:auto;overflow-x:hidden;scrollbar-width:none;padding:0.52vh 0}
@@ -140,6 +142,12 @@
 .slider-val{color:rgba(255,255,255,0.95);font-size:1.43vh;font-weight:500}
 .components-container{display:flex;align-items:center;gap:1.04vh;flex-shrink:0}
 .component{display:flex;align-items:center}
+/* petite icone vehicule a droite des lignes joueurs (SVG inline, pas la
+   fonte Phosphor : la fonte ne charge pas dans le NUI en jeu, donc un <i>
+   ph-car y reste invisible alors que le flag inVeh arrive bien) :
+   affichee seulement quand le Lua dit inVeh, devant l'interrupteur */
+.veh-icon{flex:none;width:2.08vh;height:2.08vh;color:rgba(255,255,255,0.8)}
+.veh-icon svg{width:100%;height:100%;display:block}
 .caret-icon{font-size:1.63vh;font-weight:400;line-height:1;color:rgba(255,255,255,0.88)}
 .swatch{display:block;width:2.21vh;height:2.21vh;border-radius:0.59vh;box-shadow:inset 0 0 0 0.13vh rgba(255,255,255,0.3)}
 /* sur la ligne selectionnee, le texte prend la couleur lisible sur l'accent */
@@ -374,8 +382,9 @@ ul{list-style-type:disc}
 .scroll-value.arrows .arrow::before{font-size:1.5vh;font-weight:700;line-height:1}
 .scroll-value.arrows .arrow:first-child::before{content:"<"}
 .scroll-value.arrows .arrow:last-child::before{content:">"}
-/* titre de page (setTitleStyle {style:'on'}) : barre noire, titre centre en gras */
-[data-title="on"] .menu-crumb{display:flex;align-items:center;justify-content:center;height:3.9vh;box-sizing:border-box;background:#000}
+/* titre de page (setTitleStyle {style:'on'}) : barre noire, titre centre en gras,
+   avec un filet couleur du menu en haut ET en bas (demande, comme le pied) */
+[data-title="on"] .menu-crumb{display:flex;align-items:center;justify-content:center;height:3.9vh;box-sizing:border-box;background:#000;border-top:0.2vh solid rgb(var(--mn-acc-rgb));border-bottom:0.2vh solid rgb(var(--mn-acc-rgb))}
 [data-title="on"] .crumb-title{font-size:1.69vh;font-weight:700;color:#fff}
 /* ancien fond noir (setBgStyle {style:'black'}) */
 [data-bg="black"] .menu-body{background:rgba(var(--mn-bg-rgb),0.93)}
@@ -501,6 +510,9 @@ function renderCrumb(){
   B.root.style.setProperty('--tabs-height',((isMain||singleTab))?'0vh':'3.77vh');
 }
 const comp=h=>{const d=$('div','component');d.innerHTML=h;return d};
+/* voiture vue de face, style trait comme les icones de notification (stroke
+   currentColor) : rendue meme sans la fonte Phosphor */
+const VEH_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l1.2-4.4A2 2 0 0 1 8.1 7.2h7.8a2 2 0 0 1 1.9 1.4L19 13"/><rect x="4" y="13" width="16" height="5.2" rx="1.6"/><path d="M7.5 18.2v1.3M16.5 18.2v1.3"/></svg>';
 function mkRow(o){
   if(o.type=='divider'){const d=$('div','separator-container');d.append($('div','separator-bar'),$('div','separator-text'),$('div','separator-bar'));return d}
   const r=$('div','menu-item'),lab=$('div','item-label'),cc=$('div','components-container');
@@ -524,6 +536,14 @@ function patchRow(r,o,i){
   const nm=r.querySelector('.name');nm.textContent=o.label??'';const ic=r.querySelector('.row-icon');if(ic&&o.icon)ic.className='ph '+o.icon+' row-icon';
   if(types(o).includes('slider')&&B.cur===i)nm.append(' ',$('span','slider-val',': '+o.value));
   const cb=r.querySelector('input[type=checkbox]');if(cb)cb.checked=!!o.checked;
+  /* icone vehicule : creee une fois, basculee a chaque rafraichissement
+     (les lignes sont recyclees, pas reconstruites) */
+  const cc=r.querySelector('.components-container');
+  let vi=cc?cc.querySelector('.veh-icon'):null;
+  if(o.inVeh){
+    if(!vi&&cc){vi=document.createElement('span');vi.className='veh-icon';vi.setAttribute('aria-hidden','true');vi.innerHTML=VEH_SVG;cc.prepend(vi)}
+    if(vi)vi.style.display='';
+  }else if(vi){vi.style.display='none'}
   const rg=r.querySelector('input[type=range]');
   if(rg){
     [['min',o.min],['max',o.max],['step',o.step]].forEach(([k,v])=>v==null?rg.removeAttribute(k):rg.setAttribute(k,v));
