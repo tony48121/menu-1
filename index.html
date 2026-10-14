@@ -841,7 +841,7 @@ function renderFreecam(){
    tout seuls, sans qu'aucune largeur ait besoin d'etre devinee.
    B est declare plus bas : d'ou le typeof, un accours sans B ne doit pas
    faire echouer l'affichage de la carte. */
-const PC_GAP=6, PC_M=8;
+const PC_GAP=6, PC_M=8, PC_DY=10;
 function positionPlayerCard(el){
   const c=el||(PC.slot.els&&PC.slot.els[0]);
   if(!c)return;
@@ -859,11 +859,10 @@ function positionPlayerCard(el){
   let x,y;
   if(b&&b.width){
     x=b.right+PC_GAP;
-    /* colle le HAUT de la fiche sur le HAUT du menu (demande : "ne doit pas
-       monter et descendre"). Avant, la fiche se centrait sur le menu : chaque
-       changement de hauteur (sous-menu, taille, curseur) la faisait sauter.
-       Ici seul un deplacement du menu (Position Y) la fait bouger. */
-    y=b.top;
+    /* colle la fiche juste sous le haut du menu (PC_DY) : elle ne suit plus
+       la hauteur du menu, donc elle ne monte ni ne descend. Seul un
+       deplacement du menu (Position Y) la fait bouger, avec lui. */
+    y=b.top+PC_DY;
   }else{
     /* menu absent : repli centre, sans translate (voir CSS) */
     x=window.innerWidth-w-PC_M;
