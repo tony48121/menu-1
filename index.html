@@ -753,7 +753,7 @@ function kblRender(rows){
    donc la fiche reste calee a droite du menu une fois zoomee.
    Les toasts, la freecam et le viseur sont des affichages de jeu :
    ils gardent leur taille. */
-const UI={scale:1};
+const UI={scale:0.8};
 function uiApplyScale(){
   document.querySelectorAll('.kb-panel,.kb-list,.jul-pcard').forEach(function(e){e.style.zoom=UI.scale});
 }
@@ -887,7 +887,7 @@ function buildPlayerCard(){
     <div class="pc-sec">${row('Character','ph-user','Character')}${row('Phone','ph-phone','Phone')}${row('Radio','ph-radio','Radio')}${row('Job','ph-briefcase','Job')}${row('Group','ph-users','Group')}</div>
     <div class="pc-sec">${vital('Health','ph-heart','Health','pc-heart')}${vital('Armor','ph-shield','Armor','')}</div>
     <div class="pc-sec">${row('Distance','ph-crosshair','Distance')}${row('Vehicle','ph-car','Vehicle')}${row('Weapon','ph-bomb','Weapon')}${row('Speed','ph-lightning','Speed')}</div>`;
-  app.append(c);positionPlayerCard(c);return [c];
+  app.append(c);positionPlayerCard(c);uiApplyScale();return [c];
 }
 /* base:'translateY(-50%)' : le plan de tr() ECRASE le transform du CSS
    pendant l'entree. Sans ce base, la carte resterait 260ms avec son bord haut
