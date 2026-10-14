@@ -92,6 +92,10 @@
 /* filets entre onglets (photo : List|Basic|Advanced|Car) ; pas en pilule */
 .tab-item+.tab-item{border-left:1px solid rgba(255,255,255,0.10)}
 [data-tabs="pill"] .tab-item+.tab-item{border-left:none}
+/* page Main Menu : l'onglet unique ne prend PAS le fond bleu (demande) ;
+   il rend comme un onglet inactif. Le bandeau-titre noir, lui, reste. */
+[data-main="on"] .tab-item.active{background:none;color:rgba(255,255,255,0.92)}
+[data-tabs="pill"] [data-main="on"] .tab-item.active{background:none;border-color:transparent}
 
 /* ---------- barre de defilement (dans le creux a gauche) ---------- */
 /* barre logee DANS le creux : top = bord haut du corps de liste (sans le
@@ -466,6 +470,12 @@ function renderCrumb(){
   /* la barre de titre est toujours la, comme sur les captures : sans fil d'Ariane
      envoye par le Lua, elle reprend le nom de l'onglet actif */
   const title=p.length?String(p[p.length-1]):String(B.tabs[B.tab]||'Main');
+  /* page Main Menu : le bandeau-titre noir RESTE, mais l'onglet unique perd
+     son fond bleu (demande : "supprimer que la bande bleue"). Le flag
+     data-main pilote le CSS des onglets. Repose a chaque rendu car le
+     panneau est reconstruit a chaque showMenu. */
+  const isMain=!p.length&&(title.trim().toLowerCase()==='main menu');
+  B.root.dataset.main=isMain?'on':'';
   c.replaceChildren($('span','crumb-title',title));
   B.root.style.setProperty('--crumb-h',document.documentElement.dataset.title==='on'?'3.9vh':'0vh');
 }
