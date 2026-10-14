@@ -346,17 +346,17 @@ ul{list-style-type:disc}
    rendent un glyphe ; ph-gun n'existe pas dans cette version, d'ou ph-bomb
    pour Weapon). Le filet et les icones suivent la couleur du menu
    (--mn-acc-rgb) comme la photo en mode bleu ; seul le coeur reste vert. */
-.jul-pcard{position:fixed;right:1.6vh;top:50%;transform:translateY(-50%);width:300px;max-width:calc(100vw - 32px);box-sizing:border-box;padding:14px 16px 10px;display:flex;flex-direction:column;font-family:var(--menu-font);color:#fff;pointer-events:none;z-index:9997;border-radius:10px;background:rgba(var(--mn-bg-rgb),0.96);border:1px solid rgba(var(--mn-acc-rgb),0.35);box-shadow:0 1vh 3vh rgba(0,0,0,0.65)}
-.pc-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:0 2px 10px;border-bottom:2px solid rgb(var(--mn-acc-rgb))}
-.pc-name{margin:0;min-width:0;font-size:16px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pc-id{flex:none;font-size:16px;font-weight:700}
-.pc-sec{padding:6px 2px;border-bottom:1px solid rgba(255,255,255,0.08)}
+.jul-pcard{position:fixed;right:1.6vh;top:50%;transform:translateY(-50%);width:360px;max-width:calc(100vw - 32px);box-sizing:border-box;padding:17px 19px 12px;display:flex;flex-direction:column;font-family:var(--menu-font);color:#fff;pointer-events:none;z-index:9997;border-radius:12px;background:rgba(var(--mn-bg-rgb),0.96);border:1px solid rgba(var(--mn-acc-rgb),0.35);box-shadow:0 1vh 3vh rgba(0,0,0,0.65)}
+.pc-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:0 2px 12px;border-bottom:2px solid rgb(var(--mn-acc-rgb))}
+.pc-name{margin:0;min-width:0;font-size:19px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pc-id{flex:none;font-size:19px;font-weight:700}
+.pc-sec{padding:7px 2px;border-bottom:1px solid rgba(255,255,255,0.08)}
 .pc-sec:last-child{border-bottom:none;padding-bottom:0}
-.pc-row{display:flex;align-items:center;gap:10px;min-height:30px}
-.pc-ic{flex:none;width:20px;text-align:center;font-size:16px;line-height:1;color:rgb(var(--mn-acc-rgb))}
+.pc-row{display:flex;align-items:center;gap:12px;min-height:36px}
+.pc-ic{flex:none;width:24px;text-align:center;font-size:19px;line-height:1;color:rgb(var(--mn-acc-rgb))}
 .pc-ic.pc-heart{color:#7be38b}
-.pc-k{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;color:rgba(255,255,255,0.55)}
-.pc-v{flex:none;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;font-weight:600;text-align:right}
+.pc-k{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:17px;color:rgba(255,255,255,0.55)}
+.pc-v{flex:none;max-width:192px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:17px;font-weight:600;text-align:right}
 /* ---------- contour du menu : a droite (defaut), tout autour, ou aucun (setEdgeStyle) ---------- */
 [data-edge="all"] .menu-root{border-color:rgb(var(--mn-acc-rgb));border-width:0.39vh;box-shadow:0 0 1.43vh rgba(var(--mn-acc-rgb),0.55),0 1.3vh 3.9vh rgba(0,0,0,0.6)}
 [data-edge="off"] .menu-root{border-right:0.13vh solid rgba(255,255,255,0.08);box-shadow:0 1.3vh 3.9vh rgba(0,0,0,0.6)}
@@ -891,8 +891,10 @@ function buildPlayerCard(){
 }
 /* base:'translateY(-50%)' : le plan de tr() ECRASE le transform du CSS
    pendant l'entree. Sans ce base, la carte resterait 260ms avec son bord haut
-   au centre de l'ecran puis "sauterait" une fois l'animation rendue. */
-const planPlayerCard=(e,out)=>[tr(e[0],{kind:'fly',x:26,dur:260,base:'translateY(-50%)'},out)];
+   au centre de l'ecran puis "sauterait" une fois l'animation rendue.
+   SORTIE SANS ANIMATION (demande) : out=true rend [] donc present() retire
+   l'element sur le champ, pas de fly/fondu de 260ms. */
+const planPlayerCard=(e,out)=>out?[]:[tr(e[0],{kind:'fly',x:26,dur:260,base:'translateY(-50%)'},out)];
 function renderPlayerCard(){
   const e=PC.slot.els,d=PC.d;if(!e)return;
   /* recale a chaque rafraichissement : le menu bouge (setMenuPos, Menu Size,
