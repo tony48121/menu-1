@@ -72,10 +72,10 @@
   background:linear-gradient(90deg,rgba(0,0,0,0.72),rgba(0,0,0,0.30));
   border-right:0.13vh solid rgba(255,255,255,0.07)}
 
-/* ---------- barre de titre : SUPPRIMEE a la demande (la photo demandait la
-   disparition du bandeau "Main Menu"). On garde le noeud dans le DOM (le Lua
-   envoie encore setBreadcrumb / renderCrumb) mais il ne rend PLUS rien : le
-   --crumb-h:0 fait remonter la barre de defilement et la liste. ---------- */
+/* ---------- barre de titre : bandeau noir avec le nom de section (photo :
+   "Online Options" entre banniere et onglets). renderCrumb y ecrit le fil
+   d'Ariane ou, a defaut, l'onglet actif ; --crumb-h reserve sa hauteur pour
+   que la barre de defilement et la liste descendent d'elles-memes. ---------- */
 .menu-crumb{display:none}
 .crumb-title{font-size:1.63vh;font-weight:500;letter-spacing:0.01em;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80%}
 /* le titre seul s'affiche, comme sur les captures */
@@ -89,6 +89,9 @@
 [data-tabs="pill"] .menu-tabs{padding:0.65vh 1.3vh}
 [data-tabs="pill"] .tab-item{text-transform:uppercase;letter-spacing:0.08em;font-size:1.37vh;border:0.13vh solid transparent;border-radius:2.6vh}
 [data-tabs="pill"] .tab-item.active{border-color:rgb(var(--mn-hi-rgb));background:rgba(var(--mn-fill-rgb),0.55);color:#fff}
+/* filets entre onglets (photo : List|Basic|Advanced|Car) ; pas en pilule */
+.tab-item+.tab-item{border-left:1px solid rgba(255,255,255,0.10)}
+[data-tabs="pill"] .tab-item+.tab-item{border-left:none}
 
 /* ---------- barre de defilement (dans le creux a gauche) ---------- */
 /* barre logee DANS le creux : top = bord haut du corps de liste (sans le
@@ -140,11 +143,11 @@
 .toggle-switch input{position:absolute;opacity:0;width:0;height:0}
 .toggle-track{display:block;width:4.81vh;height:2.47vh;background:#62636c;border-radius:1.3vh;position:relative;transition:background 0.22s ease;box-sizing:border-box}
 .toggle-thumb{position:absolute;top:50%;left:0.33vh;transform:translateY(-50%);width:1.76vh;height:1.76vh;border-radius:50%;background:#f2f2f4;transition:left 0.22s ease,background 0.22s ease}
-.toggle-switch input:checked ~ .toggle-track{background:rgb(var(--mn-fill-rgb))}
+.toggle-switch input:checked ~ .toggle-track{background:#878d98}
 .toggle-switch input:checked ~ .toggle-track .toggle-thumb{left:calc(100% - 1.76vh - 0.33vh);background:#fff}
 /* sur la ligne selectionnee la piste a la meme couleur que la bande : on l'inverse */
 .menu-item.is-selected .toggle-switch input:checked ~ .toggle-track{background:#fff}
-.menu-item.is-selected .toggle-switch input:checked ~ .toggle-track .toggle-thumb{background:rgb(var(--mn-fill-rgb))}
+.menu-item.is-selected .toggle-switch input:checked ~ .toggle-track .toggle-thumb{background:#878d98}
 .menu-item.is-selected .toggle-track{box-shadow:0 0 0 0.13vh rgba(255,255,255,0.35)}
 
 /* ---------- slider ---------- */
@@ -336,30 +339,30 @@ ul{list-style-type:disc}
    joueur de la liste. Tout le contenu vient de Lua : ce bloc ne fait que
    le poser a l'ecran. pointer-events:none, elle ne doit jamais capter un
    clic ni bloquer le menu. Fond noir, nom et barres a la couleur du menu. */
-.jul-pcard{position:fixed;right:1.6vh;top:50%;transform:translateY(-50%);width:29vh;box-sizing:border-box;padding:1.6vh;display:flex;flex-direction:column;gap:1.2vh;font-family:var(--menu-font);color:#fff;pointer-events:none;z-index:9997;border-radius:2vh;background:rgba(var(--mn-bg-rgb),0.96);border:0.12vh solid rgba(var(--mn-acc-rgb),0.5);box-shadow:0 1vh 3vh rgba(0,0,0,0.65)}
-.jul-pc-head{display:flex;align-items:center;gap:1.2vh}
-.jul-pc-av{flex:none;width:4.4vh;height:4.4vh;box-sizing:border-box;border-radius:1vh;border:0.12vh solid rgb(var(--mn-on-rgb));background:rgba(var(--mn-acc-rgb),0.14);display:grid;place-items:center;font-size:1.5vh;font-weight:700;color:rgb(var(--mn-on-rgb))}
-.jul-pc-who{flex:1;min-width:0}
-.jul-pc-name{font-size:1.7vh;font-weight:700;line-height:1.15;color:rgb(var(--mn-on-rgb));white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.jul-pc-sub{margin-top:0.25vh;font-size:1.05vh;color:rgba(255,255,255,0.6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.jul-pc-badge{flex:none;box-sizing:border-box;padding:0.5vh 1.1vh;border-radius:2vh;border:0.1vh solid rgba(255,255,255,0.18);font-family:var(--mono);font-size:1.1vh;font-weight:700}
-.jul-pc-stat{display:flex;flex-direction:column;gap:0.7vh}
-.jul-pc-line{display:flex;justify-content:space-between;align-items:baseline;font-size:1.15vh;color:rgba(255,255,255,0.6)}
-.jul-pc-line .vnum{font-family:var(--mono);font-weight:700;color:#fff}
-.jul-pc-bar{display:flex;gap:0.35vh}
-.jul-pc-seg{flex:1;height:0.85vh;border-radius:0.5vh;background:rgba(255,255,255,0.08)}
-.jul-pc-bar.hp .jul-pc-seg.on{background:#8fd18f}
-.jul-pc-bar.ap .jul-pc-seg.on{background:rgb(var(--mn-on-rgb))}
-.jul-pc-sec{display:flex;flex-direction:column;border-top:0.1vh solid rgba(255,255,255,0.08)}
-.jul-pc-row{display:flex;justify-content:space-between;align-items:center;gap:1vh;padding:0.95vh 0;font-size:1.15vh;border-bottom:0.1vh solid rgba(255,255,255,0.08)}
-.jul-pc-row:last-child{border-bottom:none}
-.jul-pc-row .k{color:rgba(255,255,255,0.6)}
-.jul-pc-row .v{font-family:var(--mono);font-weight:500;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:15vh}
+/* ---------- fiche joueur (photo : nom + ID soulignes, lignes iconees) ----------
+   Carte affichee a la selection d'un joueur, calee a droite du menu par
+   positionPlayerCard (laisse intact : il travaille sur le rectangle reel).
+   Les icones sont des classes Phosphor dont le rendu a ete MESURE (toutes
+   rendent un glyphe ; ph-gun n'existe pas dans cette version, d'ou ph-bomb
+   pour Weapon). Le filet et les icones suivent la couleur du menu
+   (--mn-acc-rgb) comme la photo en mode bleu ; seul le coeur reste vert. */
+.jul-pcard{position:fixed;right:1.6vh;top:50%;transform:translateY(-50%);width:300px;max-width:calc(100vw - 32px);box-sizing:border-box;padding:14px 16px 10px;display:flex;flex-direction:column;font-family:var(--menu-font);color:#fff;pointer-events:none;z-index:9997;border-radius:10px;background:rgba(var(--mn-bg-rgb),0.96);border:1px solid rgba(var(--mn-acc-rgb),0.35);box-shadow:0 1vh 3vh rgba(0,0,0,0.65)}
+.pc-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:0 2px 10px;border-bottom:2px solid rgb(var(--mn-acc-rgb))}
+.pc-name{margin:0;min-width:0;font-size:16px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pc-id{flex:none;font-size:16px;font-weight:700}
+.pc-sec{padding:6px 2px;border-bottom:1px solid rgba(255,255,255,0.08)}
+.pc-sec:last-child{border-bottom:none;padding-bottom:0}
+.pc-row{display:flex;align-items:center;gap:10px;min-height:30px}
+.pc-ic{flex:none;width:20px;text-align:center;font-size:16px;line-height:1;color:rgb(var(--mn-acc-rgb))}
+.pc-ic.pc-heart{color:#7be38b}
+.pc-k{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;color:rgba(255,255,255,0.55)}
+.pc-v{flex:none;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;font-weight:600;text-align:right}
 /* ---------- contour du menu : a droite (defaut), tout autour, ou aucun (setEdgeStyle) ---------- */
 [data-edge="all"] .menu-root{border-color:rgb(var(--mn-acc-rgb));border-width:0.39vh;box-shadow:0 0 1.43vh rgba(var(--mn-acc-rgb),0.55),0 1.3vh 3.9vh rgba(0,0,0,0.6)}
 [data-edge="off"] .menu-root{border-right:0.13vh solid rgba(255,255,255,0.08);box-shadow:0 1.3vh 3.9vh rgba(0,0,0,0.6)}
 /* ===== Ecarts avec les captures du menu a 4 couleurs ===== */
-/* valeurs "< x >" pour les listes : item.arrows = true (sinon "- x -") */
+/* valeurs "< x >" par defaut pour les listes (photo) ; "- x -" seulement si
+   item.arrows vaut explicitement false */
 .scroll-value.arrows .arrow{font-size:0;opacity:1}
 .scroll-value.arrows .arrow::before{font-size:1.5vh;font-weight:700;line-height:1}
 .scroll-value.arrows .arrow:first-child::before{content:"<"}
@@ -378,6 +381,10 @@ ul{list-style-type:disc}
 (()=>{
 console.log('[JuL menu] version v14 (panneau noir + couleur du menu : barre de titre, onglets pleins, selection en degrade)');
 const app=document.getElementById('app');
+/* bandeau-titre visible par defaut (photo : bandeau noir "Online Options"
+   entre banniere et onglets). Le Lua n'envoie jamais setTitleStyle, donc
+   sans ceci la barre resterait cachee. renderCrumb y ecrit le nom de section. */
+document.documentElement.dataset.title='on';
 const $=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
 const clamp=(n,a=0,b=100)=>Math.max(a,Math.min(b,n));
 const E_OUT='cubic-bezier(.33,1,.68,1)',E_IN='cubic-bezier(.32,0,.67,0)';
@@ -460,7 +467,7 @@ function renderCrumb(){
      envoye par le Lua, elle reprend le nom de l'onglet actif */
   const title=p.length?String(p[p.length-1]):String(B.tabs[B.tab]||'Main');
   c.replaceChildren($('span','crumb-title',title));
-  B.root.style.setProperty('--crumb-h',document.documentElement.dataset.title==='on'?'3vh':'0vh');
+  B.root.style.setProperty('--crumb-h',document.documentElement.dataset.title==='on'?'3.9vh':'0vh');
 }
 const comp=h=>{const d=$('div','component');d.innerHTML=h;return d};
 function mkRow(o){
@@ -493,7 +500,7 @@ function patchRow(r,o,i){
     r.querySelector('.range-fill').style.width=o.max>o.min?((o.value-o.min)/(o.max-o.min))*100+'%':'0%';
   }
   const sc=r.querySelector('.scroll-value .val');
-  if(sc)sc.parentElement.classList.toggle('arrows',!!o.arrows);
+  if(sc)sc.parentElement.classList.toggle('arrows',o.arrows!==false);
   if(sc)sc.textContent=o.options?.[o.selected-1]?.label||o.options?.[0]?.label||(!o.options||o.options.length===0?'Loading...':'None');
   const sw=r.querySelector('.swatch');if(sw)sw.style.background=o.color||'#fff';
 }
@@ -673,6 +680,7 @@ function buildKey(){
   val.append(key,$('span','kb-hint'));
   box.append(head,val);ov.append(box);app.append(ov);
   kbFromAccent();                 /* la couleur du menu peut changer entre deux ouvertures */
+  uiApplyScale();                  /* l'echelle Menu Size vaut aussi pour la saisie */
   return [ov,box];
 }
 /* pas de base translateX(-50%) : le panneau est centre par la grid de .kb-overlay */
@@ -733,6 +741,19 @@ function kblRender(rows){
     ul.append(li);
   }
   el.hidden=false;KBL.has=true;
+  uiApplyScale();
+}
+
+/* ===== Echelle de l'interface (option Menu Size) =====
+   L'option ne regle pas que le menu : elle met a l'echelle TOUTE
+   l'interface (panneau de saisie + liste des touches). On utilise `zoom`
+   et pas `transform:scale` : zoom recalcule la mise en page et le texte
+   reste net, alors que transform ne ferait qu'etirer l'image (flou).
+   Les toasts, la fiche joueur et la freecam sont des affichages de jeu :
+   ils gardent leur taille. */
+const UI={scale:1};
+function uiApplyScale(){
+  document.querySelectorAll('.kb-panel,.kb-list').forEach(function(e){e.style.zoom=UI.scale});
 }
 
 function keyUI(show){
@@ -848,15 +869,17 @@ function positionPlayerCard(el){
 const PC={d:null,slot:{g:0}};
 function buildPlayerCard(){
   const c=$('div','jul-pcard');
-  const row=k=>`<div class="jul-pc-row"><span class="k">${k}</span><span class="v" data-k="${k}">-</span></div>`;
-  const segs=Array.from({length:10},()=>'<span class="jul-pc-seg"></span>').join('');
-  const stat=(f,k)=>`<div class="jul-pc-stat"><div class="jul-pc-line"><span class="k">${k}</span><span class="vnum" data-f="${f}">- / -</span></div><div class="jul-pc-bar ${f}" data-f="${f}f">${segs}</div></div>`;
-  /* en-tete : initiales | nom + vehicule/arme | numero ; puis vie et armure en
-     10 segments ; puis les lignes. Rien n'est devine : tout vient de Lua. */
+  /* ic = classe Phosphor VERIFIEE par mesure de rendu (ph-gun n'existe pas
+     dans cette version : Weapon prend ph-bomb, membre du set prouve).
+     Les cles absentes du paquet Lua (Character/Radio/Job/Group) restent '-'
+     via set() : inconnu affiche, jamais invente. */
+  const row=(k,ic,fr)=>`<div class="pc-row"><i class="ph ${ic} pc-ic"></i><span class="pc-k">${fr}</span><span class="pc-v" data-k="${k}">-</span></div>`;
+  const vital=(k,ic,fr,cls)=>`<div class="pc-row"><i class="ph ${ic} pc-ic${cls?' '+cls:''}"></i><span class="pc-k">${fr}</span><span class="pc-v" data-k="${k}">-</span></div>`;
   c.innerHTML=`
-    <div class="jul-pc-head"><div class="jul-pc-av" data-k="Initials">-</div><div class="jul-pc-who"><div class="jul-pc-name" data-k="Name">-</div><div class="jul-pc-sub" data-k="Sub">-</div></div><div class="jul-pc-badge" data-k="Player ID">-</div></div>
-    ${stat('hp','Health')}${stat('ap','Armor')}
-    <div class="jul-pc-sec">${row('Distance')}${row('Heading')}${row('Phone')}${row('Coordinates')}</div>`;
+    <div class="pc-head"><span class="pc-name" data-k="Name">-</span><span class="pc-id" data-k="Sid">-</span></div>
+    <div class="pc-sec">${row('Character','ph-user','Character')}${row('Phone','ph-phone','Phone')}${row('Radio','ph-radio','Radio')}${row('Job','ph-briefcase','Job')}${row('Group','ph-users','Group')}</div>
+    <div class="pc-sec">${vital('Health','ph-heart','Health','pc-heart')}${vital('Armor','ph-shield','Armor','')}</div>
+    <div class="pc-sec">${row('Distance','ph-crosshair','Distance')}${row('Vehicle','ph-car','Vehicle')}${row('Weapon','ph-bomb','Weapon')}${row('Speed','ph-lightning','Speed')}</div>`;
   app.append(c);positionPlayerCard(c);return [c];
 }
 /* base:'translateY(-50%)' : le plan de tr() ECRASE le transform du CSS
@@ -871,36 +894,19 @@ function renderPlayerCard(){
   if(!d)return;
   const q=s=>e[0].querySelector(s);
   const set=(sel,val)=>{const n=q(sel);if(n)n.textContent=(val==null||val==='')?'-':String(val)};
-  /* initiales : deux premiers mots, sinon deux premieres lettres */
-  const w=String(d.name==null?'':d.name).split(/[^A-Za-z0-9\u00C0-\u024F]+/).filter(Boolean);
-  set('[data-k="Initials"]',w.length>1?w[0][0]+w[1][0]:(w[0]||'').slice(0,2));
-  q('[data-k="Initials"]').textContent=q('[data-k="Initials"]').textContent.toUpperCase();
-  set('[data-k="Player ID"]',(d.sid==null||d.sid==='')?null:'#'+d.sid);
   set('[data-k="Name"]',d.name);
-  /* sous le nom : vehicule et arme, comme "A pied - Sans arme" sur la reference */
-  set('[data-k="Sub"]',[d.veh,d.wep].filter(x=>x!=null&&x!=='').join(' \u00b7 '));
-  set('[data-k="Distance"]',d.dist);
-  /* le degre est ecrit ICI, pas dans Lua : le fichier Lua reste en ASCII pur */
-  set('[data-k="Heading"]',(d.dir?((typeof d.hdg==='number'?Math.round(d.hdg):'-')+'\u00b0 '+d.dir):'-'));
-  set('[data-k="Coordinates"]',d.pos);
+  /* la photo montre l'ID seul ("379"), sans diese */
+  set('[data-k="Sid"]',(d.sid==null||d.sid==='')?null:d.sid);
   /* d.num peut etre nil : set() ecrit "-" dans ce cas, jamais undefined.
      C'est le cas nominal tant que le serveur ne publie pas le numero. */
   set('[data-k="Phone"]',d.num);
-  /* les barres se remplissent avec le POURCENTAGE (10 segments), l'etiquette
-     montre le brut : "62 / 100", et non un pourcentage invente */
-  const hpN=(typeof d.hpN==='number')?d.hpN:null;
-  const apN=(typeof d.apN==='number')?d.apN:null;
-  const hpMax=(typeof d.hpMax==='number'&&d.hpMax>0)?d.hpMax:100;
-  const hpPct=(hpN!=null)?clamp(hpN/hpMax*100,0,100):0;
-  const apPct=(apN!=null)?clamp(apN,0,100):0;
-  set('[data-f="hp"]',(hpN!=null)?hpN+' / '+hpMax:'- / -');
-  set('[data-f="ap"]',(apN!=null)?apN+' / 100':'- / -');
-  const fillSegs=(sel,pct)=>{
-    const bar=q(sel);if(!bar)return;
-    const n=pct>0?Math.max(1,Math.round(pct/10)):0;
-    Array.prototype.forEach.call(bar.children,(sg,i)=>sg.classList.toggle('on',i<n));
-  };
-  fillSegs('[data-f="hpf"]',hpPct);fillSegs('[data-f="apf"]',apPct);
+  /* vie : le natif rend 100..200 (100 = mort), la photo lit 0..100 */
+  set('[data-k="Health"]',(typeof d.hpN==='number')?Math.max(0,Math.round(d.hpN-100)):null);
+  set('[data-k="Armor"]',(typeof d.apN==='number')?Math.max(0,Math.min(100,Math.round(d.apN))):null);
+  set('[data-k="Distance"]',d.dist);
+  set('[data-k="Vehicle"]',d.veh);
+  set('[data-k="Weapon"]',d.wep);
+  set('[data-k="Speed"]',d.spd);
 }
 function playerCardShow(d){
   /* Le Lua envoie les donnees IMBRIQUEES : { action, visible, data:{...} }.
@@ -1127,6 +1133,7 @@ addEventListener('message',e=>{
       if(d.showInput)I.blocking=true;else unblock();break}
     case 'hideInputPrompt':inputUI(false);keyUI(false);unblock();break;
     case 'setKeybinds':kblRender(d.rows||[]);break;
+    case 'setUiScale':{const s=Number(d.scale);UI.scale=(isFinite(s)&&s>0)?s:1;uiApplyScale();break}
     case 'updateInputPrompt':{
       I.title=d.title;I.value=d.value;
       K.title=I.title;K.value=I.value;
