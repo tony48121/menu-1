@@ -926,10 +926,9 @@ function buildPlayerCard(){
     <div class="pc-sec">${row('Distance','ph-crosshair','Distance')}${row('Vehicle','ph-car','Vehicle')}${row('Weapon','ph-bomb','Weapon')}${row('Speed','ph-lightning','Speed')}</div>`;
   app.append(c);positionPlayerCard(c);uiApplyScale();return [c];
 }
-/* Entree : simple glisse depuis la droite. Pas de base translateY : la fiche
-   est ancree par son haut (positionPlayerCard), un recentrage la ferait
-   "sauter" a la fin de l'animation. Sortie : immediate (voir plus bas). */
-const planPlayerCard=(e,out)=>out?[]:[tr(e[0],{kind:'fly',x:26,dur:260},out)];
+/* Entree ET sortie SANS ANIMATION (demande) : plan rend toujours [] donc
+   present() pose/retire l'element sur le champ, ni fly d'entree ni fondu. */
+const planPlayerCard=()=>[];
 function renderPlayerCard(){
   const e=PC.slot.els,d=PC.d;if(!e)return;
   /* recale a chaque rafraichissement : le menu bouge (setMenuPos, Menu Size,
