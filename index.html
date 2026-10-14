@@ -146,8 +146,8 @@
 .toggle-switch input:checked ~ .toggle-track{background:#878d98}
 .toggle-switch input:checked ~ .toggle-track .toggle-thumb{left:calc(100% - 1.76vh - 0.33vh);background:#fff}
 /* sur la ligne selectionnee la piste a la meme couleur que la bande : on l'inverse */
-.menu-item.is-selected .toggle-switch input:checked ~ .toggle-track{background:#fff}
-.menu-item.is-selected .toggle-switch input:checked ~ .toggle-track .toggle-thumb{background:#878d98}
+.menu-item.is-selected .toggle-switch input:checked ~ .toggle-track{background:linear-gradient(180deg,rgb(var(--mn-hi-rgb)),rgb(var(--mn-lo-rgb)))}
+.menu-item.is-selected .toggle-switch input:checked ~ .toggle-track .toggle-thumb{background:#fff}
 .menu-item.is-selected .toggle-track{box-shadow:0 0 0 0.13vh rgba(255,255,255,0.35)}
 
 /* ---------- slider ---------- */
