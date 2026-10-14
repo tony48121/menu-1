@@ -166,9 +166,9 @@
 .scroll-value .arrow{opacity:0.7}
 
 /* ---------- séparateur : filet blanc - titre - filet blanc ---------- */
-.separator-container{display:flex;align-items:center;height:var(--item-height);padding:0 0 0 2.6vh;gap:1.82vh;box-sizing:border-box;background:transparent}
-.separator-bar{display:block;flex:1;height:0.18vh;background:#fff;border-radius:0.13vh}
-.separator-text{color:#fff;font-size:1.5vh;font-weight:600;white-space:nowrap;letter-spacing:0.02em}
+.separator-container{display:flex;align-items:center;justify-content:center;height:var(--item-height);padding:0 2.6vh;gap:1.82vh;box-sizing:border-box;background:transparent}
+.separator-bar{display:block;flex:1 1 0;min-width:0;height:0.18vh;background:#fff;border-radius:0.13vh}
+.separator-text{flex:none;color:#fff;font-size:1.5vh;font-weight:600;white-space:nowrap;letter-spacing:0.02em;text-align:center}
 
 /* ---------- pied : texte a gauche | compteur a droite, filet de couleur au-dessus ---------- */
 .menu-footer{background:#000;display:grid;grid-template-columns:auto 1fr auto;align-items:center;height:3.9vh;box-sizing:border-box;border-top:0.2vh solid rgb(var(--mn-acc-rgb));border-radius:0 0 1.17vh 1.17vh;overflow:hidden}
@@ -756,6 +756,9 @@ function kblRender(rows){
 const UI={scale:0.8};
 function uiApplyScale(){
   document.querySelectorAll('.kb-panel,.kb-list,.jul-pcard').forEach(function(e){e.style.zoom=UI.scale});
+  /* le zoom change la taille rendue : on recale la fiche aussitot, sinon
+     elle garderait l'ancienne position jusqu'au prochain paquet (250ms) */
+  if(typeof positionPlayerCard==='function')positionPlayerCard();
 }
 
 function keyUI(show){
@@ -841,7 +844,7 @@ function renderFreecam(){
    tout seuls, sans qu'aucune largeur ait besoin d'etre devinee.
    B est declare plus bas : d'ou le typeof, un accours sans B ne doit pas
    faire echouer l'affichage de la carte. */
-const PC_GAP=6, PC_M=8, PC_DY=10;
+const PC_GAP=6, PC_M=8, PC_DYVH=-1;
 function positionPlayerCard(el){
   const c=el||(PC.slot.els&&PC.slot.els[0]);
   if(!c)return;
@@ -859,10 +862,11 @@ function positionPlayerCard(el){
   let x,y;
   if(b&&b.width){
     x=b.right+PC_GAP;
-    /* colle la fiche juste sous le haut du menu (PC_DY) : elle ne suit plus
-       la hauteur du menu, donc elle ne monte ni ne descend. Seul un
-       deplacement du menu (Position Y) la fait bouger, avec lui. */
-    y=b.top+PC_DY;
+    /* fiche un tout petit peu AU-DESSUS du debut de la banniere (demande) :
+       -1vh (~-11px a 1080p). En vh pour suivre toutes les resolutions ;
+       stable quelle que soit la hauteur du menu. Le garde-fou bas (PC_M)
+       protege si le menu touche le haut de l'ecran. */
+    y=b.top+PC_DYVH*window.innerHeight/100;
   }else{
     /* menu absent : repli centre, sans translate (voir CSS) */
     x=window.innerWidth-w-PC_M;
