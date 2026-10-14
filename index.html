@@ -60,8 +60,8 @@
    a son propre fond. Un fond sur la racine s'ajouterait a celui de la liste.
    Pas d'overflow:hidden non plus : le creux et la barre sont dessines a
    l'interieur du panneau, rien ne depasse du cadre. */
-.menu-root{font-family:var(--menu-font);color:#fff;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;position:fixed;width:44.2vh;z-index:1000;border-radius:1.3vh;background:transparent;border:0.13vh solid rgba(255,255,255,0.08);border-right:0.39vh solid rgb(var(--mn-acc-rgb));box-shadow:0.26vh 0 1.43vh -0.26vh rgba(var(--mn-acc-rgb),0.6),0 1.3vh 3.9vh rgba(0,0,0,0.6)}
-.menu-banner{position:relative;border-radius:1.17vh 1.17vh 0 0;overflow:hidden;padding:0;background:#000}
+.menu-root{font-family:var(--menu-font);color:#fff;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;position:fixed;width:44.2vh;z-index:1000;border-radius:0;background:transparent;border:0.13vh solid rgba(255,255,255,0.08);border-right:0.39vh solid rgb(var(--mn-acc-rgb));box-shadow:none}
+.menu-banner{position:relative;border-radius:0;overflow:hidden;padding:0;background:#000}
 .menu-banner img{width:100%;height:var(--banner-height);object-fit:cover;display:block}
 .menu-body{position:relative;background:rgba(var(--mn-char-rgb),0.94);overflow:hidden;padding-left:1.56vh}
 /* creux : petite gouttiere creusee dans le bord gauche du panneau. Le degrade
@@ -178,7 +178,7 @@
 .separator-text{flex:none;color:#fff;font-size:1.5vh;font-weight:600;white-space:nowrap;letter-spacing:0.02em;text-align:center}
 
 /* ---------- pied : texte a gauche | compteur a droite, filet de couleur au-dessus ---------- */
-.menu-footer{background:#000;display:grid;grid-template-columns:auto 1fr auto;align-items:center;height:3.9vh;box-sizing:border-box;border-top:0.2vh solid rgb(var(--mn-acc-rgb));border-radius:0 0 1.17vh 1.17vh;overflow:hidden}
+.menu-footer{background:#000;display:grid;grid-template-columns:auto 1fr auto;align-items:center;height:3.9vh;box-sizing:border-box;border-top:0.2vh solid rgb(var(--mn-acc-rgb));border-radius:0;overflow:hidden}
 .footer-logo{display:flex;align-items:center;height:100%;padding:0 0 0 2.08vh;color:rgb(var(--mn-on-rgb))}
 /* Bas a gauche : volontairement vide. L'emplacement n'accueille un logo que
    si une URL est explicitement fournie via FOOTER_LOGO_URL dans menu.lua ;
@@ -365,8 +365,8 @@ ul{list-style-type:disc}
 .pc-k{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:17px;color:rgba(255,255,255,0.55)}
 .pc-v{flex:none;max-width:192px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:17px;font-weight:600;text-align:right}
 /* ---------- contour du menu : a droite (defaut), tout autour, ou aucun (setEdgeStyle) ---------- */
-[data-edge="all"] .menu-root{border-color:rgb(var(--mn-acc-rgb));border-width:0.39vh;box-shadow:0 0 1.43vh rgba(var(--mn-acc-rgb),0.55),0 1.3vh 3.9vh rgba(0,0,0,0.6)}
-[data-edge="off"] .menu-root{border-right:0.13vh solid rgba(255,255,255,0.08);box-shadow:0 1.3vh 3.9vh rgba(0,0,0,0.6)}
+[data-edge="all"] .menu-root{border-color:rgb(var(--mn-acc-rgb));border-width:0.39vh;box-shadow:none}
+[data-edge="off"] .menu-root{border-right:0.13vh solid rgba(255,255,255,0.08);box-shadow:none}
 /* ===== Ecarts avec les captures du menu a 4 couleurs ===== */
 /* valeurs "< x >" par defaut pour les listes (photo) ; "- x -" seulement si
    item.arrows vaut explicitement false */
