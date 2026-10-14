@@ -5,7 +5,7 @@
 <title>Menu</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&family=Saira:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&family=Saira:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <script async src="https://unpkg.com/@phosphor-icons/web"></script>
 <style>
 *{background:transparent}
@@ -317,39 +317,47 @@
   color:var(--kbl-text,#e6e6e8);font-size:13px;font-weight:600;letter-spacing:0.03em}
 body,main{all:unset;display:block}
 
-/* ---------- notifications (maquette notifications.html) ----------
-   Pile en haut a droite, 340px. Tout se calcule a partir d'UNE couleur,
-   celle du menu (--accent-rgb), via ntApplyColor() : fond derive + texte
-   blanc/fonce selon contraste. Niveaux : info (couleur du menu), success,
-   warning, error, chacun avec sa propre icone SVG. Barre de temps en bas,
-   en pause au survol. duration 0 = reste jusqu'a fermeture. */
-.notify-stack{position:fixed;top:24px;right:24px;width:390px;max-width:calc(100vw - 32px);
-  display:flex;flex-direction:column;gap:12px;z-index:9999;pointer-events:none;--slide:32px}
-.nt-toast{--accent:var(--nt-on,#e0e0e0);position:relative;overflow:hidden;display:flex;
-  align-items:flex-start;gap:14px;padding:14px 12px 17px 14px;pointer-events:auto;
-  background:var(--nt-panel,rgba(98,98,98,0.88));border:1px solid var(--nt-border,rgba(208,208,208,0.35));
-  border-radius:10px;animation:nt-in 0.28s ease-out both;
-  font-family:var(--font);color:var(--nt-text,#fff)}
-.nt-toast[data-level="success"]{--accent:var(--nt-success,#7be38b)}
-.nt-toast[data-level="warning"]{--accent:var(--nt-warning,#ffcf5a)}
-.nt-toast[data-level="error"]{--accent:var(--nt-error,#ff7a70)}
-.nt-toast.leaving{animation:nt-out 0.22s ease-in forwards}
-@keyframes nt-in{from{opacity:0;transform:translateX(var(--slide))}to{opacity:1;transform:none}}
-@keyframes nt-out{from{opacity:1;transform:none}to{opacity:0;transform:translateX(var(--slide))}}
-.nt-icon{flex:none;width:34px;height:34px;display:grid;place-items:center;border-radius:9px;
-  background:rgba(0,0,0,0.28);color:var(--accent)}
-.nt-icon svg{width:22px;height:22px}
-.nt-body{flex:1;min-width:0;padding-top:1px}
-.nt-title{margin:0;font-size:16px;font-weight:700;line-height:1.3;overflow-wrap:anywhere}
-.nt-msg{margin:3px 0 0;font-size:14px;line-height:1.4;color:var(--nt-text-off,rgba(255,255,255,0.72));overflow-wrap:anywhere}
-.nt-close{flex:none;width:28px;height:28px;border:0;border-radius:6px;background:transparent;
-  color:var(--nt-text-off,rgba(255,255,255,0.72));font:400 22px/1 var(--font);cursor:pointer}
-.nt-close:hover{background:rgba(0,0,0,0.25);color:var(--nt-text,#fff)}
-.nt-timer{position:absolute;left:0;bottom:0;width:100%;height:3px;background:var(--accent);
-  transform-origin:left center;animation:nt-shrink linear forwards}
-.nt-toast:hover .nt-timer{animation-play-state:paused}
-@keyframes nt-shrink{from{transform:scaleX(1)}to{transform:scaleX(0)}}
-@media (prefers-reduced-motion:reduce){.nt-toast,.nt-toast.leaving,.nt-timer{animation:none}.nt-toast.leaving{opacity:0}}
+/* ---------- notifications (maquette notifications_style_reference.html) ----------
+   4 types aux couleurs FIXES (codes universels, pas la couleur du menu) :
+   warn jaune, success vert, error rouge, info bleu.
+   DEMANDE : pile tout en bas a droite, les nouvelles arrivent en bas.
+   Chaque toast : icone + titre + compte a rebours, message, barre qui se
+   vide avec curseur. Clic = fermer. Duree par defaut 4 s, PLAFOND 5 s
+   (demande : rien ne s'affiche plus longtemps), max 6 toasts.
+   Dimensions reduites (~0.44) par rapport a la demo (950px) : un toast de
+   950px couvrirait la moitie d'un ecran 1080p en jeu. */
+.notify-stack{--nt-warn:255,225,70;--nt-success:83,238,184;--nt-error:255,113,137;--nt-info:105,174,255;
+  position:fixed;bottom:24px;right:24px;width:400px;max-width:calc(100vw - 48px);
+  display:flex;flex-direction:column;gap:12px;z-index:9999;pointer-events:none;
+  font-family:Inter,"Segoe UI",system-ui,sans-serif}
+.nt-toast{--c:var(--nt-info);position:relative;display:flex;align-items:center;gap:12px;
+  min-height:64px;padding:10px 16px 9px;pointer-events:auto;box-sizing:border-box;
+  border:1px solid rgba(var(--c),.78);border-radius:14px;
+  background:rgba(9,10,15,.94);color:#f5f5f7;
+  box-shadow:0 0 8px rgba(var(--c),.38),0 0 25px rgba(var(--c),.2),inset 0 0 20px rgba(var(--c),.025);
+  cursor:pointer;overflow:hidden;animation:nt-in .24s ease-out both}
+.nt-toast[data-kind="warn"]{--c:var(--nt-warn)}
+.nt-toast[data-kind="success"]{--c:var(--nt-success)}
+.nt-toast[data-kind="error"]{--c:var(--nt-error)}
+.nt-toast[data-kind="info"]{--c:var(--nt-info)}
+.nt-toast.out{animation:nt-out .2s ease-in both}
+@keyframes nt-in{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:none}}
+@keyframes nt-out{to{opacity:0;transform:translateX(12px)}}
+.nt-icon{flex:none;width:40px;height:40px;box-sizing:border-box;border-radius:12px;display:grid;place-items:center;
+  border:1px solid rgba(var(--c),.8);background:rgba(var(--c),.08);color:rgb(var(--c));
+  box-shadow:inset 0 0 14px rgba(var(--c),.04)}
+.nt-icon span{width:17px;height:17px;border-radius:50%;display:grid;place-items:center;background:rgb(var(--c));color:#15151a}
+.nt-icon svg{width:10px;height:10px}
+.nt-body{flex:1;min-width:0;align-self:center;padding-bottom:2px}
+.nt-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.nt-title{font-size:14px;font-weight:600;letter-spacing:-0.2px;color:#f5f5f7}
+.nt-time{font-size:11px;font-weight:500;color:#b8b8c2;opacity:.85;font-variant-numeric:tabular-nums}
+.nt-msg{margin-top:3px;font-size:12px;font-weight:400;line-height:1.35;color:#a5a5b0;overflow-wrap:anywhere}
+.nt-bar{position:relative;margin-top:7px;height:3px;background:rgba(255,255,255,.09)}
+.nt-fill{height:100%;width:100%;background:rgb(var(--c));box-shadow:0 0 8px rgba(var(--c),.7);transform-origin:left}
+.nt-dot{display:block;position:absolute;top:50%;width:6px;height:6px;margin-left:-3px;border-radius:50%;
+  background:#f4f4f7;box-shadow:0 0 8px rgba(var(--c),.95);transform:translateY(-50%)}
+@media (prefers-reduced-motion:reduce){.nt-toast,.nt-toast.out{animation:none}}
 
 /* ---------- cible (reticule overlay) ---------- */
 /* Dessinee par le NUI, pas par un composant HUD : ainsi elle coexiste avec
@@ -1026,18 +1034,16 @@ function playerCardShow(d){
   if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>positionPlayerCard()).catch(()=>{});
 }
 
-/* ================= NOTIFICATIONS (maquette notifications.html) ================= */
-/* Couleurs derivees du menu : ntApplyColor(r,g,b) recalcule --nt-panel et
-   --nt-on a chaque setMenuColor. Defaut gris 150,150,150 comme le reste. */
-const ntStack=$('div','notify-stack');app.append(ntStack);
-const NT_LEVELS=['info','success','warning','error'];
-const NT_ICONS={
-  info:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>',
-  success:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/></svg>',
-  warning:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg>',
-  error:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>'};
-const ntToasts={};let ntNext=1;
-const NT_MAX=5,NT_DEFAULT=5000;
+/* ================= NOTIFICATIONS (maquette notifications_style_reference.html) ================= */
+/* Couleurs FIXES par type (voir CSS) : pas de recalcul sur setMenuColor.
+   ntHsl/ntHslRgb plus bas servent encore a mnApplyColor, on les garde. */
+const ntStack=$('div','notify-stack');ntStack.setAttribute('aria-live','polite');app.append(ntStack);
+const NT_KINDS={
+  warn:{title:'Warn',icon:'<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M7 2.5v5.5"/><path d="M7 11.4h.01"/></svg>'},
+  success:{title:'Success',icon:'<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7.4l2.6 2.6L11 4.4"/></svg>'},
+  error:{title:'Error',icon:'<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 4l6 6M10 4l-6 6"/></svg>'},
+  info:{title:'Info',icon:'<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M7 6.2v5"/><path d="M7 2.8h.01"/></svg>'}};
+const NT_MAX=6,NT_DEFAULT_S=4;
 function ntHsl(c){
   const r=c[0]/255,g=c[1]/255,b=c[2]/255,mx=Math.max(r,g,b),mn=Math.min(r,g,b),l=(mx+mn)/2,d=mx-mn;
   let h=0,s=0;
@@ -1052,24 +1058,8 @@ function ntHslRgb(h,s,l){
   else if(h<240){g=x;b=c}else if(h<300){r=x;b=c}else{r=c;b=x}
   return [Math.round((r+m)*255),Math.round((g+m)*255),Math.round((b+m)*255)];
 }
-function ntApplyColor(r,g,b){
-  const main=[r,g,b],black=[0,0,0],white=[255,255,255],panel=kbMix(main,black,0.35);
-  const hsl=ntHsl(main);
-  /* Gris (saturation ~0) : forcer une saturation 0.9 donnerait du rose.
-     On prend un gris clair neutre, comme l'icone du panneau de touche. */
-  const on=hsl[1]<0.15?kbMix(main,white,0.75):ntHslRgb(hsl[0],Math.min(1,Math.max(0.9,hsl[1])),0.78);
-  const a=panel.map(v=>{v/=255;return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4)});
-  const L=0.2126*a[0]+0.7152*a[1]+0.0722*a[2];
-  const text=(1.05/(L+0.05))>=((L+0.05)/0.057)?[255,255,255]:[16,21,16];
-  const s=document.documentElement.style;
-  s.setProperty('--nt-panel',kbRgba(panel,0.88));
-  s.setProperty('--nt-border',kbRgba(kbMix(main,white,0.55),0.35));
-  s.setProperty('--nt-text',kbRgba(text));
-  s.setProperty('--nt-text-off',kbRgba(text,0.72));
-  s.setProperty('--nt-on',kbRgba(on));
-}
 /* Palette du MENU PRINCIPAL et de la fiche joueur : panneau noir + UNE couleur,
-   celle du menu. Memes bases que kbApplyColor / ntApplyColor, donc tout reste
+   celle du menu. Memes bases que kbApplyColor, donc tout reste
    assorti. Chaque variable est un triplet "r,g,b" ; l'opacite est reglee dans le CSS. */
 function mnApplyColor(r,g,b){
   const main=[r,g,b],black=[0,0,0],white=[255,255,255];
@@ -1126,61 +1116,73 @@ function mnApplyColor(r,g,b){
   s.setProperty('--mn-lo-rgb',t(lo));
   s.setProperty('--mn-on-rgb',t(on));
 }
-function ntSchedule(t){
-  if(!(t.remaining>0))return;
-  t.startedAt=Date.now();
-  t.timeout=setTimeout(()=>dismissNt(t.id),t.remaining);
+function ntDismiss(el){
+  if(!el||el.classList.contains('out'))return;
+  el._stop=true;
+  el.classList.add('out');
+  setTimeout(()=>{if(el.parentNode)el.parentNode.removeChild(el)},250);
 }
-function dismissNt(id){
-  const t=ntToasts[id];if(!t)return;
-  delete ntToasts[id];clearTimeout(t.timeout);
-  t.el.classList.add('leaving');
-  setTimeout(()=>{if(t.el.parentNode)t.el.parentNode.removeChild(t.el)},240);
+function ntClear(){
+  Array.prototype.slice.call(ntStack.children).forEach(ntDismiss);
 }
-/* Signature inchangee (header,message,duration,type) : le Lua n'a rien a changer. */
+/* Signature inchangee (header,message,duration,type) : le Lua n'a rien a changer.
+   duration arrive en MILLISECONDES, la maquette compte en secondes.
+   'warning' (ancien contrat) est accepte comme 'warn'. */
 function notify(header,message,duration,type){
-  const level=NT_LEVELS.indexOf(type)>=0?type:'info';
-  let dur=Number(duration);
-  if(duration===undefined||duration===null||!isFinite(dur))dur=NT_DEFAULT;
-  dur=dur<=0?0:Math.max(500,Math.min(60000,dur));
-  const title=String(header==null?'':header),msg=String(message==null?'':message);
+  const kind=type==='warning'?'warn':(NT_KINDS[type]?type:'info');
+  let sec=(duration===undefined||duration===null)?NT_DEFAULT_S:Number(duration)/1000;
+  if(!isFinite(sec)||sec<=0)sec=NT_DEFAULT_S;
+  /* PLAFOND 5 s : aucune notification ne reste affichee plus longtemps */
+  sec=Math.min(5,sec);
+  const title=String(header==null||header==='' ? NT_KINDS[kind].title : header);
+  const msg=String(message==null?'':message);
   if(!title&&!msg)return null;
-  const id=ntNext++,el=document.createElement('div');
-  el.className='nt-toast';el.setAttribute('data-level',level);
-  el.setAttribute('role',level==='error'?'alert':'status');
-  const icon=document.createElement('span');
-  icon.className='nt-icon';icon.setAttribute('aria-hidden','true');
-  icon.innerHTML=NT_ICONS[level];
+  const el=document.createElement('div');
+  el.className='nt-toast';el.dataset.kind=kind;
+  el.setAttribute('role',kind==='error'?'alert':'status');
+  const icon=document.createElement('div');icon.className='nt-icon';
+  const inner=document.createElement('span');inner.innerHTML=NT_KINDS[kind].icon;
+  icon.appendChild(inner);
   const body=document.createElement('div');body.className='nt-body';
-  const tEl=document.createElement('p');tEl.className='nt-title';
-  tEl.textContent=title||msg;body.appendChild(tEl);
-  if(title&&msg){const mEl=document.createElement('p');mEl.className='nt-msg';mEl.textContent=msg;body.appendChild(mEl)}
-  const close=document.createElement('button');
-  close.type='button';close.className='nt-close';close.setAttribute('aria-label','Fermer');
-  close.textContent='×';close.addEventListener('click',()=>dismissNt(id));
-  el.append(icon,body,close);
-  if(dur>0){
-    const timer=document.createElement('span');
-    timer.className='nt-timer';timer.setAttribute('aria-hidden','true');
-    timer.style.animationDuration=dur+'ms';el.appendChild(timer);
+  const top=document.createElement('div');top.className='nt-top';
+  const tEl=document.createElement('span');tEl.className='nt-title';tEl.textContent=title;
+  const time=document.createElement('span');time.className='nt-time';
+  top.appendChild(tEl);top.appendChild(time);
+  const mEl=document.createElement('div');mEl.className='nt-msg';mEl.textContent=msg;
+  const bar=document.createElement('div');bar.className='nt-bar';
+  const fill=document.createElement('div');fill.className='nt-fill';
+  const dot=document.createElement('span');dot.className='nt-dot';
+  bar.appendChild(fill);bar.appendChild(dot);
+  body.appendChild(top);body.appendChild(mEl);body.appendChild(bar);
+  el.appendChild(icon);el.appendChild(body);
+  ntStack.appendChild(el);
+  while(ntStack.querySelectorAll('.nt-toast:not(.out)').length>NT_MAX){
+    ntDismiss(ntStack.querySelector('.nt-toast:not(.out)'));
   }
-  const t={id,el,duration:dur,remaining:dur,startedAt:0,timeout:null};
-  ntToasts[id]=t;
-  el.addEventListener('mouseenter',()=>{
-    if(!t.timeout)return;
-    clearTimeout(t.timeout);t.timeout=null;t.remaining-=Date.now()-t.startedAt;
-  });
-  el.addEventListener('mouseleave',()=>{
-    if(t.duration>0&&!t.timeout&&!el.classList.contains('leaving'))ntSchedule(t);
-  });
-  ntStack.insertBefore(el,ntStack.firstChild);
-  ntSchedule(t);
-  const ids=Object.keys(ntToasts).map(Number).sort((a,b)=>a-b);
-  while(ids.length>NT_MAX)dismissNt(ids.shift());
-  return id;
+  el.addEventListener('click',()=>ntDismiss(el));
+  /* compte a rebours : la barre se vide, le curseur suit, le temps s'affiche */
+  const start=performance.now();
+  const tick=now=>{
+    if(el._stop)return;
+    const left=sec-(now-start)/1000;
+    if(left<=0){ntDismiss(el);return}
+    const ratio=left/sec;
+    fill.style.transform='scaleX('+ratio+')';
+    dot.style.left=(ratio*100)+'%';
+    time.textContent=Math.ceil(left)+'s';
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+  return el;
 }
 /* defaut = le vert de reference ; le Lua le remplace via setMenuColor */
-ntApplyColor(84,150,96);mnApplyColor(84,150,96);ldApplyColor(84,150,96);
+mnApplyColor(84,150,96);ldApplyColor(84,150,96);
+/* A l'injection, les premiers messages Lua peuvent partir AVANT que la page
+   soit prete (perdus : personne n'ecoute encore) : l'ecran de chargement
+   s'affichait donc rarement. Il s'affiche desormais SEUL au demarrage, a 0%,
+   le Lua le reprend (showLoading/progress) puis le masque. Hors jeu (apercu
+   fichier), on ne l'affiche pas pour garder la previsualisation nette. */
+if(location.protocol!=='file:'){LD.status='Connexion a l\u2019interface...';LD.pct=0;ldUI(true)}
 
 /* ================= MESSAGES DU JEU ================= */
 addEventListener('message',e=>{
@@ -1209,7 +1211,7 @@ addEventListener('message',e=>{
       const lt=v=>Math.round(v+(255-v)*0.55);
       s.setProperty('--accent-rgb',`${r},${g},${b}`);
       s.setProperty('--accent-light',`${lt(r)},${lt(g)},${lt(b)}`);s.setProperty('--line-rgb',`${lt(r)},${lt(g)},${lt(b)}`);
-      kbApplyColor(r,g,b);ntApplyColor(r,g,b);mnApplyColor(r,g,b);kblApplyColor(r,g,b);ldApplyColor(r,g,b);break}
+      kbApplyColor(r,g,b);mnApplyColor(r,g,b);kblApplyColor(r,g,b);ldApplyColor(r,g,b);break}
     case 'setBreadcrumb':B.crumb=Array.isArray(d.parts)?d.parts:(d.path?String(d.path).split('>').map(s=>s.trim()):[]);renderCrumb();break;
     case 'setTabStyle':document.documentElement.dataset.tabs=d.style||'';break;
     case 'setSelectStyle':document.documentElement.dataset.select=d.style||'';break;
@@ -1277,7 +1279,8 @@ addEventListener('message',e=>{
       if(!d.url)break;
       B.logoUrl=String(d.url);
       applyFooterLogo(B.logoEl,B.logoUrl);break}
-    case 'notify':notify(d.header||'Info',d.message,d.duration??4000,d.type||'info');break;
+    case 'notify':notify(d.title||d.header||'Info',d.message,d.duration??4000,d.kind||d.type||'info');break;
+    case 'notifyClear':ntClear();break;
   }
 });
 /* ================= APERCU HORS JEU (fichier ouvert dans un navigateur) ================= */
