@@ -346,7 +346,7 @@ ul{list-style-type:disc}
    rendent un glyphe ; ph-gun n'existe pas dans cette version, d'ou ph-bomb
    pour Weapon). Le filet et les icones suivent la couleur du menu
    (--mn-acc-rgb) comme la photo en mode bleu ; seul le coeur reste vert. */
-.jul-pcard{position:fixed;right:1.6vh;top:50%;transform:translateY(-50%);width:360px;max-width:calc(100vw - 32px);box-sizing:border-box;padding:17px 19px 12px;display:flex;flex-direction:column;font-family:var(--menu-font);color:#fff;pointer-events:none;z-index:9997;border-radius:12px;background:rgba(var(--mn-bg-rgb),0.96);border:1px solid rgba(var(--mn-acc-rgb),0.35);box-shadow:0 1vh 3vh rgba(0,0,0,0.65)}
+.jul-pcard{position:fixed;right:1.6vh;top:0;width:360px;max-width:calc(100vw - 32px);box-sizing:border-box;padding:17px 19px 12px;display:flex;flex-direction:column;font-family:var(--menu-font);color:#fff;pointer-events:none;z-index:9997;border-radius:12px;background:rgba(var(--mn-bg-rgb),0.96);border:1px solid rgba(var(--mn-acc-rgb),0.35);box-shadow:0 1vh 3vh rgba(0,0,0,0.65)}
 .pc-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:0 2px 12px;border-bottom:2px solid rgb(var(--mn-acc-rgb))}
 .pc-name{margin:0;min-width:0;font-size:19px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pc-id{flex:none;font-size:19px;font-weight:700}
@@ -859,16 +859,20 @@ function positionPlayerCard(el){
   let x,y;
   if(b&&b.width){
     x=b.right+PC_GAP;
-    y=b.top+b.height/2;   /* le CSS recentre via translateY(-50%) */
+    /* colle le HAUT de la fiche sur le HAUT du menu (demande : "ne doit pas
+       monter et descendre"). Avant, la fiche se centrait sur le menu : chaque
+       changement de hauteur (sous-menu, taille, curseur) la faisait sauter.
+       Ici seul un deplacement du menu (Position Y) la fait bouger. */
+    y=b.top;
   }else{
-    /* menu absent : repli sur le bord droit de l'ecran */
+    /* menu absent : repli centre, sans translate (voir CSS) */
     x=window.innerWidth-w-PC_M;
-    y=window.innerHeight/2;
+    y=Math.max(PC_M,(window.innerHeight-h)/2);
   }
   /* la fiche ne doit jamais deborder a droite ni sortir verticalement */
   if(x+w>window.innerWidth-PC_M)x=Math.max(PC_M,window.innerWidth-w-PC_M);
-  if(y-h/2<PC_M)y=PC_M+h/2;
-  if(y+h/2>window.innerHeight-PC_M)y=Math.max(PC_M+h/2,window.innerHeight-PC_M-h/2);
+  if(y<PC_M)y=PC_M;
+  if(y+h>window.innerHeight-PC_M)y=Math.max(PC_M,window.innerHeight-PC_M-h);
   c.style.left=Math.round(x/z)+'px';
   c.style.right='auto';
   c.style.top=Math.round(y/z)+'px';
@@ -889,12 +893,10 @@ function buildPlayerCard(){
     <div class="pc-sec">${row('Distance','ph-crosshair','Distance')}${row('Vehicle','ph-car','Vehicle')}${row('Weapon','ph-bomb','Weapon')}${row('Speed','ph-lightning','Speed')}</div>`;
   app.append(c);positionPlayerCard(c);uiApplyScale();return [c];
 }
-/* base:'translateY(-50%)' : le plan de tr() ECRASE le transform du CSS
-   pendant l'entree. Sans ce base, la carte resterait 260ms avec son bord haut
-   au centre de l'ecran puis "sauterait" une fois l'animation rendue.
-   SORTIE SANS ANIMATION (demande) : out=true rend [] donc present() retire
-   l'element sur le champ, pas de fly/fondu de 260ms. */
-const planPlayerCard=(e,out)=>out?[]:[tr(e[0],{kind:'fly',x:26,dur:260,base:'translateY(-50%)'},out)];
+/* Entree : simple glisse depuis la droite. Pas de base translateY : la fiche
+   est ancree par son haut (positionPlayerCard), un recentrage la ferait
+   "sauter" a la fin de l'animation. Sortie : immediate (voir plus bas). */
+const planPlayerCard=(e,out)=>out?[]:[tr(e[0],{kind:'fly',x:26,dur:260},out)];
 function renderPlayerCard(){
   const e=PC.slot.els,d=PC.d;if(!e)return;
   /* recale a chaque rafraichissement : le menu bouge (setMenuPos, Menu Size,
