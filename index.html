@@ -240,6 +240,42 @@
 .kb-hint{margin-left:auto;padding-left:21px;font-size:16px;font-weight:500;white-space:nowrap;
   color:var(--kb-text-off,rgba(255,255,255,0.72))}
 @media (prefers-reduced-motion:reduce){.kb-caret{animation:none}}
+
+/* ===== Panneau "Keybinds" (haut droite) =====
+   Reproduit keybinds (1).html : voyant d'etat + libelle de l'option + touche.
+   POSITION DEMANDEE : tout en haut a droite. Le panneau est une INFOS PERSISTANTE
+   (il dit a quoi sert chaque touche), donc il reste visible meme quand le menu
+   est ferme : le Lua garde la couche NUI active via _G.julKeybindHud, sur le
+   meme principe que le viseur (_G.julCrosshair).
+   Les couleurs derivent de l'accent du menu (kblApplyColor), donc le panneau
+   suit DBZ (gris) ou Simpsons (bleu) sans rien coder en dur.
+   Le voyant "on" est LE SEUL element qui ne derive pas de l'accent : sur un
+   menu gris, hsl(sat=0) ne sait pas quelle teinte choisir et la reference
+   produisait un voyant rose. Un vert d'etat reste lisible sur toutes les
+   teintes. Les options sans etat persistent (bouton, curseur) n'ont pas de
+   voyant : on met un espaceur de meme largeur pour garder les libelles alignes. */
+.kb-list{box-sizing:border-box;position:fixed;top:2.2vh;right:2.2vh;z-index:9996;width:300px;
+  max-width:calc(100vw - 32px);overflow:hidden;background:var(--kbl-panel,rgba(23,24,27,0.88));
+  border:1px solid var(--kbl-border,rgba(160,160,160,0.32));border-radius:8px;
+  font-family:var(--font);font-weight:500;color:#fff;pointer-events:none}
+.kb-list[hidden]{display:none}
+.kbl-head{display:flex;align-items:center;gap:11px;padding:11px 15px;
+  background:var(--kbl-head,rgba(18,19,22,0.95));border-bottom:1px solid var(--kbl-rule,rgba(255,255,255,0.10))}
+.kbl-head svg{flex:none;color:var(--kbl-icon,#e5e5e5)}
+.kbl-title{margin:0;font-size:15px;font-weight:700;letter-spacing:0.01em;color:#fff}
+.kbl-rows{list-style:none;margin:0;padding:8px 15px 11px}
+.kbl-bind{display:flex;align-items:center;gap:10px;height:34px;font-size:14px;white-space:nowrap}
+.kbl-dot{flex:none;width:10px;height:10px;border-radius:50%}
+.kbl-bind[data-state="on"] .kbl-dot{background:var(--kbl-on,#99ff99);
+  box-shadow:0 0 8px var(--kbl-on-glow,rgba(153,255,153,0.7))}
+.kbl-bind[data-state="off"] .kbl-dot{background:var(--kbl-off,rgba(0,0,0,0.45));
+  box-shadow:inset 0 0 0 1.5px var(--kbl-off-ring,rgba(200,200,200,0.8))}
+.kbl-bind[data-state="none"] .kbl-dot{background:transparent;box-shadow:none}
+.kbl-act{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;font-weight:400}
+.kbl-bind[data-state="on"] .kbl-act{font-weight:500}
+.kbl-bind[data-state="off"] .kbl-act{color:var(--kbl-text-off,rgba(255,255,255,0.72))}
+.kbl-key{flex:none;max-width:118px;overflow:hidden;text-overflow:ellipsis;padding:3px 9px;border-radius:5px;
+  background:var(--kbl-keybg,rgba(0,0,0,0.32));font-size:12.5px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase}
 body,main{all:unset;display:block}
 
 /* ---------- notifications (maquette notifications.html) ----------
@@ -641,6 +677,64 @@ function buildKey(){
 }
 /* pas de base translateX(-50%) : le panneau est centre par la grid de .kb-overlay */
 const planKey=(e,out)=>[tr(e[0],{kind:'fade',dur:400},out),tr(e[1],{kind:'scale',start:.94,dur:480},out)];
+
+/* ===== Panneau "Keybinds" (haut droite) =====
+   Construit UNE SEULE fois puis mis a jour sur place : le panneau est un
+   element fixe de l'ecran, il ne doit pas etre reconstruit a chaque envoi
+   (sinon les transitions de couleurs sauteraient).
+   rows = [{ label, key, state }] ; state: 'on' | 'off' | 'none'
+   'on'/'off' = option qui possede un etat (checkbox) et son etat reel
+   'none'     = option sans etat persistent (bouton, curseur) : pas de voyant */
+const KBL={has:false};
+function kblApplyColor(r,g,b){
+  const main=[r,g,b],black=[0,0,0],white=[255,255,255],panel=kbMix(main,black,0.35);
+  const lum=c=>{const a=c.map(v=>{v/=255;return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4)});
+                return 0.2126*a[0]+0.7152*a[1]+0.0722*a[2]};
+  const L=lum(panel),text=(1.05/(L+0.05))>=((L+0.05)/0.057)?[255,255,255]:[16,21,16];
+  const s=document.documentElement.style;
+  s.setProperty('--kbl-panel',kbRgba(panel,0.88));
+  s.setProperty('--kbl-head',kbRgba(kbMix(main,black,0.68),0.95));
+  s.setProperty('--kbl-border',kbRgba(kbMix(main,white,0.5),0.32));
+  s.setProperty('--kbl-icon',kbRgba(kbMix(main,white,0.75)));
+  s.setProperty('--kbl-rule',kbRgba(kbMix(main,white,0.7),0.16));
+  s.setProperty('--kbl-keybg',kbRgba(kbMix(main,black,0.72),0.55));
+  s.setProperty('--kbl-text-off',kbRgba(text,0.72));
+  /* --kbl-on / --kbl-on-glow / --kbl-off-ring restent les valeurs CSS :
+     le voyant d'etat ne derive volontairement PAS de l'accent (voir CSS). */
+}
+function kblRender(rows){
+  const list=Array.isArray(rows)?rows:[];
+  let el=document.getElementById('kbl');
+  if(!list.length){KBL.has=false;if(el)el.hidden=true;return}
+  if(!el){
+    el=$('section','kb-list');el.id='kbl';
+    const head=$('header','kbl-head');
+    const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.setAttribute('width','26');svg.setAttribute('height','18');
+    svg.setAttribute('viewBox','0 0 26 18');svg.setAttribute('fill','none');
+    svg.setAttribute('stroke','currentColor');svg.setAttribute('stroke-width','1.5');
+    svg.setAttribute('aria-hidden','true');
+    svg.innerHTML='<rect x="1" y="1" width="24" height="16" rx="3.5" fill="currentColor" fill-opacity="0.25"/>'+
+                  '<path d="M5 6h2M9.5 6h2M14 6h2M18.5 6h2M5 9h2M9.5 9h2M14 9h2M18.5 9h2M8 13h10" stroke-linecap="round"/>';
+    const ttl=$('h1','kbl-title','Keybinds');
+    head.append(svg,ttl);
+    el.append(head,$('ul','kbl-rows'));
+    app.append(el);
+  }
+  const ul=el.querySelector('.kbl-rows');
+  ul.textContent='';
+  for(const r of list){
+    const st=(r.state==='on'||r.state==='off')?r.state:'none';
+    const li=$('li','kbl-bind');li.dataset.state=st;
+    const dot=$('span','kbl-dot');dot.setAttribute('role','img');
+    dot.setAttribute('aria-label',st==='on'?'active':(st==='off'?'inactive':'sans etat'));
+    li.append(dot,$('span','kbl-act',String(r.label==null?'':r.label)),
+                  $('b','kbl-key',String(r.key==null?'':r.key)));
+    ul.append(li);
+  }
+  el.hidden=false;KBL.has=true;
+}
+
 function keyUI(show){
   present(K.slot,show,buildKey,planKey);
   const e=K.slot.els;if(!e)return;
@@ -1011,7 +1105,7 @@ addEventListener('message',e=>{
       const lt=v=>Math.round(v+(255-v)*0.55);
       s.setProperty('--accent-rgb',`${r},${g},${b}`);
       s.setProperty('--accent-light',`${lt(r)},${lt(g)},${lt(b)}`);s.setProperty('--line-rgb',`${lt(r)},${lt(g)},${lt(b)}`);
-      kbApplyColor(r,g,b);ntApplyColor(r,g,b);mnApplyColor(r,g,b);break}
+      kbApplyColor(r,g,b);ntApplyColor(r,g,b);mnApplyColor(r,g,b);kblApplyColor(r,g,b);break}
     case 'setBreadcrumb':B.crumb=Array.isArray(d.parts)?d.parts:(d.path?String(d.path).split('>').map(s=>s.trim()):[]);renderCrumb();break;
     case 'setTabStyle':document.documentElement.dataset.tabs=d.style||'';break;
     case 'setSelectStyle':document.documentElement.dataset.select=d.style||'';break;
@@ -1032,6 +1126,7 @@ addEventListener('message',e=>{
       keyUI(!!d.showInput);inputUI(false);
       if(d.showInput)I.blocking=true;else unblock();break}
     case 'hideInputPrompt':inputUI(false);keyUI(false);unblock();break;
+    case 'setKeybinds':kblRender(d.rows||[]);break;
     case 'updateInputPrompt':{
       I.title=d.title;I.value=d.value;
       K.title=I.title;K.value=I.value;
@@ -1074,7 +1169,7 @@ if(location.protocol==='file:'){
     postMessage({action:'setCurrent',current:1,menu:[
       {type:'submenu',label:'Self Options'},
       {type:'submenu',label:'Visual Options'},
-      {type:'submenu',label:'Online Options'},
+      {type:'submenu',label:'Online Options'},a
       {type:'submenu',label:'Weapon Options'},
       {type:'submenu',label:'Vehicle Options'},
       {type:'checkbox',label:'Show Keybinds',checked:true},
