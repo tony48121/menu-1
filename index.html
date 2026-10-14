@@ -844,7 +844,7 @@ function renderFreecam(){
    tout seuls, sans qu'aucune largeur ait besoin d'etre devinee.
    B est declare plus bas : d'ou le typeof, un accours sans B ne doit pas
    faire echouer l'affichage de la carte. */
-const PC_GAP=6, PC_M=8, PC_DYVH=-1;
+const PC_GAP=6, PC_M=8, PC_DYVH=6.5;
 function positionPlayerCard(el){
   const c=el||(PC.slot.els&&PC.slot.els[0]);
   if(!c)return;
@@ -862,10 +862,9 @@ function positionPlayerCard(el){
   let x,y;
   if(b&&b.width){
     x=b.right+PC_GAP;
-    /* fiche un tout petit peu AU-DESSUS du debut de la banniere (demande) :
-       -1vh (~-11px a 1080p). En vh pour suivre toutes les resolutions ;
-       stable quelle que soit la hauteur du menu. Le garde-fou bas (PC_M)
-       protege si le menu touche le haut de l'ecran. */
+    /* haut de la fiche au MILIEU de la banniere (demande) : banniere 13vh
+       donc +6.5vh sous le haut du menu. En vh pour suivre toutes les
+       resolutions ; stable quelle que soit la hauteur du menu. */
     y=b.top+PC_DYVH*window.innerHeight/100;
   }else{
     /* menu absent : repli centre, sans translate (voir CSS) */
