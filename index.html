@@ -96,8 +96,8 @@
    il rend comme un onglet inactif. Le bandeau-titre noir, lui, reste. */
 [data-main="on"] .tab-item.active{background:none;color:rgba(255,255,255,0.92)}
 [data-tabs="pill"] [data-main="on"] .tab-item.active{background:none;border-color:transparent}
-/* page Main Menu : la ligne d'onglets (un seul onglet "Main Menu", doublon
-   du bandeau-titre) est supprimee, le bandeau noir reste seul. */
+/* page a onglet unique (Main Menu, Bypass...) : la ligne fait doublon avec
+   le bandeau-titre noir, elle est supprimee, le bandeau reste seul. */
 [data-main="on"] .menu-tabs{display:none}
 
 /* ---------- barre de defilement (dans le creux a gauche) ---------- */
@@ -489,11 +489,16 @@ function renderCrumb(){
      data-main pilote le CSS des onglets. Repose a chaque rendu car le
      panneau est reconstruit a chaque showMenu. */
   const isMain=!p.length&&(title.trim().toLowerCase()==='main menu');
-  B.root.dataset.main=isMain?'on':'';
+  /* un seul onglet (Main Menu, Bypass...) : la ligne fait doublon avec le
+     bandeau-titre noir qui reste seul (demande : "supprimer la barre bleue",
+     garder la noire). data-main pilote le CSS (fond bleu coupe + ligne
+     masquee). Repose a chaque rendu car le panneau est reconstruit. */
+  const singleTab=B.tabs.length===1;
+  B.root.dataset.main=(isMain||singleTab)?'on':'';
   c.replaceChildren($('span','crumb-title',title));
   B.root.style.setProperty('--crumb-h',document.documentElement.dataset.title==='on'?'3.9vh':'0vh');
-  /* sans la ligne d'onglets sur Main Menu, la barre et la liste remontent */
-  B.root.style.setProperty('--tabs-height',isMain?'0vh':'3.77vh');
+  /* sans la ligne d'onglets (un seul onglet), la barre et la liste remontent */
+  B.root.style.setProperty('--tabs-height',((isMain||singleTab))?'0vh':'3.77vh');
 }
 const comp=h=>{const d=$('div','component');d.innerHTML=h;return d};
 function mkRow(o){
