@@ -209,10 +209,15 @@
    comme l'ancien .input-overlay.
    Tout le panneau est calcule a partir d'UNE couleur, celle du menu
    (--accent-rgb), via kbApplyColor().
-   POSITION : centre exactement a l'ecran (place-items:center). La reference
-   le collait en haut (padding-top:30px) ; ici on le veut au milieu. */
+   POSITION : en bas de l'ecran (demande : "au niveau du bas de l'ecran").
+   align-items:end + padding-bottom:3vh : le panneau reste centre a
+   l'horizontale mais sa ligne de pied tombe sur celle du menu (le menu est
+   ancre bottom:3vh, la hauteur du pied). Un place-items:center le laissait
+   au milieu de l'ecran, chevauchant le personnage. La reference d'origine
+   le collait en haut (padding-top:30px). */
 .kb-overlay{box-sizing:border-box;position:fixed;top:0;left:0;width:100%;height:100%;z-index:999999;
-  pointer-events:none;display:grid;place-items:center;background:rgba(0,0,0,0.55);
+  pointer-events:none;display:grid;align-items:end;justify-items:center;padding-bottom:3vh;
+  background:rgba(0,0,0,0.55);
   font-family:var(--font);font-weight:500;color:var(--kb-text,#fff)}
 .kb-panel{box-sizing:border-box;width:min(860px,66vw);max-width:calc(100vw - 48px);height:86px;display:flex;
   flex-direction:column;overflow:hidden;background:var(--kb-panel,rgba(98,98,98,0.82));
