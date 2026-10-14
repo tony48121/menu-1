@@ -99,8 +99,6 @@
 /* page Main Menu : la ligne d'onglets (un seul onglet "Main Menu", doublon
    du bandeau-titre) est supprimee, le bandeau noir reste seul. */
 [data-main="on"] .menu-tabs{display:none}
-/* sous-menu Player : titre seul, sans onglets (pilote par data-notabs) */
-[data-notabs="on"] .menu-tabs{display:none}
 
 /* ---------- barre de defilement (dans le creux a gauche) ---------- */
 /* barre logee DANS le creux : top = bord haut du corps de liste (sans le
@@ -472,27 +470,19 @@ function renderTabs(){
 function renderCrumb(){
   if(!live())return;
   const p=B.crumb,c=B.crumbEl;
-  /* sous-menu Player (Status/Misc/Appearance) : titre seul, sans la ligne
-     d'onglets (demande). Reconnu par ses 3 onglets exacts : aucun changement
-     Lua, et les autres sous-menus (Online...) gardent leurs onglets.
-     Le changement d'onglet au clavier (E/Q) marche toujours : le titre suit
-     via renderTabs, seul l'affichage de la ligne est coupe. */
-  const noTabs=B.tabs.length===3&&B.tabs[0]==='Status'&&B.tabs[1]==='Misc'&&B.tabs[2]==='Appearance';
-  /* la barre noire montre le fil d'Ariane, SAUF dans Player ou elle montre
-     l'onglet actif (demande : jamais "Player" dans le bandeau) ; sans fil,
-     elle reprend l'onglet actif */
-  const title=(p.length&&!noTabs)?String(p[p.length-1]):String(B.tabs[B.tab]||'Main');
+  /* la barre de titre est toujours la, comme sur les captures : sans fil d'Ariane
+     envoye par le Lua, elle reprend le nom de l'onglet actif */
+  const title=p.length?String(p[p.length-1]):String(B.tabs[B.tab]||'Main');
   /* page Main Menu : le bandeau-titre noir RESTE, mais l'onglet unique perd
      son fond bleu (demande : "supprimer que la bande bleue"). Le flag
      data-main pilote le CSS des onglets. Repose a chaque rendu car le
      panneau est reconstruit a chaque showMenu. */
   const isMain=!p.length&&(title.trim().toLowerCase()==='main menu');
   B.root.dataset.main=isMain?'on':'';
-  B.root.dataset.notabs=noTabs?'on':'';
   c.replaceChildren($('span','crumb-title',title));
   B.root.style.setProperty('--crumb-h',document.documentElement.dataset.title==='on'?'3.9vh':'0vh');
-  /* sans la ligne d'onglets (Main Menu ou Player), la barre et la liste remontent */
-  B.root.style.setProperty('--tabs-height',(isMain||noTabs)?'0vh':'3.77vh');
+  /* sans la ligne d'onglets sur Main Menu, la barre et la liste remontent */
+  B.root.style.setProperty('--tabs-height',isMain?'0vh':'3.77vh');
 }
 const comp=h=>{const d=$('div','component');d.innerHTML=h;return d};
 function mkRow(o){
