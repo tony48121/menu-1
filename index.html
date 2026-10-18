@@ -196,20 +196,22 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
        celle de la banniere (bords alignes). Fond opaque #414141 =
        exactement le rendu actuel (rgba(255,255,255,0.07) sur #333) : sans
        le fond du wrapper, l'ancien rgba rendrait la bande quasi invisible.
-       Coins : le rayon est exprime grand (5vh) mais CSS le tronque a la
-       demi-hauteur de la bande, donc les extremites gauche et droite
-       finissent en demi-cercle -- et pas en simple coupe droite. */
+       Coins arrondis EN HAUT SEULEMENT : 1.36vh = demi-hauteur de la
+       bande, soit le meme rayon que celui des extremites precedemment
+       affichees. La base reste droite, la bande se pose a plat. */
     #menu-tabs {
         display: flex;
         margin: 0 0.55vh 0.55vh;
         background-color: #414141;
-        border-radius: 5vh;
+        border-radius: 1.36vh 1.36vh 0 0;
         overflow: hidden;
     }
     .tab-item {
         flex: 1; min-width: 0; padding: 0.8vh 0; font-size: 1.1vh; text-align: center;
         cursor: pointer; color: rgba(255,255,255,0.6); background: transparent;
-        border-bottom-left-radius: 0.5vh; border-bottom-right-radius: 0.5vh;
+        /* Pas de rayon en bas : la base de la bande doit rester droite.
+           Les anciens border-bottom-*-radius: 0.5vh laissaient des encoches
+           claires sous la couleur active. */
         transition: 0.3s; position: relative; overflow: hidden;
         /* z-index:0 cree un contexte d'empilement : le ::before (z-index:-1)
            de la couleur active restait ALORS derriere le fond opaque de la
