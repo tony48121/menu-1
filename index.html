@@ -286,13 +286,14 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
            Mesures sur la photo de reference : corps uniforme au centre,
            ligne claire nette sur le bord inferieur, nappe lumineuse au-dessus. */
         background: linear-gradient(180deg,
-            rgba(var(--ui-main-r), var(--ui-main-g), var(--ui-main-b), 0.9) 0%,
-            rgba(var(--ui-main-r), var(--ui-main-g), var(--ui-main-b), 0.35) 20%,
-            rgba(var(--ui-main-r), var(--ui-main-g), var(--ui-main-b), 0.35) 80%,
-            rgba(var(--ui-main-r), var(--ui-main-g), var(--ui-main-b), 0.9) 100%);
+            rgba(var(--ui-main-r), var(--ui-main-g), var(--ui-main-b), 0.95) 0%,
+            rgba(var(--ui-main-r), var(--ui-main-g), var(--ui-main-b), 0.35) 22%,
+            rgba(var(--ui-main-r), var(--ui-main-g), var(--ui-main-b), 0.30) 72%,
+            rgba(var(--ui-main-r), var(--ui-main-g), var(--ui-main-b), 0.95) 100%);
         box-shadow:
-            /* nappe lumineuse AU-DESSUS de la barre (le halo le plus fort) */
-            0 -0.45vh 1.3vh rgba(var(--ui-main-r), var(--ui-main-g), var(--ui-main-b), 0.65),
+            /* nappes lumineuses SYMETRIQUES au-dessus et en dessous */
+            0 -0.5vh 1.4vh rgba(var(--ui-main-r), var(--ui-main-g), var(--ui-main-b), 0.7),
+            0  0.5vh 1.4vh rgba(var(--ui-main-r), var(--ui-main-g), var(--ui-main-b), 0.7),
             /* liseré leger tout autour */
             0 0 0.4vh rgba(var(--ui-main-r), var(--ui-main-g), var(--ui-main-b), 0.35);
         border-radius: 0.35vh; z-index: -1; transition: top 0.25s ease-out;
