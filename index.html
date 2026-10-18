@@ -190,15 +190,17 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
     }
 
     /* Bande d'onglets detachee des 4 cotes : marge laterale identique a
-       celle de la banniere (bords alignes) et rayon sur TOUS les coins,
-       dont gauche et droite sur toute la hauteur. Fond opaque #414141 =
+       celle de la banniere (bords alignes). Fond opaque #414141 =
        exactement le rendu actuel (rgba(255,255,255,0.07) sur #333) : sans
-       le fond du wrapper, l'ancien rgba rendrait la bande quasi invisible. */
+       le fond du wrapper, l'ancien rgba rendrait la bande quasi invisible.
+       Coins : le rayon est exprime grand (5vh) mais CSS le tronque a la
+       demi-hauteur de la bande, donc les extremites gauche et droite
+       finissent en demi-cercle -- et pas en simple coupe droite. */
     #menu-tabs {
         display: flex;
         margin: 0 0.55vh 0.55vh;
         background-color: #414141;
-        border-radius: 0.4vh;
+        border-radius: 5vh;
         overflow: hidden;
     }
     .tab-item {
@@ -206,6 +208,12 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
         cursor: pointer; color: rgba(255,255,255,0.6); background: transparent;
         border-bottom-left-radius: 0.5vh; border-bottom-right-radius: 0.5vh;
         transition: 0.3s; position: relative; overflow: hidden;
+        /* z-index:0 cree un contexte d'empilement : le ::before (z-index:-1)
+           de la couleur active restait ALORS derriere le fond opaque de la
+           bande. On l'enferme ici : bleu au-dessus de #414141, texte au-
+           dessus du bleu. Indispensable depuis que la bande n'est plus
+           translucide. */
+        z-index: 0;
     }
     .tab-item::before {
         content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 100%;
