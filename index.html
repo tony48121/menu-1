@@ -281,10 +281,19 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
 
     #selection-highlight {
         position: absolute; margin-top: 0.2vh; left: 0.2vh; right: 0.2vh; height: 2.4vh;
-        background-color: rgba(var(--ui-main-r), var(--ui-main-g), var(--ui-main-b), 0.9);
-        border: 0.1vh solid rgba(var(--ui-main-r), var(--ui-main-g), var(--ui-main-b), 0.9);
-        box-shadow: 0 0 0.2vh 0.2vh rgba(var(--ui-main-r), var(--ui-main-g), var(--ui-main-b), 0.4);
-        border-radius: 0.4vh; z-index: -1; transition: top 0.25s ease-out;
+        /* Dégradé vertical bleu vif en haut -> plus sombre en bas, d'apres la
+           photo de reference. Le dégradé se fait en ALPHA sur le fond sombre du
+           menu : pas de color-mix(), donc compatible partout. */
+        background: linear-gradient(180deg,
+            rgba(var(--ui-main-r), var(--ui-main-g), var(--ui-main-b), 0.98) 0%,
+            rgba(var(--ui-main-r), var(--ui-main-g), var(--ui-main-b), 0.62) 100%);
+        /* halo : nappe lumineuse au-dessus + liseré tout autour + reflet
+           sur le bord superieur (le haut de la barre brille sur la photo) */
+        box-shadow:
+            0 -0.35vh 1.1vh rgba(var(--ui-main-r), var(--ui-main-g), var(--ui-main-b), 0.55),
+            0 0 0.5vh rgba(var(--ui-main-r), var(--ui-main-g), var(--ui-main-b), 0.35),
+            inset 0 0.1vh 0 rgba(255, 255, 255, 0.30);
+        border-radius: 0.35vh; z-index: -1; transition: top 0.25s ease-out;
     }
 
     .components-container { display: flex; gap: 1vh; align-items: center; }
