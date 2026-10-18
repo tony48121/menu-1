@@ -1508,7 +1508,7 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
         scale: 0.8,
         x: '20.25vh', y: '19.5vh',
         userX: null, userY: null,
-        tabs: ['Status', 'Misc', 'Appearance'], tab: 0,
+        tabs: ['Main'], tab: 0, showSingle: true,
         menu: [], sig: null,
         design: false,
         inputValue: '',
@@ -1673,7 +1673,7 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
         clearEl(el);
         var root = $('menu-root');
         if (root) {
-            if (S.tabs.length <= 1) root.classList.add('jul-single');
+            if (S.tabs.length <= 1 && !S.showSingle) root.classList.add('jul-single');
             else root.classList.remove('jul-single');
         }
         for (var i = 0; i < S.tabs.length; i++) {
@@ -2224,11 +2224,12 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
                 return String(t == null ? '' : (typeof t === 'string' ? t : (t.label || t.name || '')));
             });
             S.tab = int(d.index, 0);
+            S.showSingle = false;
             renderTabs();
             resyncScrollbar();
         },
         setTabIndex: function (d) { S.tab = int(d.index, 0); renderTabs(); resyncScrollbar(); },
-        resetTabs: function () { S.tabs = ['Status', 'Misc', 'Appearance']; S.tab = 0; renderTabs(); resyncScrollbar(); },
+        resetTabs: function () { S.tabs = ['Main']; S.tab = 0; S.showSingle = true; renderTabs(); resyncScrollbar(); },
         setCurrent: setCurrent
     };
 
