@@ -243,6 +243,11 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
     .tab-item {
         flex: 1; min-width: 0; padding: 0.8vh 0; font-size: 1.1vh; text-align: center;
         cursor: pointer; color: rgba(255,255,255,0.6); background: transparent;
+        /* Coins arrondis : le fond coloré de l'onglet actif (via
+           overflow:hidden + ::before) prend ce rayon. Les onglets non
+           selectionnes restent transparents -> aucun changement visuel.
+           Rayon des 4 coins pour un rendu "pastille" comme demande. */
+        border-radius: 0.9vh;
         /* Pas de rayon en bas : la base de la bande doit rester droite.
            Les anciens border-bottom-*-radius: 0.5vh laissaient des encoches
            claires sous la couleur active. */
