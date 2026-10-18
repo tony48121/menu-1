@@ -271,9 +271,12 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
            lignes (bordure). Il occupe la zone interieure de l'onglet. */
         top: 0; bottom: 0; left: 0; right: 0;
         /* Onglet selectionne : rempli de la COULEUR DU MENU (plein).
-           Rayon UNIQUEMENT EN HAUT : le bas reste droit. */
+           Rayon = 0.9vh - 0.07vh (bordure) = 0.83vh : le remplissage
+           épouse le coin INTERIEUR de la bordure. Avec 0.9vh il etait
+           plus arrondi que l'espace dispo, un croissant de fond restait
+           visible entre le noir et le bleu = "plusieurs lignes". */
         background: rgb(var(--ui-main-r), var(--ui-main-g), var(--ui-main-b));
-        border-radius: 0.9vh 0.9vh 0 0;
+        border-radius: 0.83vh 0.83vh 0 0;
         transform: scaleY(0); transform-origin: bottom; transition: 0.5s; z-index: -1;
     }
     .tab-item.single { min-width: 8vh; flex-grow: 0; padding: 0.8vh 1vh; flex-basis: auto; }
