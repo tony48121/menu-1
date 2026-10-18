@@ -202,10 +202,11 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
            haut et le bas sont compenses (0.55+off et 2-off) : la hauteur
            du wrapper reste constante, donc la banniere monte ou descend
            SANS bouger les onglets ni la liste. */
-        /* Marge laterale NEGATIVE : la banniere depasse le menu de 1vh de
-           chaque cote (demande). 1.55vh = 0.55vh de marge du bloc + 1vh de
-           debord ; l'image (width:100%) finit donc a 1vh au-dela du menu. */
-        margin: 0 -1.55vh;
+        /* Marge laterale NEGATIVE : la banniere depasse le menu de 0.2vh de
+           chaque cote seulement -- "juste un tout petit peu plus grand".
+           0.75vh = 0.55vh de marge du bloc + 0.2vh de debord ; l'image
+           (width:100%) finit donc a 0.2vh au-dela du menu. */
+        margin: 0 -0.75vh;
         padding: calc(0.55vh + var(--banner-off, 0vh)) 0.55vh calc(2vh - var(--banner-off, 0vh));
         overflow: visible;
     }
