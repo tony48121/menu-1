@@ -1714,8 +1714,19 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
         if (d.url && window.updateMenuBanner) window.updateMenuBanner({ banner: String(d.url) });
     }
 
-    function setMenuColor() {
-        var r = JUL_SKY.r, g = JUL_SKY.g, b = JUL_SKY.b;
+    function setMenuColor(d) {
+        d = d || {};
+        /* gris 160 = valeur par defaut du Lua, si un canal manque */
+        var r = (d.r === undefined) ? 160 : ch(d.r);
+        var g = (d.g === undefined) ? 160 : ch(d.g);
+        var b = (d.b === undefined) ? 160 : ch(d.b);
+        /* Le Lua choisit la teinte selon la banniere active : 160,160,160
+           (gris) pour Dragon Ball Z et au demarrage, 45,175,235 pour les
+           Simpsons. Ce dernier est remappe sur JUL_SKY (#51bdf5) : c'est
+           le bleu retenu sur la banniere, celui demande a l'ecran. */
+        if (r === 45 && g === 175 && b === 235) {
+            r = JUL_SKY.r; g = JUL_SKY.g; b = JUL_SKY.b;
+        }
         document.documentElement.style.setProperty('--jul-acc', 'rgb(' + r + ',' + g + ',' + b + ')');
         /* hex et non rgb() : le parseur Nexus ne lit que du #rrggbb */
         if (window.updateMenuColors) window.updateMenuColors({ mainColor: hexOf(r, g, b) });
