@@ -238,7 +238,8 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
            barre opaque #414141 mais se fond dans le corps du menu. */
         background-color: rgba(var(--ui-back-r), var(--ui-back-g), var(--ui-back-b), 0.8);
         border-radius: 1.36vh 1.36vh 0 0;
-        overflow: hidden;
+        /* PAS de overflow:hidden ici : il rognait le bord arrondi de
+           l'onglet et la ligne disparaitait dans les coins. */
     }
     .tab-item {
         flex: 1; min-width: 0; padding: 0.8vh 0; font-size: 1.1vh; text-align: center;
