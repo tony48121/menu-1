@@ -308,7 +308,12 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
     #footer-right { font-family: monospace; }
 
     #menu-scrollbar {
-        position: absolute; left: -1.2vh; top: 13.25vh; width: 0.6vh; height: 39vh;
+        /* top recalcule : la barre doit partir pile au niveau de la
+           PREMIERE option et finir au niveau de la DERNIERE. Les options
+           demarrent a 14.65vh depuis #menu-root (au lieu de 13.25vh
+           avant) et la hauteur (39vh) est deja celle de la zone des
+           options, donc aligner le haut aligne aussi le bas. */
+        position: absolute; left: -1.2vh; top: 14.65vh; width: 0.6vh; height: 39vh;
         opacity: 0; transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     #menu-scrollbar.visible { opacity: 1; }
@@ -1227,9 +1232,11 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
 }
 
 /* Un seul onglet (page racine, sous-menu nomme) : la barre est masquee
-   comme sur menu-1, et la barre de defilement remonte sur la banniere. */
+   comme sur menu-1, et la barre de defilement remonte sur la banniere.
+   11.95vh = la ou demarrent les options quand les onglets sont masques
+   (14.65vh moins la hauteur du bandeau d'onglets). */
 #menu-root.jul-single #menu-tabs { display: none; }
-#menu-root.jul-single #menu-scrollbar { top: 10.25vh; }
+#menu-root.jul-single #menu-scrollbar { top: 11.95vh; }
 
 /* --- marqueurs de lignes ( > sous-menu, + bouton ) ------------------- */
 .jul-mark { font-size: 1.35vh; line-height: 1; font-weight: 600; color: rgba(255,255,255,0.85); }
@@ -1586,6 +1593,49 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
         }
     }
 
+    /* La barre de defilement doit couvrir exactement la liste : de la
+       premiere option a la derniere. Son top en CSS (vh) drifte de
+       quelques pixels selon la hauteur de la fenetre, car la hauteur du
+       bandeau d'onglets contient une part en px (ligne de texte) qui ne
+       suit pas les vh. On la recalcule donc en px reels a chaque rebuild,
+       depuis #menu-items. */
+    function syncScrollbar() {
+        var bar = $('menu-scrollbar'), items = $('menu-items'), root = $('menu-root');
+        if (!bar || !items || !root) return;
+        var rr = root.getBoundingClientRect();
+        if (!rr.width || !root.offsetWidth) return;
+        /* #menu-root porte transform: scale(...) : les rect sont ecran,
+           il faut revenir au px CSS avant d'ecrire dans le style. */
+        var sc = rr.width / root.offsetWidth;
+        if (!isFinite(sc) || sc <= 0) sc = 1;
+        var ir = items.getBoundingClientRect();
+        var top = (ir.top - rr.top) / sc, h = ir.height / sc;
+        /* Pas d'ecriture si rien ne bouge : setCurrent arrive toutes les
+           400 ms et une ecriture force un recalcul de mise en page. */
+        if (Math.abs(parseFloat(bar.style.top || -1e9) - top) < 0.05 &&
+            Math.abs(parseFloat(bar.style.height || -1e9) - h) < 0.05) return;
+        bar.style.top = top + 'px';
+        bar.style.height = h + 'px';
+    }
+    /* Le bundle reconstruit la liste de maniere asynchrone : au moment du
+       premier sync les options ne sont pas encore posees (ecart de ~3 px).
+       On resynchronise sur les deux frames suivantes, ce qui suffit a
+       tomber a 0.16 px pres. */
+    function resyncScrollbar() {
+        syncScrollbar();
+        if (window.requestAnimationFrame) {
+            requestAnimationFrame(function () {
+                syncScrollbar();
+                requestAnimationFrame(function () { syncScrollbar(); });
+            });
+        }
+        /* #menu-container anime translateY(-0.45vh) -> translateY(0) sur
+           0.3 s : pendant la transition les rect sont decales de 0.45vh
+           (2.9 px a 641 px de haut), ce qui donne une barre trop haute.
+           On resynchronise une fois la transition finie. */
+        setTimeout(syncScrollbar, 360);
+    }
+
     function setCurrent(d) {
         var menu = list(d.menu);
         S.menu = menu;
@@ -1601,6 +1651,7 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
         }
         forward({ action: 'setCurrent', current: cur + 1, menu: menu });
         decorate();
+        resyncScrollbar();
         var root = $('menu-root');
         if (root && !root.classList.contains('visible') && window.showMenu) window.showMenu();
     }
@@ -1812,6 +1863,8 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
         forward({ action: 'setVisible', visible: v });
         if (v) { if (window.showMenu) window.showMenu(); }
         else { if (window.hideMenu) window.hideMenu(); }
+        /* la liste vient d'etre reconstruite : on recale la barre. */
+        if (v) resyncScrollbar();
     }
 
     /* ---------------- mode design (deplacement) ---------------- */
@@ -1906,9 +1959,10 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
             });
             S.tab = int(d.index, 0);
             renderTabs();
+            resyncScrollbar();
         },
-        setTabIndex: function (d) { S.tab = int(d.index, 0); renderTabs(); },
-        resetTabs: function () { S.tabs = ['Main Menu']; S.tab = 0; renderTabs(); },
+        setTabIndex: function (d) { S.tab = int(d.index, 0); renderTabs(); resyncScrollbar(); },
+        resetTabs: function () { S.tabs = ['Main Menu']; S.tab = 0; renderTabs(); resyncScrollbar(); },
         setCurrent: setCurrent
     };
 
