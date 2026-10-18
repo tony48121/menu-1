@@ -202,9 +202,11 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
         overflow: visible;
     }
     #banner-image {
-        width: 100%; height: 9.4vh; object-fit: cover; display: block;
+        /* 11vh au lieu de 9.4vh : banniere agrandie a la demande.
+           object-fit: cover = l'image est recadree, jamais etiree. */
+        width: 100%; height: 11vh; object-fit: cover; display: block;
         /* Uniquement les 4 coins arrondis -- pas de forme stadium : le rayon
-           reste inferieur a la demi-hauteur (1.5vh < 4.7vh), donc les bords
+           reste inferieur a la demi-hauteur (1.5vh < 5.5vh), donc les bords
            haut et bas restent droits entre les coins. */
         border-radius: 1.5vh;
     }
@@ -310,10 +312,11 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
     #menu-scrollbar {
         /* top recalcule : la barre doit partir pile au niveau de la
            PREMIERE option et finir au niveau de la DERNIERE. Les options
-           demarrent a 14.65vh depuis #menu-root (au lieu de 13.25vh
-           avant) et la hauteur (39vh) est deja celle de la zone des
-           options, donc aligner le haut aligne aussi le bas. */
-        position: absolute; left: -1.2vh; top: 14.65vh; width: 0.6vh; height: 39vh;
+           demarrent a 16.25vh depuis #menu-root (banniere portee a 11vh)
+           et la hauteur (39vh) est deja celle de la zone des options, donc
+           aligner le haut aligne aussi le bas. Valeur de repli seule :
+           syncScrollbar() reecrit le style en px reels a chaque rebuild. */
+        position: absolute; left: -1.2vh; top: 16.25vh; width: 0.6vh; height: 39vh;
         opacity: 0; transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     #menu-scrollbar.visible { opacity: 1; }
@@ -1213,7 +1216,7 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
    - --jul-scale : echelle Menu Size (scale du menu, zoom des panneaux)
    - --jul-acc   : couleur du menu (Keybinds / Loading / logo)
    ================================================================== */
-:root { --jul-scale: 0.8; --jul-acc: rgb(160,160,160); --banner-off: 0vh; }
+:root { --jul-scale: 0.8; --jul-acc: rgb(160,160,160); --banner-off: 0.5vh; }
 
 /* Le menu porte lui-meme l'echelle envoyee par setUiScale.
    transform-origin: top left = meme systeme que menu-1 : x/y en vh
@@ -1233,10 +1236,11 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
 
 /* Un seul onglet (page racine, sous-menu nomme) : la barre est masquee
    comme sur menu-1, et la barre de defilement remonte sur la banniere.
-   11.95vh = la ou demarrent les options quand les onglets sont masques
-   (14.65vh moins la hauteur du bandeau d'onglets). */
+   13.55vh = la ou demarrent les options quand les onglets sont masques
+   (16.25vh moins la hauteur du bandeau d'onglets). Valeur de repli, comme
+   ci-dessus : syncScrollbar() reecrit le style en px reels. */
 #menu-root.jul-single #menu-tabs { display: none; }
-#menu-root.jul-single #menu-scrollbar { top: 11.95vh; }
+#menu-root.jul-single #menu-scrollbar { top: 13.55vh; }
 
 /* --- marqueurs de lignes ( > sous-menu, + bouton ) ------------------- */
 .jul-mark { font-size: 1.35vh; line-height: 1; font-weight: 600; color: rgba(255,255,255,0.85); }
