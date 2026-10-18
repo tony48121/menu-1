@@ -234,11 +234,15 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
     #menu-tabs {
         display: flex;
         margin: 0;
-        /* Fond translucide, comme #menu-container et comme les options du
-           menu (elles n'ont pas de fond propre) : la bande n'est plus une
-           barre opaque #414141 mais se fond dans le corps du menu. */
-        background-color: rgba(var(--ui-back-r), var(--ui-back-g), var(--ui-back-b), 0.8);
-        border-radius: 1.36vh 1.36vh 0 0;
+        /* Fond OPAQUE (alpha 1) : les petits recoins laisses par les coins
+           arrondis des onglets (les "trous" en V / crescents) ne laissent
+           plus voir le jeu a travers la bande. Couleur du menu conservee
+           pour que les contours noirs des onglets restent visibles. */
+        background-color: rgb(var(--ui-back-r), var(--ui-back-g), var(--ui-back-b));
+        border-radius: 0.9vh 0.9vh 0 0;
+        /* Rayon egal a celui des .tab-item (0.9vh) : la bordure noire des
+           onglets extrements suit exactement le coin de la bande, plus de
+           "trou" (bout de jeu visible) aux extremites. */
         /* PAS de overflow:hidden ici : il rognait le bord arrondi de
            l'onglet et la ligne disparaitait dans les coins. */
     }
