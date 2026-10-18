@@ -245,13 +245,8 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
     .tab-item {
         flex: 1; min-width: 0; padding: 0.8vh 0; font-size: 1.1vh; text-align: center;
         cursor: pointer; color: rgba(255,255,255,0.6); background: transparent;
-        /* Encadrement plus CLAIR que le fond : la ligne doit rester visible
-           meme quand l'onglet est rempli de la couleur du menu. */
-        border: 0.14vh solid rgb(
-            min(255, calc(var(--ui-main-r) + 90)),
-            min(255, calc(var(--ui-main-g) + 90)),
-            min(255, calc(var(--ui-main-b) + 80))
-        );
+        /* Encadrement NOIR autour de l'onglet. */
+        border: 0.07vh solid #000;
         /* Coins arrondis UNIQUEMENT EN HAUT : le bas reste droit (a plat
            contre la liste du menu), pas d'encoche arrondie en bas. */
         border-radius: 0.9vh 0.9vh 0 0;
