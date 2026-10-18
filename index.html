@@ -262,12 +262,11 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
     .tab-item::before {
         content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 100%;
         /* Degradé du BAS vers le HAUT : gris fonce en bas -> couleur du menu
-           en haut. SEMI-TRANSPARENT (alpha ~0.55) : on voit le jeu a travers
-           l'onglet, mais le degradé reste bien visible. */
+           en haut. SEMI-TRANSPARENT (alpha ~0.28) : tres discret. */
         background: linear-gradient(
             to top,
-            rgba(60, 60, 66, 0.6) 0%,
-            rgba(var(--ui-main-r), var(--ui-main-g), var(--ui-main-b), 0.55) 100%
+            rgba(60, 60, 66, 0.3) 0%,
+            rgba(var(--ui-main-r), var(--ui-main-g), var(--ui-main-b), 0.26) 100%
         );
         /* alpha 1 : l'onglet selectionne doit etre OPAQUE, sinon le fond
            translucide de la bande (voir #menu-tags) le traverserait. */
