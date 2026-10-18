@@ -295,34 +295,21 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
     .menu-item.separator { justify-content: center; font-weight: 500; color: rgba(255,255,255,0.6); padding: 0.8vh 1.5vh; pointer-events: none; }
 
     #selection-highlight {
-        /* 0.37vh et non 0.3vh : la barre mesure 2.4vh dans une ligne de 3vh,
-           mais le bundle la pose avec un leger décalage vers le haut
-           (ecart reel 0.13vh au-dessus / 0.47vh en dessous avec 0.2vh).
-           0.37vh ramene l'ecart a 0.3vh de chaque cote = barre centree. */
-        position: absolute; margin-top: 0.37vh; left: 0; right: 0; height: 2.4vh;
-        /* Dégradé en HAUT ET EN BAS : les deux bords de la barre sont clairs
-           (presque la couleur pure du menu) et le milieu reste plus sombre.
-           Mesures sur la photo de reference : corps uniforme au centre,
-           ligne claire nette sur le bord inferieur, nappe lumineuse au-dessus. */
-        /* DEGRADE conserve mais ATTENUE (moins "flash").
-           - La couleur du menu reste PLEINE (opaque) : pas de trou transparent.
-           - Un voile sombre en dégradé au centre baisse l'éclat du corps.
-           - Les nappes lumineuses sont divisees par plus de deux
-             (0.7 -> 0.30, flou 1.4vh -> 1.0vh) pour un rendu plus doux. */
+        /* REMPLIT TOUTE la hauteur de la ligne (3vh) : marge a 0 et
+           height = 3vh, plus de bandes vides en haut/bas de la ligne. */
+        position: absolute; margin-top: 0; top: 0; left: 0; right: 0; height: 3vh;
+        /* Remplissage PLEIN (couleur du menu, opaque et uniforme), sans
+           voile sombre ni degradé : la selection est bien "remplie". */
+        /* REMPLISSAGE PLEIN ET UNIFORME a la couleur du menu :
+           plus de voile sombre au centre (il donnait un effet "creux",
+           la selection semblait non remplie). */
         background:
-            linear-gradient(180deg,
-                rgba(0,0,0,0)    0%,
-                rgba(0,0,0,0.26) 50%,
-                rgba(0,0,0,0)    100%),
             rgba(var(--ui-main-r), var(--ui-main-g), var(--ui-main-b), 1);
         box-shadow:
-            /* liseré clair en haut = leger relief, plus discret */
+            /* liseres tres legers pour la lisibilite */
             inset 0 0.16vh 0 rgba(255,255,255,0.13),
             inset 0 -0.10vh 0 rgba(0,0,0,0.12),
-            /* nappes lumineuses SYMETRIQUES, fortement reduites */
-            0 -0.4vh 1.0vh rgba(var(--ui-main-r), var(--ui-main-g), var(--ui-main-b), 0.30),
-            0  0.4vh 1.0vh rgba(var(--ui-main-r), var(--ui-main-g), var(--ui-main-b), 0.30),
-            /* liseré leger tout autour */
+            /* nappe lumineuse tout autour */
             0 0 0.3vh rgba(var(--ui-main-r), var(--ui-main-g), var(--ui-main-b), 0.20);
         border-radius: 0.35vh; z-index: -1; transition: top 0.25s ease-out;
     }
