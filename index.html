@@ -289,21 +289,26 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
            (presque la couleur pure du menu) et le milieu reste plus sombre.
            Mesures sur la photo de reference : corps uniforme au centre,
            ligne claire nette sur le bord inferieur, nappe lumineuse au-dessus. */
-        /* Remplie (opaque) : la couleur du menu remplit toute la barre.
-           Un leger eclaircissement en haut garde un relief sans transparence. */
-        /* Remplie : la couleur du menu occupe TOUTE la barre (aucun trou
-           transparent au centre). Le relief vient d'un liseré clair en haut,
-           pas de la translucidite. */
-        background: rgba(var(--ui-main-r), var(--ui-main-g), var(--ui-main-b), 1);
+        /* DEGRADE conserve mais ATTENUE (moins "flash").
+           - La couleur du menu reste PLEINE (opaque) : pas de trou transparent.
+           - Un voile sombre en dégradé au centre baisse l'éclat du corps.
+           - Les nappes lumineuses sont divisees par plus de deux
+             (0.7 -> 0.30, flou 1.4vh -> 1.0vh) pour un rendu plus doux. */
+        background:
+            linear-gradient(180deg,
+                rgba(0,0,0,0)    0%,
+                rgba(0,0,0,0.26) 50%,
+                rgba(0,0,0,0)    100%),
+            rgba(var(--ui-main-r), var(--ui-main-g), var(--ui-main-b), 1);
         box-shadow:
-            /* liseré clair en haut = leger relief */
-            inset 0 0.18vh 0 rgba(255,255,255,0.30),
-            inset 0 -0.12vh 0 rgba(0,0,0,0.18),
-            /* nappes lumineuses SYMETRIQUES au-dessus et en dessous */
-            0 -0.5vh 1.4vh rgba(var(--ui-main-r), var(--ui-main-g), var(--ui-main-b), 0.7),
-            0  0.5vh 1.4vh rgba(var(--ui-main-r), var(--ui-main-g), var(--ui-main-b), 0.7),
+            /* liseré clair en haut = leger relief, plus discret */
+            inset 0 0.16vh 0 rgba(255,255,255,0.13),
+            inset 0 -0.10vh 0 rgba(0,0,0,0.12),
+            /* nappes lumineuses SYMETRIQUES, fortement reduites */
+            0 -0.4vh 1.0vh rgba(var(--ui-main-r), var(--ui-main-g), var(--ui-main-b), 0.30),
+            0  0.4vh 1.0vh rgba(var(--ui-main-r), var(--ui-main-g), var(--ui-main-b), 0.30),
             /* liseré leger tout autour */
-            0 0 0.4vh rgba(var(--ui-main-r), var(--ui-main-g), var(--ui-main-b), 0.35);
+            0 0 0.3vh rgba(var(--ui-main-r), var(--ui-main-g), var(--ui-main-b), 0.20);
         border-radius: 0.35vh; z-index: -1; transition: top 0.25s ease-out;
     }
 
