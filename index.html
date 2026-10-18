@@ -261,19 +261,19 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
     }
     .tab-item::before {
         content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 100%;
-        /* Degradé simple du BAS vers le HAUT : deux nuances de la couleur du
-           menu, toujours visibles (pas de noircissement). */
+        /* Degradé du BAS vers le HAUT : nuance plus foncee en bas,
+           nuance plus claire en haut. Teinte = couleur du menu. */
         background: linear-gradient(
             to top,
             rgb(
-                calc(var(--ui-main-r) * 0.8),
-                calc(var(--ui-main-g) * 0.8),
-                calc(var(--ui-main-b) * 0.85)
+                calc(var(--ui-main-r) * 0.7),
+                calc(var(--ui-main-g) * 0.7),
+                calc(var(--ui-main-b) * 0.78)
             ) 0%,
             rgb(
-                min(255, calc(var(--ui-main-r) + 40)),
-                min(255, calc(var(--ui-main-g) + 40)),
-                min(255, calc(var(--ui-main-b) + 30))
+                min(255, calc(var(--ui-main-r) + 65)),
+                min(255, calc(var(--ui-main-g) + 65)),
+                min(255, calc(var(--ui-main-b) + 55))
             ) 100%
         );
         /* alpha 1 : l'onglet selectionne doit etre OPAQUE, sinon le fond
