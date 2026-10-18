@@ -191,10 +191,16 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
        leurs bords gauches sont alignes (bord gauche du menu). Le wrapper
        n'a plus de fond : les ecarts sont transparents et le jeu se voit
        a travers les deux cartes. */
-    /* Ecart demandee entre banniere et onglets : 2vh (2x l'ancien 1vh,
-       juge trop petit). La marge laterale de 0.55vh reste inchangee :
-       elle aligne les bords de la banniere et de la bande. */
-    #menu-banner { padding: 0.55vh 0.55vh 2vh; overflow: visible; }
+    #menu-banner {
+        /* Ecart demande entre banniere et onglets : 2vh (2x l'ancien 1vh,
+           juge trop petit). Marge laterale 0.55vh inchangee.
+           --banner-off : reglage "Banner Offset" de Settings > Misc. Le
+           haut et le bas sont compenses (0.55+off et 2-off) : la hauteur
+           du wrapper reste constante, donc la banniere monte ou descend
+           SANS bouger les onglets ni la liste. */
+        padding: calc(0.55vh + var(--banner-off, 0vh)) 0.55vh calc(2vh - var(--banner-off, 0vh));
+        overflow: visible;
+    }
     #banner-image {
         width: 100%; height: 9.4vh; object-fit: cover; display: block;
         /* Uniquement les 4 coins arrondis -- pas de forme stadium : le rayon
@@ -1202,7 +1208,7 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
    - --jul-scale : echelle Menu Size (scale du menu, zoom des panneaux)
    - --jul-acc   : couleur du menu (Keybinds / Loading / logo)
    ================================================================== */
-:root { --jul-scale: 0.8; --jul-acc: rgb(160,160,160); }
+:root { --jul-scale: 0.8; --jul-acc: rgb(160,160,160); --banner-off: 0vh; }
 
 /* Le menu porte lui-meme l'echelle envoyee par setUiScale.
    transform-origin: top left = meme systeme que menu-1 : x/y en vh
@@ -1765,6 +1771,20 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
         if (d.url && window.updateMenuBanner) window.updateMenuBanner({ banner: String(d.url) });
     }
 
+    /* Reglage "Banner Offset" (Settings > Misc) : monte ou descend la
+       banniere seule. Le deplacement est pur -- padding haut et bas de
+       #menu-banner sont compenses -- donc la hauteur du wrapper ne bouge
+       pas et rien d'autre ne bouge. Le Lua envoie des dixiemes de vh
+       (0 = position par defaut). Bornes imposees ici : le padding haut ne
+       peut pas passer sous 0 (0.55vh de base) ni le bas sous 0 (2vh). */
+    function setBannerOffset(d) {
+        d = d || {};
+        var v = parseFloat(d.v);
+        if (isNaN(v)) return;
+        v = Math.max(-0.55, Math.min(2, v));
+        document.documentElement.style.setProperty('--banner-off', v + 'vh');
+    }
+
     function setMenuColor(d) {
         d = d || {};
         /* gris 160 = valeur par defaut du Lua, si un canal manque */
@@ -1848,6 +1868,7 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
        ================================================================= */
     var LUA_ONLY = {
         setMenuPos: 1, setUiScale: 1, setMenuColor: 1, setBanner: 1,
+        setBannerOffset: 1,
         setFooterLogo: 1, setFooterUser: 1, setKeybinds: 1,
         showInputPrompt: 1, updateInputPrompt: 1, hideInputPrompt: 1,
         showLoading: 1, loadingProgress: 1, hideLoading: 1,
@@ -1860,6 +1881,7 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
         setUiScale: function (d) { setScale(d.scale); },
         setMenuColor: setMenuColor,
         setBanner: setBanner,
+        setBannerOffset: setBannerOffset,
         setFooterLogo: setFooterLogo,
         setFooterUser: setFooterUser,
         setKeybinds: setKeybinds,
