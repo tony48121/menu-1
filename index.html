@@ -237,6 +237,9 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
            menu (elles n'ont pas de fond propre) : la bande n'est plus une
            barre opaque #414141 mais se fond dans le corps du menu. */
         background-color: rgba(var(--ui-back-r), var(--ui-back-g), var(--ui-back-b), 0.8);
+        /* UN SEUL encadrement autour de toute la bande d'onglets,
+           de la couleur du menu. */
+        border: 0.12vh solid rgb(var(--ui-main-r), var(--ui-main-g), var(--ui-main-b));
         border-radius: 1.36vh 1.36vh 0 0;
         overflow: hidden;
     }
