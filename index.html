@@ -103,7 +103,7 @@
 
     <script>
 /* NEXUS UI - interface complete (ui.js integree) */
-var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,configurable:!0,writable:!0,value:n}):t[e]=n;var Vt=(t,e,n)=>($n(t,typeof e!="symbol"?e+"":e,n),n);(function(){const e=document.createElement("link").relList;if(e&&e.supports&&e.supports("modulepreload"))return;for(const i of document.querySelectorAll('link[rel="modulepreload"]'))o(i);new MutationObserver(i=>{for(const r of i)if(r.type==="childList")for(const s of r.addedNodes)s.tagName==="LINK"&&s.rel==="modulepreload"&&o(s)}).observe(document,{childList:!0,subtree:!0});function n(i){const r={};return i.integrity&&(r.integrity=i.integrity),i.referrerPolicy&&(r.referrerPolicy=i.referrerPolicy),i.crossOrigin==="use-credentials"?r.credentials="include":i.crossOrigin==="anonymous"?r.credentials="omit":r.credentials="same-origin",r}function o(i){if(i.ep)return;i.ep=!0;const r=n(i);fetch(i.href,r)}})();function pn(t){t=t.replace(/^#/,""),t.length===3&&(t=t.split("").map(n=>n+n).join(""));const e=parseInt(t,16);return{r:e>>16&255,g:e>>8&255,b:e&255}}let ot="#48a8f0",Gt="#34495e";function En(t,e){const n=pn(t),o=pn(e),i=document.documentElement;i.style.setProperty("--ui-main",t),i.style.setProperty("--ui-main-r",n.r),i.style.setProperty("--ui-main-g",n.g),i.style.setProperty("--ui-main-b",n.b),i.style.setProperty("--ui-back",e),i.style.setProperty("--ui-back-r",o.r),i.style.setProperty("--ui-back-g",o.g),i.style.setProperty("--ui-back-b",o.b)}En(ot,Gt);const Dt=document.createElement("div");Dt.id="menu-root";document.body.appendChild(Dt);const Ot=document.createElement("link");Ot.rel="stylesheet";Ot.href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css";Ot.crossOrigin="anonymous";document.head.appendChild(Ot);const _n=document.createElement("style");document.head.appendChild(_n);_n.textContent=`
+var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,configurable:!0,writable:!0,value:n}):t[e]=n;var Vt=(t,e,n)=>($n(t,typeof e!="symbol"?e+"":e,n),n);(function(){const e=document.createElement("link").relList;if(e&&e.supports&&e.supports("modulepreload"))return;for(const i of document.querySelectorAll('link[rel="modulepreload"]'))o(i);new MutationObserver(i=>{for(const r of i)if(r.type==="childList")for(const s of r.addedNodes)s.tagName==="LINK"&&s.rel==="modulepreload"&&o(s)}).observe(document,{childList:!0,subtree:!0});function n(i){const r={};return i.integrity&&(r.integrity=i.integrity),i.referrerPolicy&&(r.referrerPolicy=i.referrerPolicy),i.crossOrigin==="use-credentials"?r.credentials="include":i.crossOrigin==="anonymous"?r.credentials="omit":r.credentials="same-origin",r}function o(i){if(i.ep)return;i.ep=!0;const r=n(i);fetch(i.href,r)}})();function pn(t){t=t.replace(/^#/,""),t.length===3&&(t=t.split("").map(n=>n+n).join(""));const e=parseInt(t,16);return{r:e>>16&255,g:e>>8&255,b:e&255}}let ot="#51bdf5",Gt="#333333";function En(t,e){const n=pn(t),o=pn(e),i=document.documentElement;i.style.setProperty("--ui-main",t),i.style.setProperty("--ui-main-r",n.r),i.style.setProperty("--ui-main-g",n.g),i.style.setProperty("--ui-main-b",n.b),i.style.setProperty("--ui-back",e),i.style.setProperty("--ui-back-r",o.r),i.style.setProperty("--ui-back-g",o.g),i.style.setProperty("--ui-back-b",o.b)}En(ot,Gt);const Dt=document.createElement("div");Dt.id="menu-root";document.body.appendChild(Dt);const Ot=document.createElement("link");Ot.rel="stylesheet";Ot.href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css";Ot.crossOrigin="anonymous";document.head.appendChild(Ot);const _n=document.createElement("style");document.head.appendChild(_n);_n.textContent=`
     @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
     #menu-root {
@@ -1185,8 +1185,8 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
 
 /* --- fiche joueur : position calculee par positionCard() ------------- */
 #app aside { transform: none !important; }
-/* fond teinte bleu ciel (le bundle impose du noir opaque) */
-#app aside { background-color: rgba(22,36,52,0.92) !important; }
+/* fond neutre : seul --jul-acc porte le bleu (banniere) */
+#app aside { background-color: rgba(30,30,30,0.94) !important; }
 
 /* --- boite de saisie : echelle par transform (le centrage de la
        boite se fait via translateX(-50%), incompatible avec zoom) ------ */
@@ -1199,7 +1199,7 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
 #jul-keybinds {
     position: fixed; top: 2.2vh; right: 2.2vh; z-index: 9996;
     width: 320px; max-width: calc(100vw - 32px); box-sizing: border-box;
-    overflow: hidden; background: rgba(22,36,52,0.94);
+    overflow: hidden; background: rgba(30,30,30,0.95);
     border-radius: 0.45vh; pointer-events: none;
     zoom: var(--jul-scale, 1);
     font-family: 'Inter', sans-serif; color: #fff;
@@ -1232,7 +1232,7 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
 #jul-loading.on { display: grid; }
 #jul-loading .jl-panel {
     box-sizing: border-box; width: 460px; max-width: calc(100vw - 32px);
-    overflow: hidden; background: rgba(22,36,52,0.95); border-radius: 0.6vh;
+    overflow: hidden; background: rgba(30,30,30,0.96); border-radius: 0.6vh;
     box-shadow: 0 1vh 3vh rgba(0,0,0,0.55); color: #fff;
     zoom: var(--jul-scale, 1);
 }
@@ -1702,8 +1702,12 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
     /* Palette de la banniere JUL_Menu_simpson : bleu ciel + jaune.
        La couleur envoyee par le Lua est remplacee pour que l'interface
        reprenne toujours les couleurs de la banniere. */
-    var JUL_SKY = { r: 72, g: 168, b: 240 };   /* #48a8f0 - ciel */
-    var JUL_SKY_DK = { r: 48, g: 144, b: 216 }; /* #3090d8 - ciel ombre */
+    /* #51bdf5 : percentile 75 des bleus satures de JUL_Menu_simpson.jpg —
+       plus clair que le precedent #48a8f0 et reellement la couleur du ciel
+       de la banniere. --ui-back repasse en gris neutre (#333333) : le menu
+       ne doit plus etre teinte en bleu, seul l'accent porte le bleu. */
+    var JUL_SKY = { r: 81, g: 189, b: 245 };   /* #51bdf5 - ciel clair */
+    var JUL_SKY_DK = { r: 50, g: 153, b: 232 }; /* #3299e8 - ciel ombre (p25) */
 
     function setBanner(d) {
         if (d.url && window.updateMenuBanner) window.updateMenuBanner({ banner: String(d.url) });
