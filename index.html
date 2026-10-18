@@ -155,7 +155,10 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
         background-color: transparent;
         border-radius: 0.45vh;
         overflow: hidden;
-        margin-bottom: 0.45vh;
+        /* 0 : la bande d'onglets doit etre COLLEE au menu (demande). Avec
+           l'ancien 0.45vh + la marge basse de la bande (0.55vh) il y avait
+           1vh de blanc entre les onglets et la liste. */
+        margin-bottom: 0;
         opacity: 0;
         transform: translateY(-0.9vh);
         transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -192,16 +195,17 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
         border-radius: 1.5vh;
     }
 
-    /* Bande d'onglets detachee des 4 cotes : marge laterale identique a
-       celle de la banniere (bords alignes). Fond opaque #414141 =
-       exactement le rendu actuel (rgba(255,255,255,0.07) sur #333) : sans
-       le fond du wrapper, l'ancien rgba rendrait la bande quasi invisible.
+    /* Bande d'onglets detachee en HAUT : marge laterale identique a celle
+       de la banniere (bords alignes). Marge basse 0 : elle est collee au
+       menu. Fond opaque #414141 = exactement le rendu actuel
+       (rgba(255,255,255,0.07) sur #333) : sans le fond du wrapper, l'ancien
+       rgba rendrait la bande quasi invisible.
        Coins arrondis EN HAUT SEULEMENT : 1.36vh = demi-hauteur de la
        bande, soit le meme rayon que celui des extremites precedemment
        affichees. La base reste droite, la bande se pose a plat. */
     #menu-tabs {
         display: flex;
-        margin: 0 0.55vh 0.55vh;
+        margin: 0 0.55vh;
         background-color: #414141;
         border-radius: 1.36vh 1.36vh 0 0;
         overflow: hidden;
