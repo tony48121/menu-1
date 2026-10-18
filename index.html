@@ -232,7 +232,7 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
     .component input[type="range"]::-moz-range-thumb { width: 1.4vh; height: 1.4vh; background: #fff; border-radius: 50%; cursor: pointer; border: none; }
     .component button { background: #4a4a4a; border: none; color: white; padding: 0.3vh 0.8vh; border-radius: 0.3vh; font-size: 1.2vh; cursor: pointer; transition: background 0.2s ease; }
     .component button:hover { background: #6a6a6a; }
-    .component input[type="checkbox"] { -webkit-appearance: none; appearance: none; background-color: #333; margin: 0; width: 3.3vh; height: 1.4vh; border-radius: 1vh; cursor: pointer; position: relative; transition: background-color 0.2s ease-in-out; }
+    .component input[type="checkbox"] { -webkit-appearance: none; appearance: none; background-color: #333; margin: 0; width: 3.3vh; height: 1.4vh; border-radius: 1vh; cursor: pointer; position: relative; box-shadow: inset 0 0 0 0.1vh #000; transition: background-color 0.2s ease-in-out; }
     .component input[type="checkbox"]::after { content: ''; position: absolute; top: 0.2vh; left: 0.2vh; width: 1vh; height: 1vh; background-color: #f0f0f0; border-radius: 50%; transition: left 0.2s ease-in-out; }
     .component input[type="checkbox"]:checked { background-color: rgba(var(--ui-main-r), var(--ui-main-g), var(--ui-main-b), 0.95); }
     .component input[type="checkbox"]:checked::after { left: 2vh; }
