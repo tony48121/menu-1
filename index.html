@@ -237,15 +237,14 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
            menu (elles n'ont pas de fond propre) : la bande n'est plus une
            barre opaque #414141 mais se fond dans le corps du menu. */
         background-color: rgba(var(--ui-back-r), var(--ui-back-g), var(--ui-back-b), 0.8);
-        /* UN SEUL encadrement autour de toute la bande d'onglets,
-           de la couleur du menu. */
-        border: 0.12vh solid rgb(var(--ui-main-r), var(--ui-main-g), var(--ui-main-b));
         border-radius: 1.36vh 1.36vh 0 0;
         overflow: hidden;
     }
     .tab-item {
         flex: 1; min-width: 0; padding: 0.8vh 0; font-size: 1.1vh; text-align: center;
         cursor: pointer; color: rgba(255,255,255,0.6); background: transparent;
+        /* Encadrement arrondi de la COULEUR DU MENU autour de l'onglet. */
+        border: 0.14vh solid rgb(var(--ui-main-r), var(--ui-main-g), var(--ui-main-b));
         /* Coins arrondis : le fond coloré de l'onglet actif (via
            overflow:hidden + ::before) prend ce rayon. Les onglets non
            selectionnes restent transparents -> aucun changement visuel.
