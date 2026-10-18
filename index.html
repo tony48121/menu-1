@@ -153,7 +153,12 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
         /* Fond retire : l'ecart entre banniere et bande d'onglets est
            transparent, le jeu se voit a travers (demande : "invisible"). */
         background-color: transparent;
-        border-radius: 0.45vh;
+        /* Cotes bas CARRES : la bande d'onglets est collee a la liste et
+           doit etre une ligne continue. L'ancien rayon 0.45vh sur les
+           quatre coins rognait les extremites basse de la bande
+           (overflow:hidden) et laissait une encoche claire de part et
+           d'autre. */
+        border-radius: 0.45vh 0.45vh 0 0;
         overflow: hidden;
         /* 0 : la bande d'onglets doit etre COLLEE au menu (demande). Avec
            l'ancien 0.45vh + la marge basse de la bande (0.55vh) il y avait
@@ -168,7 +173,10 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
 
     #menu-container {
         background-color: rgba(var(--ui-back-r), var(--ui-back-g), var(--ui-back-b), 0.8);
-        border-radius: 0.45vh;
+        /* Cotes haut CARRES pour affleurer la bande d'onglets : la
+           couture doit etre une seule ligne, sans encoche. Bas arrondi
+           conserve. */
+        border-radius: 0 0 0.45vh 0.45vh;
         overflow: hidden;
         position: relative;
         opacity: 0;
@@ -195,17 +203,19 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
         border-radius: 1.5vh;
     }
 
-    /* Bande d'onglets detachee en HAUT : marge laterale identique a celle
-       de la banniere (bords alignes). Marge basse 0 : elle est collee au
-       menu. Fond opaque #414141 = exactement le rendu actuel
-       (rgba(255,255,255,0.07) sur #333) : sans le fond du wrapper, l'ancien
-       rgba rendrait la bande quasi invisible.
+    /* Bande d'onglets COLLEE au menu : ni marge laterale ni marge basse,
+       donc elle fait exactement la meme largeur que #menu-container et la
+       jonction est franche (demande : "ca doit se rejoindre"). La marge
+       laterale de 0.55vh restait sur la banniere, seule. Fond opaque
+       #414141 = exactement le rendu actuel (rgba(255,255,255,0.07) sur
+       #333) : sans le fond du wrapper, l'ancien rgba rendrait la bande
+       quasi invisible.
        Coins arrondis EN HAUT SEULEMENT : 1.36vh = demi-hauteur de la
        bande, soit le meme rayon que celui des extremites precedemment
-       affichees. La base reste droite, la bande se pose a plat. */
+       affichees. La base reste droite contre la liste. */
     #menu-tabs {
         display: flex;
-        margin: 0 0.55vh;
+        margin: 0;
         background-color: #414141;
         border-radius: 1.36vh 1.36vh 0 0;
         overflow: hidden;
