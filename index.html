@@ -150,7 +150,9 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
     .tooltip-bar-fill { position: absolute; bottom: 0; left: 0; width: 100%; border-radius: 0.15vh; transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
 
     #header-wrapper {
-        background-color: var(--ui-back);
+        /* Fond retire : l'ecart entre banniere et bande d'onglets est
+           transparent, le jeu se voit a travers (demande : "invisible"). */
+        background-color: transparent;
         border-radius: 0.45vh;
         overflow: hidden;
         margin-bottom: 0.45vh;
@@ -175,8 +177,9 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
 
     /* Tete du menu en cartes detachees : banniere ET bandeau d'onglets
        partagent la meme marge de 0.55vh et le meme rayon de 0.4vh, donc
-       leurs bords gauches sont alignes (bord gauche du menu). Le fond
-       --ui-back transparait dans les ecarts entre les cartes. */
+       leurs bords gauches sont alignes (bord gauche du menu). Le wrapper
+       n'a plus de fond : les ecarts sont transparents et le jeu se voit
+       a travers les deux cartes. */
     /* Ecart demandee entre banniere et onglets : 2vh (2x l'ancien 1vh,
        juge trop petit). La marge laterale de 0.55vh reste inchangee :
        elle aligne les bords de la banniere et de la bande. */
@@ -188,13 +191,13 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
 
     /* Bande d'onglets detachee des 4 cotes : marge laterale identique a
        celle de la banniere (bords alignes) et rayon sur TOUS les coins,
-       dont gauche et droite sur toute la hauteur. La marge basse de
-       0.55vh + celle du wrapper (0.45vh) = 1vh, soit exactement le meme
-       ecart qu'au-dessus, sous la banniere. */
+       dont gauche et droite sur toute la hauteur. Fond opaque #414141 =
+       exactement le rendu actuel (rgba(255,255,255,0.07) sur #333) : sans
+       le fond du wrapper, l'ancien rgba rendrait la bande quasi invisible. */
     #menu-tabs {
         display: flex;
         margin: 0 0.55vh 0.55vh;
-        background-color: rgba(255,255,255,0.07);
+        background-color: #414141;
         border-radius: 0.4vh;
         overflow: hidden;
     }
