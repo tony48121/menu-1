@@ -254,7 +254,7 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
         /* Pas de rayon en bas : la base de la bande doit rester droite.
            Les anciens border-bottom-*-radius: 0.5vh laissaient des encoches
            claires sous la couleur active. */
-        transition: 0.3s; position: relative; overflow: hidden;
+        transition: 0.3s; position: relative;
         /* z-index:0 cree un contexte d'empilement : le ::before (z-index:-1)
            de la couleur active restait ALORS derriere le fond opaque de la
            bande. On l'enferme ici : bleu au-dessus de #414141, texte au-
