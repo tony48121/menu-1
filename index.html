@@ -161,7 +161,9 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
            (overflow:hidden) et laissait une encoche claire de part et
            d'autre. */
         border-radius: 0.45vh 0.45vh 0 0;
-        overflow: hidden;
+        /* overflow RETIRE : la banniere doit desormais depasser le menu
+           sur les cotes (demande), et le rognage la couperait net. La bande
+           d'onglets s'elle-meme son overflow:hidden + son rayon 1.36vh. */
         /* 0 : la bande d'onglets doit etre COLLEE au menu (demande). Avec
            l'ancien 0.45vh + la marge basse de la bande (0.55vh) il y avait
            1vh de blanc entre les onglets et la liste. */
@@ -200,6 +202,10 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
            haut et le bas sont compenses (0.55+off et 2-off) : la hauteur
            du wrapper reste constante, donc la banniere monte ou descend
            SANS bouger les onglets ni la liste. */
+        /* Marge laterale NEGATIVE : la banniere depasse le menu de 1vh de
+           chaque cote (demande). 1.55vh = 0.55vh de marge du bloc + 1vh de
+           debord ; l'image (width:100%) finit donc a 1vh au-dela du menu. */
+        margin: 0 -1.55vh;
         padding: calc(0.55vh + var(--banner-off, 0vh)) 0.55vh calc(2vh - var(--banner-off, 0vh));
         overflow: visible;
     }
