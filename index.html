@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Notifications (nouveau design "foret + sauge") -->
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
     <style>
@@ -244,13 +245,16 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
     .tab-item {
         flex: 1; min-width: 0; padding: 0.8vh 0; font-size: 1.1vh; text-align: center;
         cursor: pointer; color: rgba(255,255,255,0.6); background: transparent;
-        /* Encadrement arrondi de la COULEUR DU MENU autour de l'onglet. */
-        border: 0.14vh solid rgb(var(--ui-main-r), var(--ui-main-g), var(--ui-main-b));
-        /* Coins arrondis : le fond coloré de l'onglet actif (via
-           overflow:hidden + ::before) prend ce rayon. Les onglets non
-           selectionnes restent transparents -> aucun changement visuel.
-           Rayon des 4 coins pour un rendu "pastille" comme demande. */
-        border-radius: 0.9vh;
+        /* Encadrement plus CLAIR que le fond : la ligne doit rester visible
+           meme quand l'onglet est rempli de la couleur du menu. */
+        border: 0.14vh solid rgb(
+            min(255, calc(var(--ui-main-r) + 90)),
+            min(255, calc(var(--ui-main-g) + 90)),
+            min(255, calc(var(--ui-main-b) + 80))
+        );
+        /* Coins arrondis UNIQUEMENT EN HAUT : le bas reste droit (a plat
+           contre la liste du menu), pas d'encoche arrondie en bas. */
+        border-radius: 0.9vh 0.9vh 0 0;
         /* Pas de rayon en bas : la base de la bande doit rester droite.
            Les anciens border-bottom-*-radius: 0.5vh laissaient des encoches
            claires sous la couleur active. */
@@ -263,9 +267,14 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
         z-index: 0;
     }
     .tab-item::before {
-        content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 100%;
-        /* Onglet selectionne : rempli de la COULEUR DU MENU (plein). */
+        content: ''; position: absolute;
+        /* Remplissage a l'INTERIEUR du cadre : il ne depasse pas les
+           lignes (bordure). Il occupe la zone interieure de l'onglet. */
+        top: 0; bottom: 0; left: 0; right: 0;
+        /* Onglet selectionne : rempli de la COULEUR DU MENU (plein).
+           Rayon UNIQUEMENT EN HAUT : le bas reste droit. */
         background: rgb(var(--ui-main-r), var(--ui-main-g), var(--ui-main-b));
+        border-radius: 0.9vh 0.9vh 0 0;
         transform: scaleY(0); transform-origin: bottom; transition: 0.5s; z-index: -1;
     }
     .tab-item.single { min-width: 8vh; flex-grow: 0; padding: 0.8vh 1vh; flex-basis: auto; }
@@ -1422,32 +1431,52 @@ var Rn=Object.defineProperty;var $n=(t,e,n)=>e in t?Rn(t,e,{enumerable:!0,config
 }
 
 /* ================= PANNEAU "KEYBINDS" (haut droite) ================== */
+/* Habille le HUD Keybinds avec le theme "foret + sauge" de la nouvelle
+   interface : bandeau sauge en titre, filets fins, touches en keycap. */
 #jul-keybinds {
     position: fixed; top: 2.2vh; right: 2.2vh; z-index: 9996;
     width: 320px; max-width: calc(100vw - 32px); box-sizing: border-box;
-    overflow: hidden; background: rgba(30,30,30,0.95);
-    border-radius: 0.45vh; pointer-events: none;
+    overflow: hidden; border-radius: 1vh; pointer-events: none;
     zoom: var(--jul-scale, 1);
-    font-family: 'Inter', sans-serif; color: #fff;
+    font-family: 'Inter', sans-serif;
+    color: #f6fbf2;
+    /* Corps mousse + fin liseré clair (hairline) autour. */
+    background: linear-gradient(180deg, #273828, #1b261c);
+    border: 1px solid rgba(205, 225, 198, 0.42);
+    box-shadow: 0 2.4vh 6vh rgba(0,0,0,0.45);
 }
 #jul-keybinds[hidden] { display: none; }
-#jul-keybinds .kbl-head { padding: 1.1vh 1.6vh 0.9vh; border-bottom: 0.25vh solid var(--jul-acc); }
-#jul-keybinds .kbl-title { margin: 0; font-size: 1.5vh; font-weight: 600; color: #fff; }
-#jul-keybinds .kbl-rows { list-style: none; margin: 0; padding: 0.7vh 1.6vh 1.1vh; }
-#jul-keybinds .kbl-bind {
-    display: flex; align-items: center; gap: 0.9vh; height: 2.9vh;
-    font-size: 1.25vh; color: rgba(255,255,255,0.75); white-space: nowrap;
+/* Bandeau titre sauge (comme .page-title de la nouvelle interface). */
+#jul-keybinds .kbl-head {
+    padding: 1vh 1.6vh 0.9vh;
+    background: linear-gradient(180deg, #566d54, #465b46);
+    border-bottom: 1px solid rgba(240, 246, 232, 0.4);
 }
+#jul-keybinds .kbl-title {
+    margin: 0; font-family: 'Bricolage Grotesque', 'Inter', sans-serif;
+    font-size: 1.6vh; font-weight: 700; color: #f6fbf2;
+}
+#jul-keybinds .kbl-rows { list-style: none; margin: 0; padding: 0.5vh 1.6vh 1vh; }
+#jul-keybinds .kbl-bind {
+    display: flex; align-items: center; gap: 0.9vh; height: 3vh;
+    font-size: 1.25vh; color: #d8e4d3; white-space: nowrap;
+    border-bottom: 1px solid rgba(205, 225, 198, 0.16);
+}
+#jul-keybinds .kbl-bind:last-child { border-bottom: none; }
 #jul-keybinds .kbl-act { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-#jul-keybinds .kbl-status { flex: none; font-size: 1.05vh; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
-#jul-keybinds .kbl-bind[data-state="on"]  .kbl-status { color: #5fd37a; }
+#jul-keybinds .kbl-status { flex: none; font-size: 1vh; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+#jul-keybinds .kbl-bind[data-state="on"]  .kbl-status { color: #c8f7ab; }
 #jul-keybinds .kbl-bind[data-state="off"] .kbl-status { color: #ff5a5a; }
 #jul-keybinds .kbl-bind[data-state="none"] .kbl-status { visibility: hidden; }
+/* Touche en keycap clair (comme .shortcut de la nouvelle interface). */
 #jul-keybinds .kbl-key {
     flex: none; max-width: 12vh; overflow: hidden; text-overflow: ellipsis;
-    padding: 0.2vh 0.7vh; border-radius: 0.4vh;
-    background: rgba(255,255,255,0.08); border: 0.1vh solid rgba(255,255,255,0.18);
-    font-size: 1.1vh; font-weight: 600; color: #fff;
+    padding: 0.15vh 0.8vh; border-radius: 999px;
+    background: linear-gradient(180deg, #f1f6ea, #d2dcc8);
+    border: 1px solid rgba(125, 144, 120, 0.55);
+    box-shadow: 0 0.2vh 0 rgba(125,144,120,0.35);
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 1.25vh; font-weight: 400; color: #1b261c;
 }
 
 /* ==================== ECRAN DE CHARGEMENT ========================== */
