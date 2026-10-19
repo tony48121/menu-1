@@ -896,117 +896,110 @@
       }
 
       /* =========================================================
-         NOTIFICATIONS  (src/features/modules/notifications/index.scss)
+         NOTIFICATIONS  (design "notification.html", en bas a droite)
          ========================================================= */
       .NotificationsWrapper {
         position: absolute;
         display: flex;
-        top: 1vw;
-        left: 50%;
-        width: 100%;
-        transform: translateX(-50%);
+        right: 1.25vw;
+        bottom: 1.25vw;
+        width: 16.6667vw;
         flex-direction: column;
-        gap: 0.2604vw;
+        gap: 0.5208vw;
         z-index: 9999;
         pointer-events: none;
-        align-items: center;
-        max-width: none;
       }
 
-      .NotificationsWrapper .Notification {
+      .NotificationsWrapper .notif {
         position: relative;
         display: flex;
-        min-width: 13.0208vw;
-        max-width: 20vw;
-        width: fit-content;
-        height: auto;
-        justify-content: center;
         align-items: center;
-        flex-direction: column;
-        box-sizing: border-box;
-        background: rgb(10, 10, 10);
-        border-radius: 0.2604vw;
-        opacity: 0;
-        transform: translateY(-1.5vw);
-        transition: opacity 0.5s ease, transform 0.65s ease;
-        gap: 0.3125vw;
+        gap: 0.7292vw;
+        min-height: 3.5417vw;
+        padding: 0.625vw 0.9375vw;
+        background: rgba(12, 12, 14, 0.94);
+        border-radius: 0.2083vw;
         overflow: hidden;
-      }
-
-      .NotificationsWrapper .Notification.enter {
-        opacity: 1;
-        transform: translateY(0);
-      }
-
-      .NotificationsWrapper .Notification.exit {
+        box-shadow: 0 0.4167vw 1.25vw rgba(0, 0, 0, 0.55), inset 0 0 0 0.0521vw rgba(255, 255, 255, 0.03);
+        transform: translateX(120%);
         opacity: 0;
-        transform: translateY(-1.5vw);
+        animation: JLNotifIn 0.45s cubic-bezier(0.2, 0.9, 0.25, 1) forwards;
       }
 
-      .NotificationsWrapper .Notification .Header {
-        position: relative;
-        display: flex;
+      .NotificationsWrapper .notif.out {
+        animation: JLNotifOut 0.35s ease-in forwards;
+      }
+
+      /* barre laterale : couleur principale du menu */
+      .NotificationsWrapper .notif::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 0.2083vw;
+        background: rgb(var(--menu-color));
+      }
+
+      /* barre de progression */
+      .NotificationsWrapper .notif .progress {
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        height: 0.1042vw;
         width: 100%;
-        height: 1.5625vw;
-        justify-content: flex-start;
-        align-items: center;
-        background-color: black;
-        border-bottom: 0.0521vw solid white;
+        background: rgb(var(--menu-color));
+        opacity: 0.55;
+        transform-origin: left center;
+        animation: JLNotifProgress linear forwards;
       }
 
-      .NotificationsWrapper .Notification .NIcon {
-        position: relative;
-        display: flex;
-        left: 0.4167vw;
-        width: 0.5469vw;
-        height: 0.5469vw;
-        flex-shrink: 0;
-        align-items: center;
-        color: rgb(var(--menu-color));
-        filter: drop-shadow(0 0 0.3125vw rgba(var(--menu-color), 0.25));
+      .NotificationsWrapper .notif .content {
+        min-width: 0;
       }
 
-      .NotificationsWrapper .Notification .Title {
-        position: relative;
-        display: flex;
-        left: 0.7292vw;
-        height: 0.7292vw;
-        font-family: "Inter";
-        font-style: normal;
-        font-weight: 700;
-        font-size: 0.5469vw;
-        line-height: 0.7292vw;
-        align-items: center;
-        color: rgb(var(--menu-color));
-        text-shadow: 0vw 0vw 0.3125vw rgba(var(--menu-color), 0.25);
-        margin-top: 0.0521vw;
+      .NotificationsWrapper .notif .title {
+        color: #f2f2f4;
+        font-family: "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        font-size: 0.7813vw;
+        font-weight: 600;
+        letter-spacing: 0.0104vw;
+        line-height: 1.25;
       }
 
-      .NotificationsWrapper .Notification .Body {
-        position: relative;
-        display: flex;
-        width: 100%;
-        height: auto;
-        padding-left: 0.5208vw;
-        padding-right: 0.5208vw;
-        padding-top: 0.2604vw;
-        padding-bottom: 0.5208vw;
+      .NotificationsWrapper .notif .message {
+        margin-top: 0.1563vw;
+        color: #a9a9b2;
+        font-family: "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        font-size: 0.6771vw;
+        line-height: 1.3;
       }
 
-      .NotificationsWrapper .Notification .NDesc {
-        position: relative;
-        display: inline-block;
-        width: fit-content;
-        max-width: 18vw;
-        font-family: "Inter";
-        font-weight: 400;
-        font-size: 0.5469vw;
-        line-height: 0.625vw;
-        color: white;
-        text-align: left;
-        white-space: normal;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
+      @keyframes JLNotifIn {
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+
+      @keyframes JLNotifOut {
+        from {
+          transform: translateX(0);
+          opacity: 1;
+        }
+        to {
+          transform: translateX(120%);
+          opacity: 0;
+        }
+      }
+
+      @keyframes JLNotifProgress {
+        from {
+          transform: scaleX(1);
+        }
+        to {
+          transform: scaleX(0);
+        }
       }
 
       /* =========================================================
@@ -1116,7 +1109,7 @@
       }
 
       .NotificationsWrapper {
-        transform-origin: 50% 0;
+        transform-origin: 100% 100%;
       }
 
       .InputWrapper {
@@ -1390,9 +1383,6 @@
 
         var ICON_SUBMENU =
           '<svg class="Icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5l6 7-6 7"/><path d="M12 5l6 7-6 7"/></svg>';
-
-        var ICON_NOTIFICATION =
-          '<svg class="NIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 17v-5"/><path d="M12 8h.01"/></svg>';
 
         /* ---- ICONES DES CATEGORIES (page Home) ---- */
         var JUL_ICONS = {
@@ -1824,57 +1814,47 @@
         /* ======================================================
            NOTIFICATIONS
            ====================================================== */
-        var notificationId = 0;
-
         function addNotification(data) {
-          notificationId++;
+          data = data || {};
+
+          var duration = Math.max(500, juNum(data.duration, 4000));
 
           var node = document.createElement("div");
-          node.className = "Notification " + (data.type || "info");
-          node.innerHTML =
-            '<div class="Header">' +
-            ICON_NOTIFICATION +
-            '<span class="Title">' +
-            esc(data.title) +
-            "</span></div>" +
-            '<div class="Body"><span class="NDesc">' +
-            esc(data.desc) +
-            "</span></div>";
+          node.className = "notif";
 
+          var content = document.createElement("div");
+          content.className = "content";
+          var title = document.createElement("div");
+          title.className = "title";
+          title.textContent = data.title || "Notification";
+          var message = document.createElement("div");
+          message.className = "message";
+          message.textContent = data.desc || "";
+          content.appendChild(title);
+          content.appendChild(message);
+
+          var bar = document.createElement("div");
+          bar.className = "progress";
+          bar.style.animationDuration = duration + "ms";
+
+          node.appendChild(content);
+          node.appendChild(bar);
           el.notifications.appendChild(node);
 
-          requestAnimationFrame(function () {
-            node.offsetWidth;
-            node.classList.add("enter");
-          });
-
-          var autoTimer;
-          var fallbackTimer;
-          var done = false;
-
-          function cleanup() {
-            clearTimeout(autoTimer);
-            clearTimeout(fallbackTimer);
-            node.removeEventListener("transitionend", handleEnd);
-            if (node.parentNode) node.remove();
+          var gone = false;
+          function kill() {
+            if (gone) return;
+            gone = true;
+            node.remove();
           }
 
-          function handleEnd(e) {
-            if (e.target !== node) return;
-            done = true;
-            cleanup();
-          }
-
-          function startExit() {
-            node.classList.remove("enter");
-            node.classList.add("exit");
-            node.addEventListener("transitionend", handleEnd);
-            fallbackTimer = setTimeout(function () {
-              if (!done) cleanup();
-            }, 600);
-          }
-
-          autoTimer = setTimeout(startExit, data.duration || 4000);
+          setTimeout(function () {
+            node.classList.add("out");
+            node.addEventListener("animationend", function (ev) {
+              if (ev.target === node) kill();
+            });
+            setTimeout(kill, 800);
+          }, duration);
         }
 
         /* ======================================================
@@ -2118,7 +2098,7 @@
           var t = z === 1 ? "" : "scale(" + z + ")";
           el.keybinds.style.transform = t;
           el.inputWrapper.style.transform = z === 1 ? "" : "translateX(-50%) scale(" + z + ")";
-          el.notifications.style.transform = z === 1 ? "" : "translateX(-50%) scale(" + z + ")";
+          el.notifications.style.transform = z === 1 ? "" : "scale(" + z + ")";
           var card = document.getElementById("JLLoadingCard");
           if (card) card.style.transform = t;
           juPos();
@@ -2728,7 +2708,6 @@
             el.overlay.classList.remove("show");
             el.inputWrapper.classList.remove("show");
             el.metadata.classList.remove("show");
-            el.desc.classList.remove("show");
 
             render();
             return false;
