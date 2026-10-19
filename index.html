@@ -268,6 +268,12 @@
         top: 0;
         height: 1.5625vw;
         background-color: rgba(var(--menu-color), 0.6);
+        border: 0.0521vw solid rgba(var(--menu-color), 0.85);
+        box-sizing: border-box;
+        box-shadow:
+          0 0 0.55vw rgba(var(--menu-color), 0.6),
+          0 0 1.25vw rgba(var(--menu-color), 0.3),
+          inset 0 0 0.55vw rgba(var(--menu-color), 0.3);
         z-index: 0;
         transition: top 200ms ease, height 120ms ease;
         pointer-events: none;
@@ -282,6 +288,10 @@
         max-height: 1.5625vw;
         justify-content: center;
         align-items: center;
+      }
+
+      .VWrapper .VLeftElements .VLeftInnerElements .VTabs .VTab.Selected .VTLabel {
+        text-shadow: 0 0 0.5vw rgba(var(--menu-color), 0.9), 0 0 1vw rgba(var(--menu-color), 0.45);
       }
 
       .VWrapper .VLeftElements .VLeftInnerElements .VTabs .VTab.Selected .Icon {
@@ -351,6 +361,7 @@
       .VWrapper .VLeftElements .VLeftInnerElements .VTabs .VTab .VOptions .Checkbox.Checked .Inside {
         left: 0.95vw;
         background-color: rgb(var(--menu-color));
+        box-shadow: 0 0 0.45vw rgba(var(--menu-color), 0.9);
       }
 
       .VWrapper .VLeftElements .VLeftInnerElements .VTabs .VTab .VOptions .Checkbox .Inside {
@@ -412,6 +423,7 @@
       .VWrapper .VLeftElements .VLeftInnerElements .VTabs .VTab .Checkbox.Checked .Inside {
         left: 0.95vw;
         background-color: rgb(var(--menu-color));
+        box-shadow: 0 0 0.45vw rgba(var(--menu-color), 0.9);
       }
 
       .VWrapper .VLeftElements .VLeftInnerElements .VTabs .VTab .Checkbox .Inside {
@@ -600,7 +612,7 @@
         justify-content: center;
         align-items: stretch;
         flex-direction: row;
-        background-color: rgba(22, 22, 22, 0.92);
+        background-color: rgba(11, 11, 11, 0.95);
         border-left: 0.0521vw solid rgba(11, 11, 11, 0.95);
         border-right: 0.0521vw solid rgba(11, 11, 11, 0.95);
         border-top: 0.0521vw solid rgb(var(--menu-color));
@@ -1771,6 +1783,11 @@
           var pcat = document.querySelector(".PCategories");
           if (pcat) pcat.style.display = state.categories && state.categories.length ? "" : "none";
 
+          /* l'en-tete (nom + page) ne s'affiche que sur la page Home ;
+             des qu'on est dans une categorie (onglets), il disparait */
+          var header = document.querySelector(".VHeader");
+          if (header) header.style.display = state.categories && state.categories.length ? "none" : "";
+
           var old = document.querySelectorAll(".PCategories .PCategory");
           for (var i = 0; i < old.length; i++) old[i].remove();
 
@@ -2562,14 +2579,15 @@
             juDispatch({ action: "setUiScale", scale: 1 });
             juDispatch({ action: "setMenuColor", r: JUL_SKY[0], g: JUL_SKY[1], b: JUL_SKY[2] });
             juDispatch({ action: "showMenu", visible: true });
-            juDispatch({ action: "setTabs", tabs: ["List", "Safe", "Items"], index: 0 });
+
+            /* --- page Home : aucun onglet, en-tete (Home | JuL Menu) visible --- */
+            juDispatch({ action: "resetTabs" });
             juDispatch({
               action: "setCurrent",
-              current: 3,
+              current: 2,
               menu: [
-                { type: "divider", label: "Categories" },
-                { type: "submenu", label: "Online" },
                 { type: "submenu", label: "Player" },
+                { type: "submenu", label: "Online" },
                 { type: "submenu", label: "Weapon" },
                 { type: "submenu", label: "Vehicle" },
                 { type: "submenu", label: "Destroyer" },
@@ -2588,27 +2606,27 @@
             });
 
             setTimeout(function () {
+              /* --- categorie (ex. Misc) : barre d'onglets, en-tete masque --- */
+              juDispatch({ action: "setTabs", tabs: ["Status", "Misc", "Appearance"], index: 0 });
               juDispatch({
                 action: "setCurrent",
-                current: 5,
+                current: 2,
                 menu: [
-                  { label: "Teleport to Waypoint", type: "button", desc: "Teleporte au marqueur pose sur la carte" },
-                  { label: "Godmode", type: "checkbox", checked: true, desc: "Rend invincible aux degats" },
-                  { label: "Fast Run", type: "checkbox", checked: false, desc: "Course acceleree" },
-                  { label: "Menu Size", type: "slider", value: 80, min: 50, max: 100, desc: "Taille de l'interface" },
+                  { label: "Noclip", type: "checkbox", checked: false },
                   {
-                    label: "Clear Tasks",
+                    label: "Noclip Type",
                     type: "scroll",
                     selected: 1,
-                    options: [
-                      { label: "Primaire", value: "primary" },
-                      { label: "Immediate", value: "immediate" },
-                    ],
-                    desc: "Nettoie les taches du joueur",
+                    options: [{ label: " Normal " }, { label: " Fast " }, { label: " Smooth " }],
                   },
-                  { type: "divider", label: "Status" },
-                  { label: "Script Revive", type: "button", desc: "Reanime completement le personnage" },
-                  { label: "Vider le menu", type: "button", desc: "Exemple d'entree desactivee", disabled: true },
+                  { label: "Noclip Speed", type: "slider", value: 5, min: 1, max: 20 },
+                  { label: "Teleport to Waypoint", type: "button", desc: "Teleporte au marqueur pose sur la carte" },
+                  { label: "Super Punch", type: "checkbox", checked: false },
+                  { label: "Godmode", type: "checkbox", checked: true },
+                  { label: "Solo Session", type: "checkbox", checked: false },
+                  { label: "Semi God Mode", type: "checkbox", checked: false },
+                  { label: "Invisibility", type: "checkbox", checked: false },
+                  { label: "No Ragdoll", type: "checkbox", checked: false },
                 ],
               });
               juDispatch({
