@@ -578,53 +578,6 @@
         color: #ffffff;
       }
 
-      .VWrapper .VLeftElements .VDesc {
-        position: relative;
-        display: none;
-        width: auto;
-        min-width: 100%;
-        height: auto;
-        border-radius: 0.2604vw;
-        background-color: rgba(11, 11, 11, 0.95);
-        margin-top: 0.2604vw;
-        padding: 0.5vw 0.6vw;
-        box-sizing: border-box;
-        justify-content: center;
-        align-items: center;
-        flex-direction: column;
-      }
-
-      .VWrapper .VLeftElements .VDesc.show {
-        display: inline-flex;
-        animation: VPop 0.15s ease;
-      }
-
-      .VWrapper .VLeftElements .VDesc span {
-        display: inline-block;
-        white-space: normal;
-        word-break: break-word;
-        text-align: center;
-        font-weight: 700;
-        font-size: 0.5208vw;
-        line-height: 0.625vw;
-        color: #ffffff;
-      }
-
-      .VWrapper .VLeftElements .VDesc .VDescKey {
-        margin-top: 0.2083vw;
-      }
-
-      @keyframes VPop {
-        from {
-          opacity: 0;
-          transform: scale(0.96);
-        }
-        to {
-          opacity: 1;
-          transform: scale(1);
-        }
-      }
-
       .VWrapper .VRightElements {
         position: relative;
         display: flex;
@@ -1095,6 +1048,7 @@
         background-color: #0b0b0b;
         border-bottom: 0.0521vw solid white;
         padding: 0 0.4167vw;
+        box-sizing: border-box;
       }
 
       .KBLWrapper .Title {
@@ -1118,6 +1072,7 @@
         padding: 0 0.4167vw;
         justify-content: space-between;
         align-items: center;
+        box-sizing: border-box;
       }
 
       .KBLWrapper .Keybinds .Keybind.Activated {
@@ -1140,12 +1095,11 @@
       }
 
       .KBLWrapper .Keybinds .Keybind .Elements {
-        position: relative;
         display: flex;
-        right: -0.4vw;
         justify-content: flex-end;
         align-items: center;
-        gap: 0.1042vw;
+        gap: 0.2604vw;
+        color: #ffffff;
       }
 
       .KBLWrapper .Keybinds .Keybind .Elements span {
@@ -1154,7 +1108,7 @@
       }
 
       /* =========================================================
-         PONT JuL - ajouts specifiques (charge, viseur, freecam,
+         PONT JuL - ajouts specifiques (charge, viseur,
          curseur de saisie, glisser, echelles)
          ========================================================= */
       .KBLWrapper {
@@ -1306,67 +1260,6 @@
         display: flex;
       }
 
-      /* panneau freecam (displayFreecam + scroll) */
-      .JLFreecam {
-        position: absolute;
-        display: none;
-        right: 1.0417vw;
-        top: 26vh;
-        width: 9.375vw;
-        flex-direction: column;
-        background: rgba(11, 11, 11, 0.95);
-        border-radius: 0.2604vw;
-        font-family: "Inter";
-        overflow: hidden;
-        z-index: 55;
-        transform-origin: 100% 0;
-      }
-
-      .JLFreecam.show {
-        display: flex;
-      }
-
-      .JLFreecam .Header {
-        display: flex;
-        width: 100%;
-        height: 1.3021vw;
-        justify-content: flex-start;
-        align-items: center;
-        background-color: #0b0b0b;
-        border-bottom: 0.0521vw solid white;
-        padding: 0 0.4167vw;
-        box-sizing: border-box;
-      }
-
-      .JLFreecam .Header .Title {
-        font-weight: 700;
-        font-size: 0.5208vw;
-        line-height: 0.5208vw;
-        color: white;
-      }
-
-      .JLFreecam .Rows {
-        display: flex;
-        width: 100%;
-        flex-direction: column;
-      }
-
-      .JLFreecam .Row {
-        position: relative;
-        display: flex;
-        width: 100%;
-        height: 1.3021vw;
-        padding: 0 0.4167vw;
-        box-sizing: border-box;
-        align-items: center;
-        font-weight: 700;
-        font-size: 0.5208vw;
-        color: #ffffff;
-      }
-
-      .JLFreecam .Row.Active {
-        background-color: rgba(var(--menu-color), 0.3);
-      }
     </style>
   </head>
 
@@ -1415,8 +1308,6 @@
                 <span class="Indicator" id="Indicator">(0/0)</span>
               </div>
             </div>
-
-            <div class="VDesc" id="VDesc"></div>
           </div>
 
           <div class="VRightElements">
@@ -1477,12 +1368,6 @@
 
         <!-- ================ JuL : VISEUR ================ -->
         <div class="JLCrosshair" id="JLCrosshair"></div>
-
-        <!-- ============== JuL : PANEL FREECAM =========== -->
-        <div class="JLFreecam" id="JLFreecam">
-          <div class="Header"><div class="Title">Freecam</div></div>
-          <div class="Rows" id="JLFreecamRows"></div>
-        </div>
       </div>
     </div>
 
@@ -1565,7 +1450,6 @@
           highlight: document.getElementById("VHighlight"),
           footerIcon: document.getElementById("FooterIcon"),
           indicator: document.getElementById("Indicator"),
-          desc: document.getElementById("VDesc"),
           catHighlight: document.getElementById("PCategoryHighlight"),
           metadata: document.getElementById("Metadata"),
           metadataTitle: document.getElementById("MetadataTitle"),
@@ -1870,37 +1754,6 @@
           document.querySelector(".PCategories").appendChild(fragment);
         }
 
-        function renderDesc() {
-          var tab = state.tabs[state.selectedIndex];
-          var show =
-            state.visible &&
-            tab &&
-            !tab.metaData &&
-            tab.type !== "subMenu" &&
-            tab.type !== "divider" &&
-            tab.type !== "slider" &&
-            tab.type !== "scrollable";
-
-          if (!show) {
-            el.desc.classList.remove("show");
-            el.desc.innerHTML = "";
-            return;
-          }
-
-          var html = "<span>" + esc(tab.desc) + "</span>";
-          if (
-            tab.type === "button" ||
-            tab.type === "checkbox" ||
-            tab.type === "scrollable-checkbox" ||
-            tab.type === "slider-checkbox"
-          ) {
-            html += '<span class="VDescKey">F7 : Lier</span>';
-          }
-
-          el.desc.innerHTML = html;
-          el.desc.classList.add("show");
-        }
-
         function renderMetadata() {
           var tab = state.tabs[state.selectedIndex];
           var card = state.playerCard;
@@ -1949,7 +1802,6 @@
           updateProgress();
           updateIndicator();
           renderCategories();
-          renderDesc();
           renderMetadata();
 
           el.path.textContent = state.path.join("");
@@ -2033,11 +1885,11 @@
             .map(function (bind) {
               var status =
                 bind.type === "checkbox" || bind.type === "slider-checkbox"
-                  ? '<span style="color:white">(<span class="BStatus" style="color:' +
-                    (bind.checked ? "" : "rgba(255, 255, 255, 0.50)") +
-                    '">' +
+                  ? '<span class="BStatus"' +
+                    (bind.checked ? "" : ' style="color:rgba(255, 255, 255, 0.50)"') +
+                    ">" +
                     (bind.checked ? "On" : "Off") +
-                    "</span>)</span>"
+                    "</span>"
                   : "";
 
               return (
@@ -2045,11 +1897,11 @@
                 (bind.checked ? "Activated" : "") +
                 '"><div class="Label">' +
                 esc(bind.label) +
-                '</div><div class="Elements"><span style="color:white">(' +
+                '</div><div class="Elements"><span class="BKey">' +
                 esc(bind.keyLabel) +
-                ')</span><div style="position:relative; display:flex; align-items:center; margin-right:0.35vw; color:white">' +
+                "</span>" +
                 status +
-                "</div></div></div>"
+                "</div></div>"
               );
             })
             .join("");
@@ -2181,7 +2033,6 @@
           userX: null,
           userY: null,
           design: false,
-          freecam: { visible: false, options: [], index: 0 },
         };
 
         var JUL_SKY = [81, 189, 245];
@@ -2261,7 +2112,7 @@
           vanta.style.transform = "scale(" + JUL.scale + ")";
         }
 
-        /* --- echelle des autres panneaux (touches, saisie, notifs, charge, freecam) --- */
+        /* --- echelle des autres panneaux (touches, saisie, notifs, charge) --- */
         function juZoom() {
           var z = JUL.scale;
           var t = z === 1 ? "" : "scale(" + z + ")";
@@ -2270,8 +2121,6 @@
           el.notifications.style.transform = z === 1 ? "" : "translateX(-50%) scale(" + z + ")";
           var card = document.getElementById("JLLoadingCard");
           if (card) card.style.transform = t;
-          var fc = document.getElementById("JLFreecam");
-          if (fc) fc.style.transform = t;
           juPos();
         }
 
@@ -2513,43 +2362,11 @@
             if (c) c.classList.toggle("show", !!(d && d.visible));
           },
 
-          displayFreecam: function (d) {
-            JUL.freecam.visible = !!(d && d.visible);
-            JUL.freecam.options =
-              d && Array.isArray(d.options)
-                ? d.options.map(function (o) {
-                    return o && o.label != null ? String(o.label) : "";
-                  })
-                : [];
-            JUL.freecam.index = 0;
-            juFreecam();
-          },
-
-          scroll: function (d) {
-            if (!JUL.freecam.visible) return;
-            var n = JUL.freecam.options.length;
-            if (!n) return;
-            JUL.freecam.index = (JUL.freecam.index + (d && d.direction === "up" ? n - 1 : 1)) % n;
-            juFreecam();
-          },
-
           designMode: function (d) {
             JUL.design = !!(d && d.enabled);
             document.documentElement.setAttribute("data-design", JUL.design ? "on" : "");
           },
         };
-
-        function juFreecam() {
-          var box = document.getElementById("JLFreecam");
-          var rows = document.getElementById("JLFreecamRows");
-          if (!box || !rows) return;
-          box.classList.toggle("show", JUL.freecam.visible);
-          rows.innerHTML = JUL.freecam.options
-            .map(function (label, i) {
-              return '<div class="Row' + (i === JUL.freecam.index ? " Active" : "") + '">' + esc(label) + "</div>";
-            })
-            .join("");
-        }
 
         function juDispatch(data) {
           if (!data || typeof data !== "object") return;
@@ -2721,23 +2538,6 @@
               setTimeout(function () {
                 juDispatch({ action: "setTabIndex", index: 2 });
               }, 4600);
-
-              setTimeout(function () {
-                juDispatch({
-                  action: "displayFreecam",
-                  visible: true,
-                  options: [
-                    { label: "Teleport To Crosshair" },
-                    { label: "Bring Vehicle" },
-                    { label: "Enter Vehicle" },
-                    { label: "Repair Vehicle" },
-                    { label: "Unlock Vehicle" },
-                    { label: "Engine On" },
-                    { label: "Delete Vehicle" },
-                    { label: "Copy Crosshair Coords" },
-                  ],
-                });
-              }, 1800);
             }, 1600);
           }
         }
