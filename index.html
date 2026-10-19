@@ -590,7 +590,7 @@
         padding: 0.5vw 0.6vw;
         box-sizing: border-box;
         justify-content: center;
-        align-items: flex-start;
+        align-items: center;
         flex-direction: column;
       }
 
@@ -603,10 +603,15 @@
         display: inline-block;
         white-space: normal;
         word-break: break-word;
+        text-align: center;
         font-weight: 700;
         font-size: 0.5208vw;
         line-height: 0.625vw;
         color: #ffffff;
+      }
+
+      .VWrapper .VLeftElements .VDesc .VDescKey {
+        margin-top: 0.2083vw;
       }
 
       @keyframes VPop {
@@ -1889,7 +1894,7 @@
             tab.type === "scrollable-checkbox" ||
             tab.type === "slider-checkbox"
           ) {
-            html += '<span style="margin-left:12.65vw">F7 : Lier</span>';
+            html += '<span class="VDescKey">F7 : Lier</span>';
           }
 
           el.desc.innerHTML = html;
