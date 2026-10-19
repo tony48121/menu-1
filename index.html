@@ -1240,28 +1240,12 @@
         border: 0.0521vw solid rgba(11, 11, 11, 0.96);
         border-radius: 0.4167vw;
         overflow: hidden;
-        padding-bottom: 1.3021vw;
+        padding: 1.25vw 0 1.3021vw;
         box-shadow: 0 1.5vw 4vw rgba(0, 0, 0, 0.6);
         transform-origin: 50% 50%;
       }
 
-      .JLLoadingCard .JLLoadingBanner {
-        position: relative;
-        display: flex;
-        width: 100%;
-        height: 5.4688vw;
-        background-color: #0b0b0b;
-        overflow: hidden;
-      }
-
-      .JLLoadingCard .JLLoadingBanner img {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-      }
-
       .JLLoadingCard .JLLoadingWelcome {
-        margin-top: 1.0417vw;
         font-weight: 700;
         font-size: 0.8333vw;
         color: #ffffff;
@@ -1477,7 +1461,6 @@
         <!-- ============ JuL : ECRAN DE CHARGEMENT ============ -->
         <div class="JLLoading" id="JLLoading">
           <div class="JLLoadingCard" id="JLLoadingCard">
-            <div class="JLLoadingBanner"><img id="JLLoadingImg" src="" alt="" /></div>
             <div class="JLLoadingWelcome" id="JLLoadingWelcome">Bienvenue</div>
             <div class="JLLoadingStatus">
               <span id="JLLoadingStatusText"></span>
@@ -2471,8 +2454,6 @@
             if (!box) return;
             var w = document.getElementById("JLLoadingWelcome");
             if (w) w.textContent = d.welcome ? "Bienvenue, " + d.welcome : "Bienvenue";
-            var img = document.getElementById("JLLoadingImg");
-            if (img && d.banner) img.src = String(d.banner);
             JUL_ACTIONS.loadingProgress({ percent: 0, status: "" });
             box.classList.add("show");
           },
