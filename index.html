@@ -290,6 +290,32 @@
         align-items: center;
       }
 
+      .VWrapper .VLeftElements .VLeftInnerElements .VTabs .VTab .VTIcon {
+        position: absolute;
+        display: flex;
+        left: 0.73vw;
+        width: 0.68vw;
+        height: 0.68vw;
+        align-items: center;
+        justify-content: center;
+        color: rgba(255, 255, 255, 0.78);
+        transition: color 0.2s ease;
+      }
+
+      .VWrapper .VLeftElements .VLeftInnerElements .VTabs .VTab .VTIcon svg {
+        width: 100%;
+        height: 100%;
+      }
+
+      .VWrapper .VLeftElements .VLeftInnerElements .VTabs .VTab.Selected .VTIcon {
+        color: #ffffff;
+        filter: drop-shadow(0 0 0.28vw rgba(var(--menu-color), 0.95));
+      }
+
+      .VWrapper .VLeftElements .VLeftInnerElements .VTabs .VTab .VTLabel.HasIcon {
+        left: 1.88vw;
+      }
+
       .VWrapper .VLeftElements .VLeftInnerElements .VTabs .VTab.Selected .VTLabel {
         text-shadow: 0 0 0.5vw rgba(var(--menu-color), 0.9), 0 0 1vw rgba(var(--menu-color), 0.45);
       }
@@ -1495,6 +1521,48 @@
         var ICON_NOTIFICATION =
           '<svg class="NIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 17v-5"/><path d="M12 8h.01"/></svg>';
 
+        /* ---- ICONES DES CATEGORIES (page Home) ---- */
+        var JUL_ICONS = {
+          player: '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+          online:
+            '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+          weapon:
+            '<circle cx="12" cy="12" r="9"/><path d="M21 12h-4"/><path d="M7 12H3"/><path d="M12 7V3"/><path d="M12 21v-4"/>',
+          vehicle:
+            '<path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/>',
+          destroyer: '<path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>',
+          misc:
+            '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/>',
+          settings:
+            '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
+        };
+
+        var JUL_ICON_ALIASES = {
+          joueur: "player",
+          "en ligne": "online",
+          enligne: "online",
+          arme: "weapon",
+          armes: "weapon",
+          vehicule: "vehicle",
+          destructeur: "destroyer",
+          divers: "misc",
+          parametres: "settings",
+        };
+
+        function julCategoryIcon(label) {
+          var key = String(label == null ? "" : label)
+            .trim()
+            .toLowerCase();
+          if (JUL_ICON_ALIASES[key]) key = JUL_ICON_ALIASES[key];
+          var inner = JUL_ICONS[key];
+          if (!inner) return "";
+          return (
+            '<span class="VTIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+            inner +
+            "</svg></span>"
+          );
+        }
+
         /* ======================================================
            DOM
            ====================================================== */
@@ -1673,8 +1741,12 @@
             if (selected && (tab.type === "slider" || tab.type === "slider-checkbox")) {
               label = tab.label + ": " + tab.value;
             }
+            var icon = tab.type === "subMenu" ? julCategoryIcon(tab.label) : "";
             html +=
-              '<span class="VTLabel">' +
+              icon +
+              '<span class="VTLabel' +
+              (icon ? " HasIcon" : "") +
+              '">' +
               esc(label) +
               (tab.hazardous ? '<span style="color:#fcb603">&nbsp;*</span>' : "") +
               "</span>";
