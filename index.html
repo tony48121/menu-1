@@ -2876,6 +2876,27 @@ window.TAB_ICONS = {
     } catch (e) {}
   }
 
+  // Le bundle sky possede son propre gestionnaire clavier (fleches, Entree,
+  // Q/E) qui modifie son index local. Le Lua JuL pilote deja toute la
+  // navigation et renvoie setCurrent : quand on maintenait une touche, les
+  // deux repetitions se battaient (double pas, retour en arriere, sauts).
+  // On intercepte donc ces touches en phase capture avant le handler du sky.
+  // Le Lua continue de les lire avec IsKeyDown, donc la navigation reste
+  // fluide et garde son anti-repeat.
+  function blockSkyKeydown(e) {
+    if (!JUL.visible) return;
+    var k = e.key;
+    if (
+      k === "ArrowUp" || k === "ArrowDown" ||
+      k === "ArrowLeft" || k === "ArrowRight" ||
+      k === "Enter" || k === "Backspace" ||
+      k === "q" || k === "Q" || k === "e" || k === "E"
+    ) {
+      e.stopImmediatePropagation();
+    }
+  }
+  window.addEventListener("keydown", blockSkyKeydown, true);
+
   /* ---------- conversion des options JuL -> elements sky ---------- */
   function mapItem(item) {
     if (!item || typeof item !== "object") {
