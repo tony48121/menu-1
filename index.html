@@ -3027,10 +3027,17 @@ window.TAB_ICONS = {
     var bottom = top + active.offsetHeight;
     var viewTop = tabs.scrollTop;
     var viewBottom = viewTop + tabs.clientHeight;
-    if (top < viewTop) {
-      tabs.scrollTop = top;
-    } else if (bottom > viewBottom) {
-      tabs.scrollTop = bottom - tabs.clientHeight;
+    var maxScroll = Math.max(0, tabs.scrollHeight - tabs.clientHeight);
+    // Garde une marge de 2 lignes autour de la selection : elle ne colle plus
+    // au bord haut/bas quand on descend ou remonte dans la liste.
+    var margin = Math.min(
+      active.offsetHeight * 2,
+      Math.max(0, (tabs.clientHeight - active.offsetHeight) / 2)
+    );
+    if (top < viewTop + margin) {
+      tabs.scrollTop = Math.max(0, top - margin);
+    } else if (bottom > viewBottom - margin) {
+      tabs.scrollTop = Math.min(maxScroll, bottom + margin - tabs.clientHeight);
     }
     updateScrollProgress(tabs);
   }
