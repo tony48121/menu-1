@@ -3438,6 +3438,9 @@ window.TAB_ICONS = {
   ].join("\n");
   document.head.appendChild(style);
 
+  // Notifications : toujours en bas a droite de l'ecran.
+  document.documentElement.setAttribute("data-notify", "bottom-right");
+
   /* ---------- DOM des overlays JuL ---------- */
   var host = document.createElement("div");
   host.id = "julBridge";
