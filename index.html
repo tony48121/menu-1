@@ -3407,9 +3407,9 @@ window.TAB_ICONS = {
   var style = document.createElement("style");
   style.id = "julBridgeStyle";
   style.textContent = [
-    ":root { --jul-scale: 1; --menu-color: 115, 115, 115; --menu-x: 20.25vh; --menu-y: 19.5vh; --max-visible: 13; }",
+    ":root { --jul-scale: 1; --menu-color: 115, 115, 115; --menu-x: 20.25vh; --menu-y: 19.5vh; --max-visible: 12; }",
     "html body .PWrapper { transform: translate(5%, 5%) scale(var(--jul-scale, 1)) !important; transform-origin: 0 0 !important; }",
-    "html body .PWrapper .PTabs { max-height: calc(var(--max-visible, 9) * 1.5625vw + 0.2vw) !important; }",
+    "html body .PWrapper .PTabs { max-height: calc(var(--max-visible, 9) * 1.5625vw + 0.15vw) !important; }",
     "html body .PWrapper .PElements .PScroll { top: 0 !important; height: calc(100% - 1.91vw) !important; }",
     "html body .KBLWrapper { transform: scale(var(--jul-scale, 1)) !important; transform-origin: 100% 0 !important; }",
     "html body .NotificationsWrapper { transform: scale(var(--jul-scale, 1)) !important; transform-origin: 100% 100% !important; }",
@@ -3431,7 +3431,7 @@ window.TAB_ICONS = {
     ".JulCrosshair.show { display: block; }",
 
     ".JulDesc { position: fixed; display: none; z-index: 999998; box-sizing: border-box; padding: calc(.45vw * var(--jul-scale, 1)) calc(.65vw * var(--jul-scale, 1)); background: rgba(12,12,12,.9); border: .05vw solid rgba(var(--menu-color), .35); border-radius: calc(.35vw * var(--jul-scale, 1)); font-family: Inter, sans-serif; font-size: calc(.52vw * var(--jul-scale, 1)); line-height: 1.35; color: rgba(255,255,255,.78); pointer-events: none; overflow: hidden; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }",
-    ".JulDesc.show { display: -webkit-box; }",
+    ".JulDesc, .JulDesc.show { display: none !important; }",
 
     "html[data-jul-design=\"on\"] .PBanner { cursor: move !important; outline: .0521vw dashed rgba(var(--menu-color), .85); outline-offset: -.1vw; }",
     "html[data-jul-design=\"on\"] .KBLWrapper .Header { cursor: move !important; }"
