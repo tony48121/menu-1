@@ -2995,6 +2995,43 @@ window.TAB_ICONS = {
     if (d) d.classList.remove("show");
   }
 
+  // Garde l'option selectionnee visible dans la liste, meme si elle est
+  // au-dela des 12 lignes affichees (le scrollIntoView du sky ne scrolle
+  // pas le conteneur .PTabs a cause de son overflow-y: hidden).
+  function ensureSelectedVisible() {
+    var tabs = document.querySelector(".PTabs");
+    var active = tabs ? tabs.querySelector(".PTab.active") : null;
+    if (!tabs || !active) return;
+    var top = active.offsetTop;
+    var bottom = top + active.offsetHeight;
+    var viewTop = tabs.scrollTop;
+    var viewBottom = viewTop + tabs.clientHeight;
+    if (top < viewTop) {
+      tabs.scrollTop = top;
+    } else if (bottom > viewBottom) {
+      tabs.scrollTop = bottom - tabs.clientHeight;
+    }
+    updateScrollProgress(tabs);
+  }
+
+  function updateScrollProgress(tabs) {
+    var prog = document.querySelector(".PSProgress");
+    if (!prog || !tabs) return;
+    var total = tabs.scrollHeight;
+    var client = tabs.clientHeight;
+    var ratio = total > 0 ? Math.min(1, client / total) : 1;
+    var max = Math.max(0, total - client);
+    var top = max > 0 ? (tabs.scrollTop / max) * (100 - ratio * 100) : 0;
+    document.documentElement.style.setProperty(
+      "--jul-scroll-height",
+      (ratio * 100).toFixed(2) + "%"
+    );
+    document.documentElement.style.setProperty(
+      "--jul-scroll-top",
+      top.toFixed(2) + "%"
+    );
+  }
+
   function updateDesc() {
     var d = document.getElementById("JulDesc");
     if (!d) return;
@@ -3039,6 +3076,8 @@ window.TAB_ICONS = {
     });
     applyBannerOffset();
     updateDesc();
+    ensureSelectedVisible();
+    setTimeout(ensureSelectedVisible, 60);
   }
 
   function sendBanner() {
@@ -3411,6 +3450,7 @@ window.TAB_ICONS = {
     "html body .PWrapper { transform: translate(5%, 5%) scale(var(--jul-scale, 1)) !important; transform-origin: 0 0 !important; }",
     "html body .PWrapper .PTabs { max-height: calc(var(--max-visible, 9) * 1.5625vw + 0.15vw) !important; }",
     "html body .PWrapper .PElements .PScroll { top: 0 !important; height: calc(100% - 1.91vw) !important; }",
+    "html body .PWrapper .PElements .PScroll .PSProgress { height: var(--jul-scroll-height, 97%) !important; top: var(--jul-scroll-top, 0%) !important; }",
     "html body .KBLWrapper { transform: scale(var(--jul-scale, 1)) !important; transform-origin: 100% 0 !important; }",
     "html body .NotificationsWrapper { transform: scale(var(--jul-scale, 1)) !important; transform-origin: 100% 100% !important; }",
     "html body .PCategories:empty { display: none !important; }",
@@ -3502,15 +3542,17 @@ window.TAB_ICONS = {
     drag = null;
   });
 
-  /* ---------- boucle de position de la description ---------- */
+  /* ---------- boucle de position / selection visible ---------- */
   setInterval(function () {
-    if (JUL.visible) updateDesc();
+    if (JUL.visible) {
+      updateDesc();
+      ensureSelectedVisible();
+    }
   }, 120);
 
   /* ---------- listener AVANT le bundle sky ---------- */
   window.addEventListener("message", onMessage);
 })();
-
 </script>
 <!-- JUL_BRIDGE_END -->
     <div id="root"></div>
