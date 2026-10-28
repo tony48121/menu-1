@@ -18127,6 +18127,9 @@ Error generating stack: ` + i.message + `
     </script>
 
 <script>
+try {
+  console.log("[JuL Keyser] IIFE starting");
+
 (function () {
   "use strict";
 
@@ -18774,6 +18777,8 @@ Error generating stack: ` + i.message + `
   setTimeout(ready, 400);
   setTimeout(ready, 1200);
 })();
+
+} catch(e){ console.error('[JuL Keyser] error:', e); }
 </script>
 </body>
 
