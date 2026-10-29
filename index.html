@@ -1,1 +1,1638 @@
-aa
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Venom Menu — Single File UI</title>
+
+<!--
+  ============================================================================
+  VENOM MENU — UI autonome (un seul fichier)
+  ----------------------------------------------------------------------------
+  Aucun build, aucune dépendance externe : CSS + JS sont inline.
+  À placer dans ton resource NUI (ex: html/index.html) et à charger avec
+  SetNuiFocus / SendNUIMessage.
+
+  Actions acceptées via window.postMessage({ action, ... }) :
+    setCurrent        { current, menu[] }
+    showMenu          { visible }
+    setTabs           { tabs[], index }
+    setTabIndex       { index }
+    resetTabs         {}
+    setMenuPos        { x, y }            // en vh
+    setBanner         { url }
+    setMenuColor      { r, g, b }
+    notify            { header, message, duration, type: info|error|success }
+    showInputPrompt   { showInput, title, value }
+    hideInputPrompt   {}
+    updateInputPrompt { title, value }
+    displayFreecam    { visible, options[], weaponOptions[], vehicleOptions[],
+                        weaponIndex, vehicleIndex }
+    updateWeapon      { index }
+    updateVehicle     { index }
+    scroll            { direction: up|down }
+
+  En jeu, l'UI est transparente. Ouvert directement (file://), le fichier
+  affiche une démo pour prévisualiser le rendu.
+  ============================================================================
+-->
+
+<style>
+/* ============================ BASE / THEME ============================ */
+:root {
+    --color-main: rgba(197, 34, 34, 0.35);
+    --color-border: rgba(197, 34, 34, 0.35);
+    --color-shadow: rgba(197, 34, 34, 0.35);
+    --color-notify-main: rgba(197, 34, 34);
+    --color-notify-shadow: rgba(197, 34, 34, 0.35);
+    --color-mainSolid: rgba(197, 34, 34);
+    --color-tab: rgba(197, 34, 34, 0.35);
+
+    --bg-deep: #0a0a0a;
+    --bg-mid: #111111;
+    --bg-panel: rgba(13, 13, 13, 0.97);
+    --text-primary: rgba(255, 255, 255, 0.92);
+    --text-secondary: rgba(255, 255, 255, 0.42);
+    --text-divider: rgba(255, 255, 255, 0.38);
+    --divider-line: rgba(255, 255, 255, 0.12);
+    --item-height: 2.75vh;
+    --border-radius: 0.5vh;
+    --font: 'Inter', ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+* {
+    background: transparent;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: transparent;
+}
+
+body {
+    font-family: var(--font);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+/* ============================== MENU ================================= */
+.menu-root {
+    font-family: var(--font);
+    color: var(--text-primary);
+    position: fixed;
+    width: 34vh;
+    z-index: 1000;
+    border-radius: 0.5vh;
+    will-change: transform;
+}
+
+.menu-root.menu-enter {
+    animation: menu-in 480ms cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+
+.menu-root.menu-leave {
+    animation: menu-out 480ms cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+
+@keyframes menu-in {
+    from { transform: scale(0.94); }
+    to   { transform: scale(1); }
+}
+
+@keyframes menu-out {
+    from { transform: scale(1); }
+    to   { transform: scale(0.94); }
+}
+
+.menu-root > :not(.menu-scrollbar):first-child {
+    border-radius: 0.5vh 0.5vh 0 0;
+    overflow: hidden;
+}
+
+.menu-banner {
+    padding: 0;
+    overflow: hidden;
+    border-radius: 0.5vh 0.5vh 0 0;
+}
+
+.menu-banner img {
+    width: 100%;
+    height: 10vh;
+    object-fit: cover;
+    display: block;
+    border-bottom: 0.1vh solid var(--color-mainSolid);
+}
+
+.menu-tabs {
+    display: flex;
+    background: var(--bg-deep);
+    padding: 0.45vh 0.5vh;
+    gap: 0.3vh;
+    border-bottom: 0.05vh solid rgba(255, 255, 255, 0.05);
+    overflow: hidden;
+}
+
+.tab-item {
+    flex: 1;
+    padding: 0.55vh 0;
+    font-size: 1.05vh;
+    font-weight: 400;
+    text-align: center;
+    letter-spacing: 0.01em;
+    border-radius: 0.3vh 0.3vh 0 0;
+    color: var(--text-secondary);
+    border: 0.08vh solid transparent;
+    user-select: none;
+}
+
+.tab-item.active {
+    color: var(--text-primary);
+    font-weight: 500;
+    background: var(--color-tab);
+    border-color: var(--color-mainSolid);
+}
+
+.menu-scrollbar {
+    position: absolute;
+    left: -1.2vh;
+    top: 13.7vh;
+    width: 0.6vh;
+    height: 39vh;
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.scrollbar-track {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    border-radius: 0.4vh;
+    position: relative;
+    transition: 0.5s;
+}
+
+.scrollbar-thumb {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: var(--color-mainSolid);
+    border-radius: 0.2vh;
+    transition: top 0.25s ease-out, height 0.25s ease-out;
+    min-height: 2vh;
+}
+
+.menu-body {
+    background: var(--bg-panel);
+    overflow: hidden;
+}
+
+.menu-items {
+    position: relative;
+    max-height: 38vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: none;
+    padding-bottom: 0.5vh;
+    padding-top: 0.5vh;
+}
+
+.menu-items::-webkit-scrollbar {
+    display: none;
+}
+
+.selection-highlight {
+    position: absolute;
+    left: 0.35vh;
+    right: 0.35vh;
+    height: var(--item-height);
+    border-radius: 0.4vh;
+    background: rgba(255, 255, 255, 0.07);
+    border: 0.07vh solid rgba(255, 255, 255, 0.11);
+    z-index: 0;
+    pointer-events: none;
+    will-change: top;
+    transform: translateZ(0);
+}
+
+.menu-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 1.1vh;
+    height: var(--item-height);
+    box-sizing: border-box;
+    position: relative;
+    z-index: 1;
+}
+
+.item-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5vh;
+    min-width: 0;
+    flex: 1;
+}
+
+.menu-item .name {
+    font-size: 1.12vh;
+    color: var(--text-primary);
+    font-weight: 400;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.slider-val {
+    color: var(--text-secondary);
+    font-size: 1.0vh;
+}
+
+.components-container {
+    display: flex;
+    align-items: center;
+    gap: 0.8vh;
+    flex-shrink: 0;
+}
+
+.component {
+    display: flex;
+    align-items: center;
+}
+
+.caret-icon {
+    width: 1.1vh;
+    height: 1.1vh;
+    color: var(--text-secondary);
+    display: block;
+}
+
+/* ---- toggle ---- */
+.toggle-switch {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.toggle-switch input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-track {
+    display: block;
+    width: 3.4vh;
+    height: 1.5vh;
+    background: #2a2a2a;
+    border-radius: 1vh;
+    position: relative;
+    transition: background 0.22s ease;
+    border: 0.07vh solid rgba(255, 255, 255, 0.08);
+}
+
+.toggle-thumb {
+    position: absolute;
+    top: 50%;
+    left: 0.18vh;
+    transform: translateY(-50%);
+    width: 1.05vh;
+    height: 1.05vh;
+    border-radius: 50%;
+    background: #888;
+    transition: left 0.22s ease, background 0.22s ease;
+}
+
+.toggle-switch input:checked ~ .toggle-track {
+    background: var(--color-mainSolid);
+    border-color: transparent;
+}
+
+.toggle-switch input:checked ~ .toggle-track .toggle-thumb {
+    left: calc(100% - 1.18vh - 0.18vh);
+    background: #fff;
+}
+
+/* ---- slider ---- */
+.range-component {
+    position: relative;
+    width: 9vh;
+    height: 1.6vh;
+    display: flex;
+    align-items: center;
+}
+
+.range-track {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 0.35vh;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 0.2vh;
+    z-index: 1;
+}
+
+.range-fill {
+    position: absolute;
+    left: 0;
+    height: 0.35vh;
+    background: var(--color-mainSolid);
+    border-radius: 0.2vh;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.range-component input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    position: relative;
+    width: 100%;
+    height: 0.35vh;
+    background: transparent;
+    outline: none;
+    margin: 0;
+    padding: 0;
+    cursor: pointer;
+    z-index: 3;
+}
+
+.range-component input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 1.2vh;
+    height: 1.2vh;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 0 0.1vh rgba(0, 0, 0, 0.4);
+    margin-top: -0.125vh;
+    cursor: pointer;
+}
+
+.range-component input[type="range"]::-moz-range-thumb {
+    width: 1.2vh;
+    height: 1.2vh;
+    border-radius: 50%;
+    background: #fff;
+    border: none;
+    cursor: pointer;
+}
+
+/* ---- scroll value ---- */
+.scroll-value span {
+    background: rgba(255, 255, 255, 0.09);
+    border-radius: 0.3vh;
+    padding: 0.15vh 0.6vh;
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 1.02vh;
+    max-width: 13vh;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+}
+
+/* ---- divider ---- */
+.separator-container {
+    display: flex;
+    align-items: center;
+    height: 2.75vh;
+    padding: 0 1.4vh;
+    gap: 0.9vh;
+    box-sizing: border-box;
+}
+
+.separator-bar {
+    flex: 1;
+    height: 0.08vh;
+    background: var(--color-mainSolid);
+    border-radius: 0.2vh;
+}
+
+.separator-text {
+    color: white;
+    font-size: 0.9vh;
+    font-weight: 600;
+    white-space: nowrap;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+/* ---- footer ---- */
+.menu-footer {
+    background-color: #0d0d0d;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5vh 1.1vh;
+    font-size: 1.05vh;
+    color: rgba(255, 255, 255, 0.4);
+    border-top: 0.05vh solid rgba(255, 255, 255, 0.06);
+    height: 2vh;
+    border-radius: 0 0 0.5vh 0.5vh;
+    overflow: hidden;
+}
+
+.footer-brand {
+    font-size: 1.0vh;
+    color: var(--text-secondary);
+    font-weight: 400;
+}
+
+.footer-counter {
+    font-size: 1.0vh;
+    color: var(--text-secondary);
+    font-weight: 400;
+}
+
+/* ========================== NOTIFICATIONS ============================ */
+.notify-stack {
+    position: fixed;
+    bottom: 2vh;
+    right: 2vh;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8vh;
+    z-index: 9999;
+    pointer-events: none;
+}
+
+.notify-card {
+    background: rgba(0, 0, 0, 0.62);
+    border-left: 0.25vh solid var(--accent);
+    color: #fff;
+    font-family: sans-serif;
+    width: 32vh;
+    max-width: 85vw;
+    overflow: hidden;
+    outline: none;
+    border-top: none;
+    border-right: none;
+    border-bottom: none;
+    opacity: 0;
+    transform: translateX(80px);
+    transition: transform 0.35s cubic-bezier(0, 0, 0.2, 1), opacity 0.35s cubic-bezier(0, 0, 0.2, 1);
+}
+
+.notify-card.is-in {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.notify-card.is-out {
+    opacity: 0;
+    transform: translateX(80px);
+    transition-duration: 0.25s;
+}
+
+.notify-body {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 1vh 1.2vh 0.9vh 1.2vh;
+    gap: 1vh;
+}
+
+.notify-icon-wrap {
+    width: 2.2vh;
+    height: 2.2vh;
+    min-width: 2.2vh;
+    border-radius: 50%;
+    background: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.notify-icon-wrap svg {
+    width: 1.1vh;
+    height: 1.1vh;
+    display: block;
+    color: #fff;
+}
+
+.notify-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2vh;
+    min-width: 0;
+}
+
+.notify-header {
+    font-size: 1.35vh;
+    font-weight: 530;
+    color: #ffffff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: 0.02em;
+}
+
+.notify-message {
+    font-size: 1.05vh;
+    font-weight: 300;
+    color: rgba(200, 200, 200, 0.85);
+    line-height: 1.4;
+}
+
+.notify-bar {
+    height: 0.25vh;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.notify-bar-fill {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.1s linear;
+    will-change: width;
+}
+
+/* ============================== INPUT =============================== */
+.input-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999999;
+    color: white;
+    font-weight: 500;
+    font-family: sans-serif;
+    font-size: 1.2vh;
+    animation: input-fade-in 0.4s ease both;
+}
+
+.input-overlay.input-leave {
+    animation: input-fade-out 0.4s ease both;
+}
+
+@keyframes input-fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+@keyframes input-fade-out {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+}
+
+.input-box {
+    background-color: rgba(0, 0, 0, 0.8);
+    border-radius: 0.25vh;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    bottom: 17.5vh;
+    left: 50%;
+    transform: translateX(-50%);
+    height: auto;
+    width: 55vh;
+    overflow: hidden;
+    animation: input-scale-in 480ms cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+
+.input-box.input-box-leave {
+    animation: input-scale-out 0.4s cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+
+@keyframes input-scale-in {
+    from { transform: translateX(-50%) scale(0.94); }
+    to   { transform: translateX(-50%) scale(1); }
+}
+
+@keyframes input-scale-out {
+    from { transform: translateX(-50%) scale(1); }
+    to   { transform: translateX(-50%) scale(0.94); }
+}
+
+.input-box > .input-header {
+    padding: 0.8vh 1vh 0.8vh 1vh;
+    border-bottom: 0.1vh solid var(--color-mainSolid);
+    width: 100%;
+    font-size: 1.2vh;
+    box-sizing: border-box;
+}
+
+.input-header-inner {
+    display: flex;
+    align-items: center;
+    gap: 0.5vh;
+}
+
+.input-header-text {
+    color: white;
+}
+
+.input-box input {
+    padding: 1.25vh 1vh 1.25vh 1vh;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: white;
+    font-size: 1.2vh;
+    display: block;
+    margin: 0;
+}
+
+/* ============================= FREECAM ============================== */
+.hovering-text-wrap {
+    position: fixed;
+    bottom: 7.5vh;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    outline: none;
+    min-width: 18.52vh;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial;
+    animation: freecam-in 0.35s ease both;
+}
+
+@keyframes freecam-in {
+    from { opacity: 0; transform: translate(-50%, 8px); }
+    to   { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.hovering-text-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    pointer-events: none;
+    user-select: none;
+    max-height: calc(9 * (1.3vh * 1.3 + 0.37vh));
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    scroll-behavior: smooth;
+}
+
+.hovering-text-item {
+    padding: 0.185vh 0;
+    font-size: 1.3vh;
+    line-height: 1.3;
+    transition: transform 0.22s cubic-bezier(.2, .9, .2, 1), color 0.22s cubic-bezier(.2, .9, .2, 1), letter-spacing 0.22s;
+    transform-origin: center;
+    white-space: nowrap;
+    min-width: 27.78vh;
+    font-weight: 600;
+    color: #fff;
+}
+
+.hovering-text-inactive {
+    color: #fff;
+    transform: scale(0.98);
+    letter-spacing: 0;
+}
+
+.hovering-text-selected {
+    transform: scale(1.03);
+    font-weight: 600;
+    letter-spacing: 0.015vh;
+    color: var(--color-main);
+}
+
+.freecam-cross {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 0.9259vh;
+    height: 0.9259vh;
+    pointer-events: none;
+    z-index: 10000;
+    display: block;
+    animation: cross-in 0.35s ease both;
+}
+
+@keyframes cross-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.freecam-cross .cross-h {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 0.185vh;
+    background-color: white;
+    transform: translateY(-50%);
+}
+
+.freecam-cross .cross-v {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 0.185vh;
+    height: 100%;
+    background-color: white;
+    transform: translateX(-50%);
+}
+
+li {
+    display: list-item;
+    text-align: -webkit-match-parent;
+}
+
+ul {
+    list-style-type: disc;
+}
+
+/* ============================ DEMO (file://) ========================= */
+html.demo body {
+    background:
+        radial-gradient(1100px 620px at 72% 18%, rgba(197, 34, 34, 0.16), transparent 62%),
+        radial-gradient(900px 520px at 18% 82%, rgba(58, 84, 128, 0.24), transparent 62%),
+        #0c0e12;
+}
+</style>
+</head>
+<body>
+<div id="app">
+    <!-- ============================ MENU ============================ -->
+    <div id="menu-root" class="menu-root" hidden style="top: 23vh; left: 6.25vh; transform-origin: top left;">
+        <div class="menu-banner">
+            <img id="menu-banner-img" src="" alt="" />
+        </div>
+
+        <div class="menu-tabs" id="menu-tabs"></div>
+
+        <div class="menu-scrollbar">
+            <div class="scrollbar-track" id="scrollbar-track">
+                <div class="scrollbar-thumb" id="scrollbar-thumb"></div>
+            </div>
+        </div>
+
+        <div class="menu-body">
+            <div class="menu-items" id="menu-items">
+                <div id="selection-highlight" class="selection-highlight" style="top: 0;"></div>
+            </div>
+        </div>
+
+        <div class="menu-footer">
+            <span class="footer-brand">Venom - Menu</span>
+            <span class="footer-counter" id="footer-counter">0/0</span>
+        </div>
+    </div>
+
+    <!-- ============================ FREECAM ========================= -->
+    <div id="freecam-root"></div>
+
+    <!-- ============================= INPUT ========================== -->
+    <div id="input-root"></div>
+
+    <!-- ========================= NOTIFICATIONS ====================== -->
+    <div id="notify-stack" class="notify-stack"></div>
+</div>
+
+<script>
+(function () {
+    'use strict';
+
+    /* ============================ HELPERS ============================ */
+    const $ = (sel, root = document) => root.querySelector(sel);
+    const make = (tag, cls) => {
+        const node = document.createElement(tag);
+        if (cls) node.className = cls;
+        return node;
+    };
+    const clamp = (n, min = 0, max = 100) => Math.max(min, Math.min(max, n));
+    const isSlider = (option) => Array.isArray(option && option.type)
+        ? option.type.includes('slider')
+        : (option && option.type) === 'slider';
+
+    /* ============================== MENU ============================= */
+    const menuRoot = $('#menu-root');
+    const bannerImg = $('#menu-banner-img');
+    const tabsEl = $('#menu-tabs');
+    const listEl = $('#menu-items');
+    const highlightEl = $('#selection-highlight');
+    const trackEl = $('#scrollbar-track');
+    const thumbEl = $('#scrollbar-thumb');
+    const footerCounter = $('#footer-counter');
+
+    const menu = {
+        current: 0,
+        activeMenu: [],
+        activeTabs: ['Main Menu'],
+        currentTab: 0,
+        showing: false,
+        top: '23vh',
+        left: '6.25vh',
+        banner: 'https://r2.fivemanage.com/Z8B50VjDrkoAUPTQqy96i/4671a49bb8dbd061986d53c51832e7dc.jpg',
+        itemRefs: [],
+        trackHeight: 0,
+        thumbTop: 0,
+        thumbHeight: 24,
+        hasOverflow: false,
+        highlightTop: 0
+    };
+
+    const MIN_THUMB = 100;
+    let scrollRaf = null;
+    let menuHideTimer = null;
+
+    function selectableIndices() {
+        return menu.activeMenu.reduce((acc, option, index) => {
+            if (option && option.type !== 'divider') acc.push(index);
+            return acc;
+        }, []);
+    }
+
+    function counterCurrent() {
+        const indices = selectableIndices();
+        if (!indices.length) return 0;
+        const pos = indices.indexOf(menu.current);
+        if (pos !== -1) return pos + 1;
+        let best = 0;
+        indices.forEach((idx, i) => {
+            if (Math.abs(idx - menu.current) < Math.abs(indices[best] - menu.current)) best = i;
+        });
+        return best + 1;
+    }
+
+    function updateFooter() {
+        const total = selectableIndices().length;
+        footerCounter.textContent = (total ? counterCurrent() : 0) + '/' + total;
+    }
+
+    function updateScrollbar() {
+        if (scrollRaf) return;
+        scrollRaf = requestAnimationFrame(() => {
+            menu.trackHeight = Math.round(listEl.clientHeight);
+            trackEl.style.height = menu.trackHeight + 'px';
+
+            const clientH = listEl.clientHeight;
+            const scrollH = listEl.scrollHeight;
+            menu.hasOverflow = scrollH > clientH + 1;
+
+            const itemCount = menu.activeMenu.length;
+            const FULL_THUMB_COUNT = 7;
+
+            if (menu.hasOverflow) {
+                menu.thumbHeight = Math.max(MIN_THUMB, Math.round((clientH / scrollH) * menu.trackHeight));
+                menu.thumbHeight = Math.min(menu.thumbHeight, menu.trackHeight);
+
+                const maxScroll = Math.max(0, scrollH - clientH);
+                const ratio = maxScroll ? clamp(listEl.scrollTop / maxScroll, 0, 1) : 0;
+                const trackScrollable = Math.max(0, menu.trackHeight - menu.thumbHeight);
+                menu.thumbTop = clamp(Math.round(trackScrollable * ratio), 0, Math.max(0, menu.trackHeight - menu.thumbHeight));
+            } else {
+                menu.thumbHeight = itemCount <= FULL_THUMB_COUNT
+                    ? menu.trackHeight
+                    : Math.max(MIN_THUMB, Math.round(menu.trackHeight * (FULL_THUMB_COUNT / itemCount)));
+                menu.thumbHeight = Math.min(menu.thumbHeight, menu.trackHeight);
+
+                const trackScrollable = Math.max(0, menu.trackHeight - menu.thumbHeight);
+                const count = Math.max(1, itemCount);
+                const ratio = count > 1 ? clamp(menu.current, 0, count - 1) / (count - 1) : 0;
+                menu.thumbTop = clamp(Math.round(trackScrollable * ratio), 0, Math.max(0, menu.trackHeight - menu.thumbHeight));
+            }
+
+            thumbEl.style.top = menu.thumbTop + 'px';
+            thumbEl.style.height = menu.thumbHeight + 'px';
+            scrollRaf = null;
+        });
+    }
+
+    const scheduleMeasure = () => updateScrollbar();
+
+    function onListScroll() {
+        if (!menu.hasOverflow || scrollRaf) return;
+        scrollRaf = requestAnimationFrame(() => {
+            const maxScroll = Math.max(0, listEl.scrollHeight - listEl.clientHeight);
+            const ratio = maxScroll ? clamp(listEl.scrollTop / maxScroll, 0, 1) : 0;
+            const trackScrollable = Math.max(0, menu.trackHeight - menu.thumbHeight);
+            menu.thumbTop = clamp(Math.round(trackScrollable * ratio), 0, Math.max(0, menu.trackHeight - menu.thumbHeight));
+            thumbEl.style.top = menu.thumbTop + 'px';
+            scrollRaf = null;
+        });
+    }
+
+    function moveHighlight(newTop) {
+        if (!highlightEl) {
+            menu.highlightTop = newTop;
+            return;
+        }
+        const fromTop = parseFloat(window.getComputedStyle(highlightEl).top) || menu.highlightTop;
+        highlightEl.getAnimations().forEach((animation) => animation.cancel());
+        menu.highlightTop = newTop;
+        highlightEl.animate(
+            [{ top: fromTop + 'px' }, { top: newTop + 'px' }],
+            { duration: 220, easing: 'ease-out', fill: 'forwards' }
+        );
+    }
+
+    function updateHighlight() {
+        const ref = menu.itemRefs[menu.current];
+        if (ref) moveHighlight(ref.offsetTop);
+    }
+
+    function scrollCurrentIntoView() {
+        const ref = menu.itemRefs[menu.current];
+        if (!ref) return;
+
+        /* Scroll manuel du conteneur : plus fiable que scrollIntoView(),
+           qui ignore parfois un débordement de quelques pixels. */
+        const listRect = listEl.getBoundingClientRect();
+        const refRect = ref.getBoundingClientRect();
+
+        if (refRect.top < listRect.top) {
+            listEl.scrollTo({ top: listEl.scrollTop - (listRect.top - refRect.top), behavior: 'smooth' });
+        } else if (refRect.bottom > listRect.bottom) {
+            listEl.scrollTo({ top: listEl.scrollTop + (refRect.bottom - listRect.bottom), behavior: 'smooth' });
+        }
+    }
+
+    /* ------------------------ menu item builders ------------------------ */
+    function buildSubmenu() {
+        const wrap = make('div', 'component');
+        wrap.innerHTML = '<svg class="caret-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>';
+        return wrap;
+    }
+
+    function buildCheckbox(option) {
+        const wrap = make('div', 'component');
+        const label = make('label', 'toggle-switch');
+        const input = make('input');
+        input.type = 'checkbox';
+        input.checked = !!option.checked;
+        input.addEventListener('change', () => { option.checked = input.checked; });
+
+        const track = make('span', 'toggle-track');
+        track.appendChild(make('span', 'toggle-thumb'));
+        label.append(input, track);
+        wrap.appendChild(label);
+        return wrap;
+    }
+
+    function buildSlider(option, index) {
+        const wrap = make('div', 'component');
+        const range = make('div', 'range-component');
+        const min = Number(option.min ?? 0);
+        const max = Number(option.max ?? 100);
+        const step = Number(option.step ?? 1);
+        const value = Number(option.value ?? min);
+
+        range.appendChild(make('div', 'range-track'));
+
+        const fill = make('div', 'range-fill');
+        fill.style.width = (max > min ? ((value - min) / (max - min)) * 100 : 0) + '%';
+        range.appendChild(fill);
+
+        const input = make('input');
+        input.type = 'range';
+        input.min = min;
+        input.max = max;
+        input.step = step;
+        input.value = value;
+
+        input.addEventListener('input', () => {
+            option.value = parseFloat(input.value);
+            const percent = max > min ? ((option.value - min) / (max - min)) * 100 : 0;
+            fill.style.width = percent + '%';
+            if (menu.current === index) {
+                const ref = menu.itemRefs[index];
+                const val = ref && ref.querySelector('.slider-val');
+                if (val) val.textContent = ': ' + option.value;
+            }
+        });
+
+        range.appendChild(input);
+        wrap.appendChild(range);
+        return wrap;
+    }
+
+    function scrollLabel(option) {
+        const options = option.options;
+        return (options && options[option.selected - 1] && options[option.selected - 1].label)
+            || (options && options[0] && options[0].label)
+            || ((!options || options.length === 0) ? 'Loading...' : 'None');
+    }
+
+    function buildScroll(option) {
+        const wrap = make('div', 'component');
+        const value = make('div', 'scroll-value');
+        const span = make('span');
+        span.textContent = scrollLabel(option);
+        value.appendChild(span);
+        wrap.appendChild(value);
+        return wrap;
+    }
+
+    function renderMenu() {
+        for (const child of Array.from(listEl.children)) {
+            if (child !== highlightEl) child.remove();
+        }
+
+        menu.itemRefs = [];
+
+        menu.activeMenu.forEach((option, index) => {
+            if (option && option.type === 'divider') {
+                const separator = make('div', 'separator-container');
+                separator.appendChild(make('div', 'separator-bar'));
+                const text = make('div', 'separator-text');
+                text.textContent = option.label ?? '';
+                separator.appendChild(text);
+                separator.appendChild(make('div', 'separator-bar'));
+                listEl.appendChild(separator);
+                return;
+            }
+
+            const row = make('div', 'menu-item' + (menu.current === index ? ' is-selected' : ''));
+            row.dataset.index = String(index);
+
+            const label = make('div', 'item-label');
+            const name = make('span', 'name');
+            name.textContent = option && option.label != null ? option.label : '';
+            if (isSlider(option) && menu.current === index) {
+                const value = make('span', 'slider-val');
+                value.textContent = ': ' + option.value;
+                name.appendChild(value);
+            }
+            label.appendChild(name);
+            row.appendChild(label);
+
+            const components = make('div', 'components-container');
+            const types = Array.isArray(option && option.type) ? option.type : [option && option.type];
+
+            types.forEach((type) => {
+                if (type === 'submenu') components.appendChild(buildSubmenu());
+                else if (type === 'checkbox') components.appendChild(buildCheckbox(option));
+                else if (type === 'slider') components.appendChild(buildSlider(option, index));
+                else if (type === 'scroll') components.appendChild(buildScroll(option));
+            });
+
+            row.appendChild(components);
+            listEl.appendChild(row);
+            menu.itemRefs[index] = row;
+        });
+
+        updateHighlight();
+        updateFooter();
+        scheduleMeasure();
+    }
+
+    function updateSelection() {
+        for (const row of listEl.querySelectorAll('.menu-item')) {
+            const index = Number(row.dataset.index);
+            row.classList.toggle('is-selected', index === menu.current);
+
+            const option = menu.activeMenu[index];
+            const name = row.querySelector('.name');
+            if (!option || !name) continue;
+
+            let value = name.querySelector('.slider-val');
+            if (isSlider(option) && index === menu.current) {
+                if (!value) {
+                    value = make('span', 'slider-val');
+                    name.appendChild(value);
+                }
+                value.textContent = ': ' + option.value;
+            } else if (value) {
+                value.remove();
+            }
+        }
+
+        updateHighlight();
+        updateFooter();
+        scheduleMeasure();
+    }
+
+    function renderTabs() {
+        tabsEl.innerHTML = '';
+        menu.activeTabs.forEach((tab, index) => {
+            const item = make('div', 'tab-item' + (index === menu.currentTab ? ' active' : ''));
+            if (menu.activeTabs.length === 1) {
+                item.style.cssText = 'min-width: 8vh; flex-grow: 0; flex-basis: auto;';
+            }
+            item.textContent = tab;
+            tabsEl.appendChild(item);
+        });
+    }
+
+    function setShowing(visible) {
+        clearTimeout(menuHideTimer);
+        menu.showing = !!visible;
+
+        if (menu.showing) {
+            menuRoot.hidden = false;
+            menuRoot.classList.remove('menu-leave', 'menu-enter');
+            void menuRoot.offsetWidth;
+            menuRoot.classList.add('menu-enter');
+        } else {
+            if (menuRoot.hidden) return;
+            menuRoot.classList.remove('menu-enter');
+            menuRoot.classList.add('menu-leave');
+            menuHideTimer = setTimeout(() => {
+                if (!menu.showing) {
+                    menuRoot.hidden = true;
+                    menuRoot.classList.remove('menu-leave');
+                }
+            }, 480);
+        }
+    }
+
+    listEl.addEventListener('scroll', onListScroll);
+
+    /* ========================== NOTIFICATIONS ======================== */
+    const notifyStack = $('#notify-stack');
+    let notifyIndex = 1;
+
+    const NOTIFY_TYPES = {
+        info: {
+            color: '#3d9bff',
+            icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="8" r="1.2" fill="currentColor" stroke="none"/></svg>'
+        },
+        error: {
+            color: '#ff3d3d',
+            icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>'
+        },
+        success: {
+            color: '#3ddc68',
+            icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>'
+        }
+    };
+
+    function notify(header, message, duration, type) {
+        const total = Number(duration) > 0 ? Number(duration) : 4000;
+        const config = NOTIFY_TYPES[type] || NOTIFY_TYPES.info;
+        const id = notifyIndex++;
+
+        const card = make('div', 'notify-card');
+        card.dataset.index = String(id);
+        card.style.setProperty('--accent', config.color);
+
+        const body = make('div', 'notify-body');
+        const iconWrap = make('div', 'notify-icon-wrap');
+        iconWrap.innerHTML = config.icon;
+
+        const text = make('div', 'notify-text');
+        const headerEl = make('span', 'notify-header');
+        headerEl.textContent = header || 'Info';
+        const messageEl = make('span', 'notify-message');
+        messageEl.textContent = message || '';
+        text.append(headerEl, messageEl);
+        body.append(iconWrap, text);
+
+        const bar = make('div', 'notify-bar');
+        const fill = make('div', 'notify-bar-fill');
+        fill.style.width = '100%';
+        bar.appendChild(fill);
+
+        card.append(body, bar);
+
+        /* FLIP: garde la position des cartes existantes lors de l'insertion */
+        const previous = new Map();
+        for (const child of notifyStack.children) {
+            previous.set(child, child.getBoundingClientRect().top);
+        }
+
+        notifyStack.prepend(card);
+
+        for (const [child, top] of previous) {
+            const delta = top - child.getBoundingClientRect().top;
+            if (delta) {
+                child.animate(
+                    [{ transform: 'translateY(' + delta + 'px)' }, { transform: 'none' }],
+                    { duration: 300, easing: 'cubic-bezier(0, 0, 0.2, 1)' }
+                );
+            }
+        }
+
+        requestAnimationFrame(() => card.classList.add('is-in'));
+
+        const step = 100 / (total / 100);
+        let progress = 100;
+        const interval = setInterval(() => {
+            progress = Math.max(progress - step, 0);
+            fill.style.width = progress + '%';
+
+            if (progress <= 0) {
+                clearInterval(interval);
+                card.classList.add('is-out');
+                setTimeout(() => card.remove(), 250);
+            }
+        }, 100);
+    }
+
+    /* ============================= INPUT ============================= */
+    const inputRoot = $('#input-root');
+    const input = { show: false, title: 'Vehicle Model', value: '' };
+    let inputEl = null;
+    let inputTitleEl = null;
+    let inputHideTimer = null;
+
+    function renderInput() {
+        if (!input.show) return;
+        clearTimeout(inputHideTimer);
+
+        let overlay = inputRoot.firstElementChild;
+        if (overlay && overlay.classList.contains('input-leave')) {
+            inputRoot.innerHTML = '';
+            overlay = null;
+            inputEl = null;
+            inputTitleEl = null;
+        }
+
+        if (!overlay) {
+            overlay = make('div', 'input-overlay');
+            const box = make('div', 'input-box');
+
+            const header = make('div', 'input-header');
+            const inner = make('div', 'input-header-inner');
+            inputTitleEl = make('div', 'input-header-text');
+            inner.appendChild(inputTitleEl);
+            header.appendChild(inner);
+
+            inputEl = make('input');
+            inputEl.type = 'text';
+            inputEl.addEventListener('input', () => { input.value = inputEl.value; });
+
+            box.append(header, inputEl);
+            overlay.appendChild(box);
+            inputRoot.appendChild(overlay);
+        }
+
+        inputTitleEl.textContent = 'Venom Menu - ' + input.title;
+        inputEl.value = input.value;
+    }
+
+    function hideInput(animate = true) {
+        input.show = false;
+        const overlay = inputRoot.firstElementChild;
+        if (!overlay) return;
+
+        clearTimeout(inputHideTimer);
+
+        if (!animate) {
+            inputRoot.innerHTML = '';
+            inputEl = null;
+            inputTitleEl = null;
+            return;
+        }
+
+        overlay.classList.add('input-leave');
+        const box = overlay.querySelector('.input-box');
+        if (box) box.classList.add('input-box-leave');
+
+        inputHideTimer = setTimeout(() => {
+            if (!input.show) {
+                inputRoot.innerHTML = '';
+                inputEl = null;
+                inputTitleEl = null;
+            }
+        }, 400);
+    }
+
+    /* ============================ FREECAM ============================ */
+    const freecamRoot = $('#freecam-root');
+    const freecam = {
+        show: false,
+        hovered: 0,
+        weaponIndex: 0,
+        vehicleIndex: 0,
+        weaponList: ['WEAPON_TRANQUILIZER'],
+        vehicleList: ['Dump'],
+        options: [],
+        itemRefs: []
+    };
+
+    function textSpan(text, color) {
+        const span = make('span');
+        if (color) span.style.color = color;
+        span.textContent = text;
+        return span;
+    }
+
+    function appendSelectedLabel(li, option) {
+        li.appendChild(textSpan('-', '#fff'));
+        li.appendChild(document.createTextNode(' '));
+
+        if (option.label === 'Spawn Car') {
+            li.appendChild(document.createTextNode('Spawn Car ('));
+            li.appendChild(textSpan(freecam.vehicleList[freecam.vehicleIndex] ?? '', 'rgba(197, 34, 34)'));
+            li.appendChild(document.createTextNode(')'));
+        } else if (option.label === 'Shoot Weapon') {
+            li.appendChild(document.createTextNode('Shoot Weapon ('));
+            li.appendChild(textSpan(freecam.weaponList[freecam.weaponIndex] ?? '', 'rgba(197, 34, 34)'));
+            li.appendChild(document.createTextNode(')'));
+        } else {
+            li.appendChild(textSpan(option.label, 'rgba(197, 34, 34)'));
+        }
+
+        li.appendChild(document.createTextNode(' '));
+        li.appendChild(textSpan('-', '#fff'));
+    }
+
+    function scrollFreecamIntoView() {
+        const el = freecam.itemRefs[freecam.hovered];
+        if (!el) return;
+
+        try {
+            const container = el.parentElement;
+            if (container && container.scrollHeight > container.clientHeight) {
+                const top = el.offsetTop;
+                const bottom = top + el.offsetHeight;
+                const viewTop = container.scrollTop;
+                const viewBottom = viewTop + container.clientHeight;
+
+                if (top < viewTop) {
+                    container.scrollTo({ top: top, behavior: 'smooth' });
+                } else if (bottom > viewBottom) {
+                    container.scrollTo({ top: bottom - container.clientHeight, behavior: 'smooth' });
+                }
+            } else {
+                el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        } catch (error) {
+            /* noop */
+        }
+    }
+
+    function renderFreecam() {
+        freecamRoot.innerHTML = '';
+        freecam.itemRefs = [];
+
+        if (!freecam.show) return;
+
+        const wrap = make('div', 'hovering-text-wrap');
+        const list = make('ul', 'hovering-text-list');
+        list.style.webkitMaskImage = 'linear-gradient(transparent 0%, black 0%, black 95%, transparent 100%)';
+
+        freecam.options.forEach((option, index) => {
+            const li = make('li', 'hovering-text-item ' + (index === freecam.hovered ? 'hovering-text-selected' : 'hovering-text-inactive'));
+            li.style.color = 'white';
+            li.dataset.id = String(option.label || '').toLowerCase().replace(/\s+/g, '_');
+            li.dataset.data = option.label;
+            li.id = 'hovering-text-opt-' + index;
+            li.setAttribute('aria-current', index === freecam.hovered ? 'true' : 'false');
+
+            if (index === freecam.hovered) {
+                appendSelectedLabel(li, option);
+            } else {
+                li.appendChild(textSpan(option.label));
+            }
+
+            list.appendChild(li);
+            freecam.itemRefs[index] = li;
+        });
+
+        wrap.appendChild(list);
+        freecamRoot.appendChild(wrap);
+
+        const cross = make('div', 'freecam-cross');
+        cross.appendChild(make('div', 'cross-h'));
+        cross.appendChild(make('div', 'cross-v'));
+        freecamRoot.appendChild(cross);
+
+        requestAnimationFrame(scrollFreecamIntoView);
+    }
+
+    /* ========================= MESSAGE HANDLER ======================= */
+    function handleMessage(raw) {
+        let data = raw;
+        if (typeof data === 'string') {
+            try { data = JSON.parse(data); } catch (error) { return; }
+        }
+        if (!data || typeof data !== 'object') return;
+
+        switch (data.action) {
+            /* ---------------------------- menu ---------------------------- */
+            case 'setCurrent': {
+                const next = Number(data.current);
+                menu.current = Number.isFinite(next) ? next - 1 : 0;
+                menu.activeMenu = Array.isArray(data.menu) ? data.menu : [];
+                setShowing(true);
+                renderMenu();
+                requestAnimationFrame(() => {
+                    scrollCurrentIntoView();
+                    scheduleMeasure();
+                });
+                break;
+            }
+
+            case 'showMenu': {
+                setShowing(!!data.visible);
+                if (menu.showing) {
+                    requestAnimationFrame(scrollCurrentIntoView);
+                }
+                scheduleMeasure();
+                break;
+            }
+
+            case 'setTabs': {
+                menu.activeTabs = Array.isArray(data.tabs) ? data.tabs : [];
+                menu.currentTab = Number(data.index) || 0;
+                renderTabs();
+                break;
+            }
+
+            case 'setTabIndex': {
+                menu.currentTab = Number(data.index) || 0;
+                renderTabs();
+                break;
+            }
+
+            case 'resetTabs': {
+                menu.activeTabs = ['Main Menu'];
+                menu.currentTab = 0;
+                renderTabs();
+                break;
+            }
+
+            case 'setMenuPos': {
+                if (data.x !== undefined) {
+                    menu.left = data.x + 'vh';
+                    menuRoot.style.left = menu.left;
+                }
+                if (data.y !== undefined) {
+                    menu.top = data.y + 'vh';
+                    menuRoot.style.top = menu.top;
+                }
+                break;
+            }
+
+            case 'setBanner': {
+                if (data.url) {
+                    menu.banner = data.url;
+                    bannerImg.src = menu.banner;
+                }
+                break;
+            }
+
+            case 'setMenuColor': {
+                const r = data.r ?? 197;
+                const g = data.g ?? 34;
+                const b = data.b ?? 34;
+                const root = document.documentElement;
+                root.style.setProperty('--color-main', 'rgba(' + r + ',' + g + ',' + b + ',0.35)');
+                root.style.setProperty('--color-border', 'rgba(' + r + ',' + g + ',' + b + ',0.35)');
+                root.style.setProperty('--color-shadow', 'rgba(' + r + ',' + g + ',' + b + ',0.35)');
+                root.style.setProperty('--color-notify-main', 'rgba(' + r + ',' + g + ',' + b + ')');
+                root.style.setProperty('--color-notify-shadow', 'rgba(' + r + ',' + g + ',' + b + ',0.35)');
+                root.style.setProperty('--color-mainSolid', 'rgba(' + r + ',' + g + ',' + b + ')');
+                root.style.setProperty('--color-tab', 'rgba(' + r + ',' + g + ',' + b + ',0.35)');
+                break;
+            }
+
+            /* ------------------------ notifications ----------------------- */
+            case 'notify': {
+                notify(data.header || 'Info', data.message, data.duration || 4000, data.type || 'info');
+                break;
+            }
+
+            /* ---------------------------- input --------------------------- */
+            case 'showInputPrompt': {
+                input.show = !!data.showInput;
+                input.title = data.title || 'Vehicle Model';
+                input.value = data.showInput ? (data.value || '') : '';
+                if (input.show) renderInput();
+                else hideInput();
+                break;
+            }
+
+            case 'hideInputPrompt': {
+                hideInput();
+                break;
+            }
+
+            case 'updateInputPrompt': {
+                input.title = data.title || input.title;
+                input.value = data.value ?? input.value;
+                if (input.show) {
+                    if (inputTitleEl) inputTitleEl.textContent = 'Venom Menu - ' + input.title;
+                    if (inputEl) inputEl.value = input.value;
+                }
+                break;
+            }
+
+            /* --------------------------- freecam -------------------------- */
+            case 'displayFreecam': {
+                freecam.show = !!data.visible;
+                freecam.options = Array.isArray(data.options) ? data.options : [];
+                freecam.weaponList = Array.isArray(data.weaponOptions) ? data.weaponOptions : [];
+                freecam.vehicleList = Array.isArray(data.vehicleOptions) ? data.vehicleOptions : [];
+                if (data.weaponIndex !== undefined) freecam.weaponIndex = data.weaponIndex - 1;
+                if (data.vehicleIndex !== undefined) freecam.vehicleIndex = data.vehicleIndex - 1;
+                renderFreecam();
+                break;
+            }
+
+            case 'updateWeapon': {
+                freecam.weaponIndex = data.index - 1;
+                if (freecam.show) renderFreecam();
+                break;
+            }
+
+            case 'updateVehicle': {
+                freecam.vehicleIndex = data.index - 1;
+                if (freecam.show) renderFreecam();
+                break;
+            }
+
+            case 'scroll': {
+                if (!freecam.options.length) break;
+                if (data.direction === 'up') {
+                    freecam.hovered = (freecam.hovered - 1 + freecam.options.length) % freecam.options.length;
+                } else {
+                    freecam.hovered = (freecam.hovered + 1) % freecam.options.length;
+                }
+                if (freecam.show) renderFreecam();
+                break;
+            }
+        }
+    }
+
+    window.addEventListener('message', (event) => handleMessage(event.data));
+
+    /* ============================== DEMO ============================= */
+    function demoBanner() {
+        const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="680" height="200" viewBox="0 0 680 200">'
+            + '<defs>'
+            + '<linearGradient id="g" x1="0" y1="0" x2="1" y2="1">'
+            + '<stop offset="0" stop-color="#1a0505"/><stop offset="0.55" stop-color="#3a0b0b"/><stop offset="1" stop-color="#12060a"/>'
+            + '</linearGradient>'
+            + '<radialGradient id="r" cx="0.7" cy="0.3" r="0.7">'
+            + '<stop offset="0" stop-color="#c52222" stop-opacity="0.55"/><stop offset="1" stop-color="#c52222" stop-opacity="0"/>'
+            + '</radialGradient>'
+            + '</defs>'
+            + '<rect width="680" height="200" fill="url(#g)"/>'
+            + '<rect width="680" height="200" fill="url(#r)"/>'
+            + '<text x="34" y="118" font-family="Segoe UI, Arial, sans-serif" font-size="54" font-weight="700" fill="#ffffff" letter-spacing="10">VENOM</text>'
+            + '<text x="36" y="146" font-family="Segoe UI, Arial, sans-serif" font-size="14" fill="#ffffff" fill-opacity="0.55" letter-spacing="5">SINGLE FILE UI</text>'
+            + '</svg>';
+        return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    }
+
+    function startDemo() {
+        document.documentElement.classList.add('demo');
+        menu.banner = demoBanner();
+        bannerImg.src = menu.banner;
+
+        setTimeout(() => {
+            handleMessage({
+                action: 'setCurrent',
+                current: 4,
+                menu: [
+                    { type: 'submenu', label: 'Vehicle Options' },
+                    { type: ['checkbox'], label: 'God Mode', checked: true },
+                    { type: 'divider', label: 'Weapons' },
+                    { type: 'slider', label: 'Damage Multiplier', value: 2.5, min: 0, max: 5, step: 0.1 },
+                    { type: ['scroll'], label: 'Weapon', selected: 2, options: [{ label: 'Pistol' }, { label: 'Rifle' }, { label: 'Shotgun' }] },
+                    { type: ['checkbox'], label: 'Infinite Ammo', checked: false },
+                    { type: 'divider', label: 'World' },
+                    { type: 'slider', label: 'Time Scale', value: 1, min: 0, max: 2, step: 0.05 },
+                    { type: 'submenu', label: 'Teleport' }
+                ]
+            });
+
+            handleMessage({ action: 'setTabs', tabs: ['Main Menu', 'Vehicle', 'Player'], index: 0 });
+
+            handleMessage({
+                action: 'notify',
+                header: 'Venom Menu',
+                message: 'Single-file UI loaded successfully.',
+                duration: 6000,
+                type: 'success'
+            });
+        }, 350);
+    }
+
+    /* ============================== INIT ============================= */
+    bannerImg.src = menu.banner;
+    renderTabs();
+    updateFooter();
+
+    window.VenomUI = { send: handleMessage };
+
+    if (location.protocol === 'file:' || /(?:^|[?&])demo(?:[=&]|$)/.test(location.search)) {
+        startDemo();
+    }
+})();
+</script>
+</body>
+</html>
